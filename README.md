@@ -21,9 +21,7 @@
 
 ---
 
-## 💚 From Our Hearts to the Open Source Community 🌱
-
-**Thailand Humanoid Atlas** is a labor of love, built by developers who believe that the future of humanoid and social robotics belongs to the community. We designed this research database platform to help map, understand, and accelerate Thailand’s robotics ecosystem. 
+**Thailand Humanoid Atlas** is a labor of love, I believe that the future of humanoid and social robotics belongs to the community. We designed this research database platform to help map, understand, and accelerate Thailand’s robotics ecosystem. 
 
 Whether it is cataloging companion robots caring for our grandparents, mapping academic publications by local researchers, or open-sourcing data structures, we want to create a transparent, reliable, and collaborative atlas for all.
 
