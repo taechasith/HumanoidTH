@@ -81,7 +81,7 @@ export default async function AdminSubmittedDataPage({ searchParams }: { searchP
 
       {dbOffline && (
         <div className="notice" style={{ backgroundColor: "#fffbeb", borderLeftColor: "var(--warning)", marginBottom: "16px" }}>
-          <strong>⚠️ Database Offline:</strong> Live PostgreSQL connection is unavailable (normal for Vercel preview environments). Displaying high-fidelity simulated submissions.
+          <strong>Database Offline:</strong> Live PostgreSQL is unavailable. Showing sample submissions for layout preview.
         </div>
       )}
 

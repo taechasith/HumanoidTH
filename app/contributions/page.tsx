@@ -62,7 +62,7 @@ export default async function ContributionsPage({ searchParams }: { searchParams
     console.error("Database connection failed in contributions page:", error);
     dbOffline = true;
     
-    // Serve high-fidelity mock datasets for contributions
+    // Representative fallback records for offline previews.
     robots = [
       { id: "1", canonicalName: "Dinsaw Mini" },
       { id: "2", canonicalName: "NAO" }
@@ -133,7 +133,7 @@ export default async function ContributionsPage({ searchParams }: { searchParams
 
       {dbOffline && (
         <div className="notice" style={{ backgroundColor: "#fffbeb", borderLeftColor: "var(--warning)", marginBottom: "16px" }}>
-          <strong>⚠️ Database Offline:</strong> Live PostgreSQL connection is unavailable (normal for Vercel preview environments). Displaying high-fidelity simulated contribution records.
+          <strong>Database Offline:</strong> Live PostgreSQL is unavailable. Showing sample contribution records for layout preview.
         </div>
       )}
 

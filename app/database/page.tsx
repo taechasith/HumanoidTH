@@ -84,7 +84,7 @@ export default async function DatabasePage({ searchParams }: { searchParams: Sea
     console.error("Database connection failed in database browser:", error);
     dbOffline = true;
     
-    // Fallback simulated datasets for each table option
+    // Representative fallback datasets for each table option.
     if (table === "robots") {
       data = [
         { id: "1", canonicalName: "Dinsaw Mini", manufacturer: "CT Asia Robotics", countryOfOrigin: "Thailand", robotType: "humanoid", embodimentLevel: "upper_body", description: "Elderly care assistive platform.", createdAt: new Date() },
@@ -150,7 +150,7 @@ export default async function DatabasePage({ searchParams }: { searchParams: Sea
 
       {dbOffline && (
         <div className="notice" style={{ backgroundColor: "#fffbeb", borderLeftColor: "var(--warning)", marginBottom: "16px" }}>
-          <strong>⚠️ Database Offline:</strong> Live PostgreSQL connection is unavailable (normal for Vercel preview environments). Displaying high-fidelity simulated database table structure.
+          <strong>Database Offline:</strong> Live PostgreSQL is unavailable. Showing sample rows that match the selected table shape.
         </div>
       )}
 
@@ -176,7 +176,7 @@ export default async function DatabasePage({ searchParams }: { searchParams: Sea
       {/* Dense Monospace Grid view */}
       <div className="panel" style={{ padding: "12px" }}>
         <h2 style={{ fontSize: "14px", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>
-          Interactive Schema View: <code>{table}</code> ({data.length} records)
+          Table Preview: <code>{table}</code> ({data.length} records)
         </h2>
         
         <div className="table-wrap" style={{ border: "1px solid var(--border)", borderRadius: "4px" }}>

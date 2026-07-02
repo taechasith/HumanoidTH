@@ -38,7 +38,7 @@ export default async function AnalyticsPage() {
       <div className="notice">Trends and correlations are descriptive signals only, not causal claims.</div>
       {dbOffline && (
         <div className="notice" style={{ marginBottom: 16 }}>
-          Live analytics are unavailable. Showing fallback aggregate examples.
+          Live analytics are unavailable. Showing sample aggregate examples.
         </div>
       )}
       <h2>Perspective Themes</h2>

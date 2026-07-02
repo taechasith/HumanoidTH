@@ -34,7 +34,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body>
         <div className="app-shell">
           <aside className="sidebar">
-            <div className="brand">{t.brand}</div>
+            <div className="brand" style={{ display: "flex", alignItems: "center", minHeight: "36px", marginBottom: "18px" }}>
+              <img src="/logo.png" alt="Thailand Humanoid Atlas" style={{ maxHeight: "36px", maxWidth: "100%", width: "auto", objectFit: "contain" }} />
+            </div>
             <SidebarNav currentLang={lang} />
             <LanguageSelector currentLang={lang} />
           </aside>

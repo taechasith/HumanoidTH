@@ -67,7 +67,7 @@ export default async function OverviewPage() {
   } catch (error) {
     console.error("Prisma query failed in home page (OverviewPage):", error);
     dbOffline = true;
-    // Serve high-fidelity mock data on Vercel for preview and design approval
+    // Serve representative sample data when the live database is unavailable.
     statsCount = {
       sourcesCount: 154,
       acceptedCount: 132,
@@ -96,7 +96,7 @@ export default async function OverviewPage() {
         <div>
           <h1>Overview & Corpus Summary</h1>
           <p className="muted font-mono">
-            Research-console database indexing Thailand's robotics ecosystem and public signals.
+            Research database for Thailand humanoid, social, and service robotics records.
           </p>
         </div>
         <div className="toolbar">
@@ -109,7 +109,7 @@ export default async function OverviewPage() {
 
       {dbOffline && (
         <div className="notice" style={{ backgroundColor: "#fffbeb", borderLeftColor: "var(--warning)", marginBottom: "16px" }}>
-          <strong>⚠️ Database Offline:</strong> Live PostgreSQL connection is unavailable (normal for Vercel preview environments). Displaying high-fidelity simulated research data.
+          <strong>Database Offline:</strong> Live PostgreSQL is unavailable. Showing sample atlas records so the page structure remains visible.
         </div>
       )}
 
@@ -172,7 +172,7 @@ export default async function OverviewPage() {
               <div className="muted" style={{ fontSize: "12px" }}>Temporal Coverage</div>
               <div className="stat" style={{ fontSize: "18px", padding: "4px 0" }}>{statsCount.yearRangeStr}</div>
               <div className="muted" style={{ fontSize: "11px" }}>
-                Active media publications range
+                Source publication dates
               </div>
             </div>
           </section>
@@ -206,21 +206,20 @@ export default async function OverviewPage() {
       <div className="panel" style={{ marginTop: "20px" }}>
         <h2>Database Empty State Guide</h2>
         <p className="muted" style={{ fontSize: "13px" }}>
-          If there are no robot models or source signals populated, run the following CLI commands in the root of the project to initialize:
+          If there are no robot models or source signals populated, initialize the active Next.js database with these project commands:
         </p>
         <pre style={{ background: "var(--surface-muted)", padding: "10px", borderRadius: "6px", fontSize: "12px", overflowX: "auto", marginTop: "10px" }}>
           <code>
-{`# 1. Initialize DB tables
-python -m humanoid_atlas db init
+{`# 1. Generate the Prisma client
+pnpm db:generate
 
-# 2. Seed robot models
-python -m humanoid_atlas ingest seeds --file data/seeds/robot_models.seed.yml
+# 2. Apply the Prisma schema to the database
+pnpm db:push
 
-# 3. Seed inventory and relations
-python -m humanoid_atlas ingest seeds --file data/seeds/owned_inventory.seed.yml
+# 3. Seed sample atlas records
+pnpm db:seed
 
-# 4. Extract graph relations
-python -m humanoid_atlas analyze graph`}
+# 4. Optional: pull live source records from the Data Pulls page`}
           </code>
         </pre>
       </div>

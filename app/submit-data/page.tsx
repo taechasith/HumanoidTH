@@ -46,14 +46,14 @@ export default async function SubmitDataPage() {
         <div>
           <h1>Submit Signal or Record</h1>
           <p className="muted">
-            Contribute a robotics signal, register a model, claim an open-source project, or report owned inventory units.
+            Submit source evidence, robot model details, contribution claims, corrections, or inventory updates for review.
           </p>
         </div>
       </div>
 
       {dbOffline && (
         <div className="notice" style={{ backgroundColor: "#fffbeb", borderLeftColor: "var(--warning)", marginBottom: "16px" }}>
-          <strong>⚠️ Database Offline:</strong> Live PostgreSQL connection is unavailable (normal for Vercel preview environments). Displaying high-fidelity simulated tracking status.
+          <strong>Database Offline:</strong> Live PostgreSQL is unavailable. Showing sample submission statuses for layout preview.
         </div>
       )}
 
@@ -85,7 +85,7 @@ export default async function SubmitDataPage() {
           
           <label>
             Description / Core Evidence Notes
-            <textarea name="notes" rows={5} placeholder="Provide excerpt quotes, physical location, serial numbers, or reasoning..." />
+            <textarea name="notes" rows={5} placeholder="Provide source excerpts, model details, correction notes, or inventory context. Avoid sensitive private data unless needed for internal review." />
           </label>
           
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
@@ -108,13 +108,13 @@ export default async function SubmitDataPage() {
         <aside className="panel" style={{ fontSize: "13px" }}>
           <h2>Submission Policy</h2>
           <p className="muted" style={{ marginBottom: "10px" }}>
-            Thank you for contributing to the Thailand Humanoid Atlas. All submissions enter a pipeline queue.
+            Thank you for contributing to the Thailand Humanoid Atlas. All submissions are stored in the review queue before they become public records.
           </p>
           <ul style={{ paddingLeft: "18px", margin: "6px 0", color: "var(--text-secondary)", display: "flex", flexDirection: "column", gap: "6px" }}>
-            <li>URLs are processed by the automated crawler to extract keywords and entities.</li>
-            <li>Relevance status is evaluated automatically.</li>
-            <li>High-confidence data is published automatically, but low-confidence records require Administrator approval.</li>
-            <li>Private inventory fields (like serial numbers) will remain hidden.</li>
+            <li>Submitted URLs and notes are evidence for reviewer decisions.</li>
+            <li>Data pull jobs can classify external source records separately.</li>
+            <li>Administrators approve, reject, or request more information before indexing submissions.</li>
+            <li>Private inventory fields, such as serial numbers, should stay hidden from public views.</li>
           </ul>
         </aside>
       </div>

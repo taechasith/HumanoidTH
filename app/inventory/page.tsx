@@ -20,7 +20,7 @@ export default async function InventoryPage({ searchParams }: { searchParams: Se
   } catch (error) {
     console.error("Database connection failed in inventory page:", error);
     dbOffline = true;
-    // High-fidelity fallback simulated records
+    // Representative fallback records for offline previews.
     inventory = [
       {
         id: "mock-1",
@@ -69,7 +69,7 @@ export default async function InventoryPage({ searchParams }: { searchParams: Se
         <div>
           <h1>Owned Inventory</h1>
           <p className="muted">
-            Tracking hardware models owned, borrowed, or operated by the team.
+            Tracking robot units owned, borrowed, tested, or documented by the atlas team.
           </p>
         </div>
         <div className="toolbar">
@@ -90,19 +90,19 @@ export default async function InventoryPage({ searchParams }: { searchParams: Se
 
       {dbOffline && (
         <div className="notice" style={{ backgroundColor: "#fffbeb", borderLeftColor: "var(--warning)", marginBottom: "16px" }}>
-          <strong>⚠️ Database Offline:</strong> Live PostgreSQL connection is unavailable (normal for Vercel preview environments). Displaying high-fidelity simulated hardware units.
+          <strong>Database Offline:</strong> Live PostgreSQL is unavailable. Showing sample inventory records for layout preview.
         </div>
       )}
 
       {!isPublic ? (
         <div className="notice" style={{ backgroundColor: "#fdf2f2", borderLeftColor: "var(--danger)" }}>
-          <strong>⚠️ Access Warning:</strong> You are currently in <strong>Operator Mode</strong>. 
+          <strong>Access Warning:</strong> You are currently in <strong>Operator Mode</strong>. 
           Sensitive internal data (serial numbers, exact locations, and repair logs) are visible on screen. 
           Do not share this view during public presentations or screenshots.
         </div>
       ) : (
         <div className="notice" style={{ backgroundColor: "#f0fdf4", borderLeftColor: "var(--success)" }}>
-          <strong>🛡️ Public-Safe Mode Active:</strong> Serial numbers, exact locations, and private logs are masked or hidden.
+          <strong>Public-Safe Mode Active:</strong> Serial numbers, exact locations, and private logs are masked or hidden.
         </div>
       )}
 

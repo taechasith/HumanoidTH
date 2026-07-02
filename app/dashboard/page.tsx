@@ -138,7 +138,7 @@ export default async function DashboardPage() {
 
       {data.dbOffline && (
         <div className="notice" style={{ backgroundColor: "#fffbeb", borderLeftColor: "var(--warning)", marginBottom: "16px" }}>
-          <strong>⚠️ Database Offline:</strong> Live PostgreSQL connection is unavailable (normal for Vercel preview environments). Displaying high-fidelity simulated research analytics.
+          <strong>Database Offline:</strong> Live PostgreSQL is unavailable. Showing sample aggregate records for layout preview.
         </div>
       )}
 

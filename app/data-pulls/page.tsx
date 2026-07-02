@@ -16,6 +16,9 @@ export default async function DataPullsPage() {
     <>
       <h1>{t.dataPullsTitle}</h1>
       <p className="muted">{t.dataPullsDesc}</p>
+      <div className="notice" style={{ marginBottom: 14 }}>
+        Pull jobs save source records for later relevance and perspective review. They do not publish community submissions automatically.
+      </div>
 
       <form className="form panel" action={runDataPull}>
         <label>Adapter
@@ -52,4 +55,3 @@ export default async function DataPullsPage() {
     </>
   );
 }
-

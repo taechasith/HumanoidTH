@@ -20,7 +20,7 @@ export default async function NetworkPage() {
   } catch (error) {
     console.error("Database connection failed in network graph page:", error);
     dbOffline = true;
-    // Serve high-fidelity mock entities for the Obsidian-style Cytoscape graph
+    // Representative fallback entities for the Cytoscape graph preview.
     robots = [
       { id: "1", canonicalName: "Dinsaw Mini", manufacturer: "CT Asia Robotics" },
       { id: "2", canonicalName: "NAO", manufacturer: "SoftBank Robotics" }
@@ -52,7 +52,7 @@ export default async function NetworkPage() {
     <>
       {dbOffline && (
         <div className="notice" style={{ backgroundColor: "#fffbeb", borderLeftColor: "var(--warning)", marginBottom: "16px", margin: "14px 22px" }}>
-          <strong>⚠️ Database Offline:</strong> Live PostgreSQL connection is unavailable (normal for Vercel preview environments). Displaying high-fidelity simulated relationship graph.
+          <strong>Database Offline:</strong> Live PostgreSQL is unavailable. Showing a sample relationship graph for layout preview.
         </div>
       )}
       <NetworkGraphClient 
