@@ -27,108 +27,56 @@ export default async function DatabasePage({ searchParams }: { searchParams: Sea
   const t = getTranslation(lang);
 
   let data: any[] = [];
-  let dbOffline = false;
 
-  try {
-    switch (table) {
-      case "robots":
-        data = await prisma.robotModel.findMany({
-          where: q ? { canonicalName: { contains: q, mode: "insensitive" } } : {},
-          orderBy: { createdAt: "desc" },
-          take: 250
-        });
-        break;
-      case "owned_inventory":
-        data = await prisma.ownedInventory.findMany({
-          where: q ? { displayName: { contains: q, mode: "insensitive" } } : {},
-          orderBy: { createdAt: "desc" },
-          take: 250
-        });
-        break;
-      case "contributions":
-        data = await prisma.contribution.findMany({
-          where: q ? { title: { contains: q, mode: "insensitive" } } : {},
-          orderBy: { createdAt: "desc" },
-          take: 250
-        });
-        break;
-      case "submissions":
-        data = await prisma.submittedData.findMany({
-          where: q ? { title: { contains: q, mode: "insensitive" } } : {},
-          orderBy: { createdAt: "desc" },
-          take: 250
-        });
-        break;
-      case "perspective_annotations":
-        data = await prisma.perspectiveAnnotation.findMany({
-          where: q ? { perspectiveTheme: { contains: q, mode: "insensitive" } } : {},
-          orderBy: { createdAt: "desc" },
-          take: 250
-        });
-        break;
-      case "pull_jobs":
-        data = await prisma.sourcePullJob.findMany({
-          where: q ? { query: { contains: q, mode: "insensitive" } } : {},
-          orderBy: { createdAt: "desc" },
-          take: 250
-        });
-        break;
-      default:
-        data = await prisma.sourceRecord.findMany({
-          where: q ? { title: { contains: q, mode: "insensitive" } } : {},
-          orderBy: { createdAt: "desc" },
-          take: 250
-        });
-    }
-  } catch (error) {
-    console.error("Database connection failed in database browser:", error);
-    dbOffline = true;
-    
-    // Representative fallback datasets for each table option.
-    if (table === "robots") {
-      data = [
-        { id: "1", canonicalName: "Dinsaw Mini", manufacturer: "CT Asia Robotics", countryOfOrigin: "Thailand", robotType: "humanoid", embodimentLevel: "upper_body", description: "Elderly care assistive platform.", createdAt: new Date() },
-        { id: "2", canonicalName: "NAO", manufacturer: "SoftBank Robotics", countryOfOrigin: "Japan", robotType: "humanoid", embodimentLevel: "full_humanoid", description: "Education and research legged model.", createdAt: new Date() }
-      ];
-    } else if (table === "owned_inventory") {
-      data = [
-        { id: "mock-inv-1", displayName: "NAO Education Platform B", ownershipStatus: "borrowed", visibility: "public", custodian: "FIBO KMUTT", locationLabel: "Robotics Lab", serialNumber: "NAO-62-9981A", publicSerialSafe: true, notes: "Loaned.", createdAt: new Date() },
-        { id: "mock-inv-2", displayName: "Dinsaw Eldercare Unit A", ownershipStatus: "owned", visibility: "private", custodian: "Siriraj Hospital", locationLabel: "Ward 12", serialNumber: "DS-2026-991A", publicSerialSafe: false, notes: "Private unit.", createdAt: new Date() }
-      ];
-    } else if (table === "contributions") {
-      data = [
-        { id: "mock-c-1", title: "Thai HRI research seed", contributorName: "Dr. Somchai", organization: "FIBO", contributionType: "research_paper", license: "MIT", verificationStatus: "VERIFIED", createdAt: new Date() }
-      ];
-    } else if (table === "submissions") {
-      data = [
-        { id: "mock-sub-1", title: "NAO Robot deployment KMUTT", submissionType: "source_url", status: "QUEUED", submitterName: "Ajahn Somchai", notes: "Please ingest.", createdAt: new Date() }
-      ];
-    } else if (table === "perspective_annotations") {
-      data = [
-        { id: "mock-pa-1", perspectiveTheme: "economic_impact", stance: "SUPPORTIVE", confidence: 0.92, createdAt: new Date() },
-        { id: "mock-pa-2", perspectiveTheme: "safety_concern", stance: "NEUTRAL", confidence: 0.65, createdAt: new Date() }
-      ];
-    } else if (table === "pull_jobs") {
-      data = [
-        { id: "mock-pj-1", adapter: "facebook", query: "Thailand humanoid", status: "SUCCEEDED", recordsFound: 5, recordsSaved: 5, createdAt: new Date() }
-      ];
-    } else {
-      // Default: sources
-      data = [
-        { id: "1", platform: "facebook", title: "KMUTT FIBO NAO robot study", sourceUrl: "https://facebook.com/kmuttoficial/123", relevanceStatus: "ACCEPTED", relevanceConfidence: 0.94, publishedAt: new Date(), createdAt: new Date() },
-        { id: "2", platform: "youtube", title: "Dinsaw mini robotic nursing home test", sourceUrl: "https://youtube.com/watch?v=abc", relevanceStatus: "ACCEPTED", relevanceConfidence: 0.88, publishedAt: new Date(), createdAt: new Date() }
-      ];
-    }
-
-    // Simple local text filter for search query parameter
-    if (q) {
-      const qLower = q.toLowerCase();
-      data = data.filter(item => 
-        Object.values(item).some(val => 
-          val && typeof val === "string" && val.toLowerCase().includes(qLower)
-        )
-      );
-    }
+  switch (table) {
+    case "robots":
+      data = await prisma.robotModel.findMany({
+        where: q ? { canonicalName: { contains: q, mode: "insensitive" } } : {},
+        orderBy: { createdAt: "desc" },
+        take: 250
+      });
+      break;
+    case "owned_inventory":
+      data = await prisma.ownedInventory.findMany({
+        where: q ? { displayName: { contains: q, mode: "insensitive" } } : {},
+        orderBy: { createdAt: "desc" },
+        take: 250
+      });
+      break;
+    case "contributions":
+      data = await prisma.contribution.findMany({
+        where: q ? { title: { contains: q, mode: "insensitive" } } : {},
+        orderBy: { createdAt: "desc" },
+        take: 250
+      });
+      break;
+    case "submissions":
+      data = await prisma.submittedData.findMany({
+        where: q ? { title: { contains: q, mode: "insensitive" } } : {},
+        orderBy: { createdAt: "desc" },
+        take: 250
+      });
+      break;
+    case "perspective_annotations":
+      data = await prisma.perspectiveAnnotation.findMany({
+        where: q ? { perspectiveTheme: { contains: q, mode: "insensitive" } } : {},
+        orderBy: { createdAt: "desc" },
+        take: 250
+      });
+      break;
+    case "pull_jobs":
+      data = await prisma.sourcePullJob.findMany({
+        where: q ? { query: { contains: q, mode: "insensitive" } } : {},
+        orderBy: { createdAt: "desc" },
+        take: 250
+      });
+      break;
+    default:
+      data = await prisma.sourceRecord.findMany({
+        where: q ? { title: { contains: q, mode: "insensitive" } } : {},
+        orderBy: { createdAt: "desc" },
+        take: 250
+      });
   }
 
   // Column headers based on keys in records
@@ -148,11 +96,7 @@ export default async function DatabasePage({ searchParams }: { searchParams: Sea
         </div>
       </div>
 
-      {dbOffline && (
-        <div className="notice" style={{ backgroundColor: "#fffbeb", borderLeftColor: "var(--warning)", marginBottom: "16px" }}>
-          <strong>Database Offline:</strong> Live PostgreSQL is unavailable. Showing sample rows that match the selected table shape.
-        </div>
-      )}
+
 
       {/* Selector & Search Form */}
       <form method="GET" className="panel grid" style={{ gridTemplateColumns: "1fr 2fr 80px", gap: "10px", alignItems: "end", marginBottom: "16px" }}>

@@ -4,41 +4,10 @@ import { createSubmission } from "@/app/actions";
 export const dynamic = "force-dynamic";
 
 export default async function SubmitDataPage() {
-  let recentSubmissions: any[] = [];
-  let dbOffline = false;
-
-  try {
-    recentSubmissions = await prisma.submittedData.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 15
-    });
-  } catch (error) {
-    console.error("Database connection failed in submit page:", error);
-    dbOffline = true;
-    recentSubmissions = [
-      {
-        id: "mock-s-1",
-        title: "NAO Robot deployment at KMUTT",
-        url: "https://facebook.com/kmuttoficial/123",
-        submissionType: "source_url",
-        submitterName: "Ajahn Somchai",
-        status: "APPROVED",
-        notes: "Initial deployment test with children.",
-        createdAt: new Date(),
-        payloadJson: { confidence: 0.94, reason: "Entities and context confirmed" }
-      },
-      {
-        id: "mock-s-2",
-        title: "Dinsaw mini review video",
-        url: "https://youtube.com/watch?v=abc",
-        submissionType: "source_url",
-        submitterName: "Anonymous",
-        status: "QUEUED",
-        notes: "Product review of CT Asia robotics hospital service mini units.",
-        createdAt: new Date()
-      }
-    ];
-  }
+  const recentSubmissions = await prisma.submittedData.findMany({
+    orderBy: { createdAt: "desc" },
+    take: 15
+  });
 
   return (
     <>
@@ -51,11 +20,7 @@ export default async function SubmitDataPage() {
         </div>
       </div>
 
-      {dbOffline && (
-        <div className="notice" style={{ backgroundColor: "#fffbeb", borderLeftColor: "var(--warning)", marginBottom: "16px" }}>
-          <strong>Database Offline:</strong> Live PostgreSQL is unavailable. Showing sample submission statuses for layout preview.
-        </div>
-      )}
+
 
       <div className="two" style={{ gridTemplateColumns: "1fr 320px", gap: "16px" }}>
         

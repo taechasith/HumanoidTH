@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
-import { loginAsUser, logoutUser } from "@/app/actions";
+import { loginAsUser, logoutUser, registerAndLoginUser } from "@/app/actions";
 import { getTranslation } from "@/lib/translations";
 
 export const dynamic = "force-dynamic";
@@ -12,34 +12,12 @@ export default async function ProfilePage() {
   const lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
   const t = getTranslation(lang);
 
-  let users: Array<{ id: string; email: string; name: string | null; role: string; createdAt: Date }> = [];
-  let dbOffline = false;
-
-  try {
-    users = await prisma.user.findMany({ orderBy: { createdAt: "desc" }, take: 20 });
-  } catch (error) {
-    console.error("Database query failed in profile page:", error);
-    dbOffline = true;
-    users = [
-      {
-        id: "fallback-admin",
-        email: "creativelab.co.th@gmail.com",
-        name: "CreativeLabTH Group",
-        role: "ADMIN",
-        createdAt: new Date()
-      }
-    ];
-  }
+  const users = await prisma.user.findMany({ orderBy: { createdAt: "desc" }, take: 20 });
 
   return (
     <>
       <h1>{t.profileTitle}</h1>
       <p className="muted" style={{ marginBottom: "18px" }}>{t.profileDesc}</p>
-      {dbOffline && (
-        <div className="notice" style={{ marginBottom: 16 }}>
-          Live user records are unavailable. Showing configured admin fallback.
-        </div>
-      )}
       
       {currentEmail ? (
         <section className="panel" style={{ border: "1px solid var(--accent)", marginBottom: "20px" }}>
@@ -57,21 +35,47 @@ export default async function ProfilePage() {
         </section>
       ) : (
         <section className="panel" style={{ border: "1px solid var(--warning)", marginBottom: "20px" }}>
-          <h2>Simulated Authentication Session</h2>
-          <p className="muted">
-            No active session found. Select a profile below to log in. Role-based access control gates administrative features.
+          <h2>Authentication & Registration</h2>
+          <p className="muted" style={{ marginBottom: 14 }}>
+            Register a new account or log in with an existing email. This session will be saved in the PostgreSQL database.
           </p>
 
-          <div style={{ display: "flex", gap: "10px", marginTop: "14px" }}>
-            <form action={loginAsUser.bind(null, "creativelab.co.th@gmail.com", "ADMIN")}>
-              <button type="submit" className="primary">Login as Administrator</button>
-            </form>
-            <form action={loginAsUser.bind(null, "researcher@example.com", "RESEARCHER")}>
-              <button type="submit">Login as Researcher</button>
-            </form>
-            <form action={loginAsUser.bind(null, "student@example.com", "USER")}>
-              <button type="submit">Login as Guest / Student</button>
-            </form>
+          <form action={registerAndLoginUser} className="form" style={{ maxWidth: "400px", gap: "12px" }}>
+            <label>
+              Email Address
+              <input name="email" type="email" required placeholder="name@domain.com" />
+            </label>
+            <label>
+              Full Name (Optional)
+              <input name="name" placeholder="John Doe" />
+            </label>
+            <label>
+              Role
+              <select name="role" defaultValue="USER">
+                <option value="USER">User (Read-only)</option>
+                <option value="RESEARCHER">Researcher</option>
+                <option value="ADMIN">Administrator</option>
+              </select>
+            </label>
+            <button type="submit" className="primary" style={{ marginTop: "6px" }}>
+              Log In / Register
+            </button>
+          </form>
+
+          <div style={{ borderTop: "1px solid var(--border)", paddingTop: "14px", marginTop: "14px" }}>
+            <span className="muted" style={{ fontSize: "12px" }}>Quick Simulators:</span>
+            <div style={{ display: "flex", gap: "10px", marginTop: "8px" }}>
+              <form action={loginAsUser.bind(null, "creativelab.co.th@gmail.com", "ADMIN")}>
+                <button type="submit" className="button" style={{ fontSize: "11px", minHeight: "28px" }}>
+                  💻 Quick Admin
+                </button>
+              </form>
+              <form action={loginAsUser.bind(null, "researcher@example.com", "RESEARCHER")}>
+                <button type="submit" className="button" style={{ fontSize: "11px", minHeight: "28px" }}>
+                  🔬 Quick Researcher
+                </button>
+              </form>
+            </div>
           </div>
         </section>
       )}
@@ -109,3 +113,4 @@ export default async function ProfilePage() {
     </>
   );
 }
+

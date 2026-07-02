@@ -70,9 +70,49 @@ export async function runDataPull(formData: FormData) {
 }
 
 export async function loginAsUser(email: string, role: string) {
+  const user = await prisma.user.upsert({
+    where: { email },
+    update: { role: role as any },
+    create: {
+      email,
+      name: email.split("@")[0],
+      role: role as any
+    }
+  });
+
   const cookieStore = await cookies();
-  cookieStore.set("user_email", email, { path: "/" });
-  cookieStore.set("user_role", role, { path: "/" });
+  cookieStore.set("user_email", user.email, { path: "/" });
+  cookieStore.set("user_role", user.role, { path: "/" });
+  revalidatePath("/profile");
+  revalidatePath("/admin/submitted-data");
+  redirect("/profile");
+}
+
+export async function registerAndLoginUser(formData: FormData) {
+  const email = String(formData.get("email") ?? "").trim();
+  const name = String(formData.get("name") ?? "").trim();
+  const role = String(formData.get("role") ?? "USER") as any;
+
+  if (!email) {
+    throw new Error("Email is required");
+  }
+
+  const user = await prisma.user.upsert({
+    where: { email },
+    update: {
+      name: name || undefined,
+      role
+    },
+    create: {
+      email,
+      name: name || email.split("@")[0],
+      role
+    }
+  });
+
+  const cookieStore = await cookies();
+  cookieStore.set("user_email", user.email, { path: "/" });
+  cookieStore.set("user_role", user.role, { path: "/" });
   revalidatePath("/profile");
   revalidatePath("/admin/submitted-data");
   redirect("/profile");

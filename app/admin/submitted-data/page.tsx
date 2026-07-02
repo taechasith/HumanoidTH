@@ -29,42 +29,10 @@ export default async function AdminSubmittedDataPage({ searchParams }: { searchP
   const params = await searchParams;
   const selectedId = params.selectedId;
 
-  let items: any[] = [];
-  let dbOffline = false;
-
-  try {
-    items = await prisma.submittedData.findMany({ 
-      orderBy: { createdAt: "desc" }, 
-      take: 100 
-    });
-  } catch (error) {
-    console.error("Database connection failed in admin submitted-data:", error);
-    dbOffline = true;
-    items = [
-      {
-        id: "mock-s-1",
-        title: "NAO Robot deployment at KMUTT",
-        url: "https://facebook.com/kmuttoficial/123",
-        submissionType: "source_url",
-        submitterName: "Ajahn Somchai",
-        submitterContact: "somchai@university.ac.th",
-        status: "QUEUED",
-        notes: "Initial deployment test with children at FIBO. Automated relevance analysis indicates high HRI focus.",
-        createdAt: new Date()
-      },
-      {
-        id: "mock-s-2",
-        title: "Dinsaw mini review video",
-        url: "https://youtube.com/watch?v=abc",
-        submissionType: "source_url",
-        submitterName: "Anonymous",
-        submitterContact: "not provided",
-        status: "NEEDS_REVIEW",
-        notes: "Product review of CT Asia robotics hospital service mini units.",
-        createdAt: new Date()
-      }
-    ];
-  }
+  const items = await prisma.submittedData.findMany({ 
+    orderBy: { createdAt: "desc" }, 
+    take: 100 
+  });
 
   const selectedItem = items.find(item => item.id === selectedId) || items[0];
 
@@ -79,11 +47,7 @@ export default async function AdminSubmittedDataPage({ searchParams }: { searchP
         </div>
       </div>
 
-      {dbOffline && (
-        <div className="notice" style={{ backgroundColor: "#fffbeb", borderLeftColor: "var(--warning)", marginBottom: "16px" }}>
-          <strong>Database Offline:</strong> Live PostgreSQL is unavailable. Showing sample submissions for layout preview.
-        </div>
-      )}
+
 
       <div className="two" style={{ gridTemplateColumns: "1fr 400px", gap: "16px" }}>
         
@@ -215,31 +179,23 @@ export default async function AdminSubmittedDataPage({ searchParams }: { searchP
               {/* Action Forms */}
               <div style={{ borderTop: "1px solid var(--border)", paddingTop: "10px", marginTop: "auto" }}>
                 <strong>Verification Verdict:</strong>
-                {dbOffline ? (
-                  <p className="muted" style={{ fontSize: "11px", margin: "4px 0" }}>
-                    Verdict actions disabled while database is offline.
-                  </p>
-                ) : (
-                  <>
-                    <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
-                      <form action={updateSubmissionStatus.bind(null, selectedItem.id, "APPROVED")} style={{ flex: 1 }}>
-                        <button type="submit" className="primary" style={{ width: "100%", background: "var(--success)", borderColor: "var(--success)", minHeight: "38px" }}>
-                          Approve
-                        </button>
-                      </form>
-                      <form action={updateSubmissionStatus.bind(null, selectedItem.id, "REJECTED")} style={{ flex: 1 }}>
-                        <button type="submit" className="button" style={{ width: "100%", color: "var(--danger)", borderColor: "var(--danger)", minHeight: "38px" }}>
-                          Reject
-                        </button>
-                      </form>
-                    </div>
-                    <form action={updateSubmissionStatus.bind(null, selectedItem.id, "NEEDS_REVIEW")} style={{ marginTop: "8px" }}>
-                      <button type="submit" className="button" style={{ width: "100%", minHeight: "38px" }}>
-                        Mark Pending / Review
-                      </button>
-                    </form>
-                  </>
-                )}
+                <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
+                  <form action={updateSubmissionStatus.bind(null, selectedItem.id, "APPROVED")} style={{ flex: 1 }}>
+                    <button type="submit" className="primary" style={{ width: "100%", background: "var(--success)", borderColor: "var(--success)", minHeight: "38px" }}>
+                      Approve
+                    </button>
+                  </form>
+                  <form action={updateSubmissionStatus.bind(null, selectedItem.id, "REJECTED")} style={{ flex: 1 }}>
+                    <button type="submit" className="button" style={{ width: "100%", color: "var(--danger)", borderColor: "var(--danger)", minHeight: "38px" }}>
+                      Reject
+                    </button>
+                  </form>
+                </div>
+                <form action={updateSubmissionStatus.bind(null, selectedItem.id, "NEEDS_REVIEW")} style={{ marginTop: "8px" }}>
+                  <button type="submit" className="button" style={{ width: "100%", minHeight: "38px" }}>
+                    Mark Pending / Review
+                  </button>
+                </form>
               </div>
             </>
           ) : (

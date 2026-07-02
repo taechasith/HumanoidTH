@@ -34,83 +34,24 @@ export default async function ContributionsPage({ searchParams }: { searchParams
     ];
   }
 
-  let items: any[] = [];
-  let robots: any[] = [];
-  let uniqueOrgs: string[] = [];
-  let dbOffline = false;
+  const [dbItems, dbRobots, dbOrganizations] = await Promise.all([
+    prisma.contribution.findMany({
+      where,
+      include: { relatedRobotModel: true },
+      orderBy: { updatedAt: "desc" },
+      take: 200
+    }),
+    prisma.robotModel.findMany({ select: { id: true, canonicalName: true } }),
+    prisma.contribution.findMany({
+      select: { organization: true },
+      distinct: ["organization"],
+      where: { organization: { not: null } }
+    })
+  ]);
 
-  try {
-    const [dbItems, dbRobots, dbOrganizations] = await Promise.all([
-      prisma.contribution.findMany({
-        where,
-        include: { relatedRobotModel: true },
-        orderBy: { updatedAt: "desc" },
-        take: 200
-      }),
-      prisma.robotModel.findMany({ select: { id: true, canonicalName: true } }),
-      prisma.contribution.findMany({
-        select: { organization: true },
-        distinct: ["organization"],
-        where: { organization: { not: null } }
-      })
-    ]);
-
-    items = dbItems;
-    robots = dbRobots;
-    uniqueOrgs = dbOrganizations.map(o => o.organization).filter(Boolean) as string[];
-  } catch (error) {
-    console.error("Database connection failed in contributions page:", error);
-    dbOffline = true;
-    
-    // Representative fallback records for offline previews.
-    robots = [
-      { id: "1", canonicalName: "Dinsaw Mini" },
-      { id: "2", canonicalName: "NAO" }
-    ];
-    uniqueOrgs = ["FIBO KMUTT", "Chulalongkorn University", "National Robotics Lab"];
-    
-    items = [
-      {
-        id: "mock-c-1",
-        title: "Thai HRI research seed",
-        contributorName: "Dr. Somchai",
-        organization: "FIBO KMUTT",
-        contributionType: "research_paper",
-        license: "MIT",
-        verificationStatus: "VERIFIED",
-        description: "Kinematic evaluation of elderly companionship robots in nursing environments using NAO platform.",
-        url: "https://github.com/fibo/hri-companion",
-        updatedAt: new Date(),
-        relatedRobotModel: { canonicalName: "NAO" }
-      },
-      {
-        id: "mock-c-2",
-        title: "Dinsaw navigation patches",
-        contributorName: "Developer Team",
-        organization: "CT Asia Robotics",
-        contributionType: "software_repository",
-        license: "MIT",
-        verificationStatus: "VERIFIED",
-        description: "SLAM mapping configuration patches for indoor corridor navigation for Dinsaw Mini models.",
-        url: "https://github.com/ctasia/dinsaw-navigation",
-        updatedAt: new Date(),
-        relatedRobotModel: { canonicalName: "Dinsaw Mini" }
-      }
-    ];
-
-    // Filter items locally if parameters were specified
-    if (type) items = items.filter(i => i.contributionType === type);
-    if (org) items = items.filter(i => i.organization === org);
-    if (status) items = items.filter(i => i.verificationStatus === status);
-    if (q) {
-      const qLower = q.toLowerCase();
-      items = items.filter(i => 
-        i.title.toLowerCase().includes(qLower) || 
-        i.contributorName.toLowerCase().includes(qLower) ||
-        i.description.toLowerCase().includes(qLower)
-      );
-    }
-  }
+  const items = dbItems;
+  const robots = dbRobots;
+  const uniqueOrgs = dbOrganizations.map(o => o.organization).filter(Boolean) as string[];
 
   // Taxonomies
   const contributionTypes = [
@@ -131,11 +72,7 @@ export default async function ContributionsPage({ searchParams }: { searchParams
         </div>
       </div>
 
-      {dbOffline && (
-        <div className="notice" style={{ backgroundColor: "#fffbeb", borderLeftColor: "var(--warning)", marginBottom: "16px" }}>
-          <strong>Database Offline:</strong> Live PostgreSQL is unavailable. Showing sample contribution records for layout preview.
-        </div>
-      )}
+
 
       {/* Filter Toolbar */}
       <form method="GET" className="panel grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr)) 80px", gap: "10px", alignItems: "end", marginBottom: "16px" }}>
@@ -219,16 +156,16 @@ export default async function ContributionsPage({ searchParams }: { searchParams
                 <td>{item.relatedRobotModel?.canonicalName || "General / None"}</td>
                 <td><code>{item.license || "N/A"}</code></td>
                 <td>
-                  <span className={`badge ${item.verificationStatus === "VERIFIED" ? "ok" : item.verificationStatus === "FLAGGED" ? "danger" : "warn"}`}>
+                  <span className={`badge ${item.verificationStatus === "APPROVED" ? "ok" : item.verificationStatus === "REJECTED" ? "danger" : "warn"}`}>
                     {item.verificationStatus}
                   </span>
                 </td>
                 <td style={{ maxWidth: "300px", fontSize: "12px" }}>
                   <div>{item.description || "No description."}</div>
-                  {item.url && (
+                  {item.sourceUrl && (
                     <div style={{ marginTop: "4px" }}>
-                      <a href={item.url} target="_blank" rel="noreferrer" style={{ wordBreak: "break-all" }}>
-                        {item.url}
+                      <a href={item.sourceUrl} target="_blank" rel="noreferrer" style={{ wordBreak: "break-all" }}>
+                        {item.sourceUrl}
                       </a>
                     </div>
                   )}

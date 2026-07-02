@@ -9,59 +9,10 @@ export default async function InventoryPage({ searchParams }: { searchParams: Se
   const params = await searchParams;
   const isPublic = params.mode === "public";
   
-  let inventory = [];
-  let dbOffline = false;
-
-  try {
-    inventory = await prisma.ownedInventory.findMany({
-      include: { robotModel: true },
-      orderBy: { updatedAt: "desc" }
-    });
-  } catch (error) {
-    console.error("Database connection failed in inventory page:", error);
-    dbOffline = true;
-    // Representative fallback records for offline previews.
-    inventory = [
-      {
-        id: "mock-1",
-        displayName: "NAO Education Platform B",
-        ownershipStatus: "borrowed",
-        visibility: "public",
-        custodian: "FIBO KMUTT",
-        conditionStatus: "excellent",
-        locationLabel: "Robotics Lab, 3rd Floor",
-        serialNumber: "NAO-62-9981A",
-        publicSerialSafe: true,
-        accessories: JSON.stringify(["Charger", "Transport Case", "Kinetic Sensors"]),
-        documentationLinks: JSON.stringify(["https://example.com/nao-docs", "https://example.com/nao-safety"]),
-        notes: "On active loan from public grant for human-robot interaction studies.",
-        updatedAt: new Date(),
-        robotModel: {
-          canonicalName: "NAO",
-          manufacturer: "SoftBank Robotics"
-        }
-      },
-      {
-        id: "mock-2",
-        displayName: "Dinsaw Eldercare Unit A",
-        ownershipStatus: "owned",
-        visibility: "private",
-        custodian: "Siriraj Hospital Lab",
-        conditionStatus: "good",
-        locationLabel: "Geriatric Ward, Bed 12",
-        serialNumber: "DS-2026-991A",
-        publicSerialSafe: false,
-        accessories: JSON.stringify(["Power Base", "Emergency Call Button"]),
-        documentationLinks: JSON.stringify(["https://example.com/dinsaw-setup"]),
-        notes: "Private beta unit. Subject to patient confidentiality rules. Exact Ward locations are masked.",
-        updatedAt: new Date(),
-        robotModel: {
-          canonicalName: "Dinsaw Mini",
-          manufacturer: "CT Asia Robotics"
-        }
-      }
-    ];
-  }
+  const inventory = await prisma.ownedInventory.findMany({
+    include: { robotModel: true },
+    orderBy: { updatedAt: "desc" }
+  });
 
   return (
     <>
@@ -88,11 +39,7 @@ export default async function InventoryPage({ searchParams }: { searchParams: Se
         </div>
       </div>
 
-      {dbOffline && (
-        <div className="notice" style={{ backgroundColor: "#fffbeb", borderLeftColor: "var(--warning)", marginBottom: "16px" }}>
-          <strong>Database Offline:</strong> Live PostgreSQL is unavailable. Showing sample inventory records for layout preview.
-        </div>
-      )}
+
 
       {!isPublic ? (
         <div className="notice" style={{ backgroundColor: "#fdf2f2", borderLeftColor: "var(--danger)" }}>
