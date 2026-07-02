@@ -1,9 +1,13 @@
+import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import NetworkGraphClient from "./NetworkGraphClient";
 
 export const dynamic = "force-dynamic";
 
 export default async function NetworkPage() {
+  const cookieStore = await cookies();
+  const lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
+
   const [triplets, robots, inventory, contributions] = await Promise.all([
     prisma.triplet.findMany({ include: { source: true }, orderBy: { confidence: "desc" }, take: 500 }),
     prisma.robotModel.findMany(),
@@ -22,6 +26,7 @@ export default async function NetworkPage() {
       robots={serializedRobots} 
       inventory={serializedInventory} 
       contributions={serializedContributions} 
+      currentLang={lang}
     />
   );
 }

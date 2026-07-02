@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
+import { getTranslation } from "@/lib/translations";
 
 export const dynamic = "force-dynamic";
 
@@ -9,47 +11,92 @@ export default async function InventoryPage({ searchParams }: { searchParams: Se
   const params = await searchParams;
   const isPublic = params.mode === "public";
   
+  const cookieStore = await cookies();
+  const lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
+  const t = getTranslation(lang);
+
   const inventory = await prisma.ownedInventory.findMany({
     include: { robotModel: true },
     orderBy: { updatedAt: "desc" }
   });
 
+  const localT = {
+    en: {
+      opMode: "Operator Mode (Private)",
+      pubMode: "Public-Safe Mode",
+      warnTitle: "Access Warning:",
+      warnDesc: "You are currently in Operator Mode. Sensitive internal data (serial numbers, exact locations, and repair logs) are visible on screen. Do not share this view during public presentations or screenshots.",
+      safeTitle: "Public-Safe Mode Active:",
+      safeDesc: "Serial numbers, exact locations, and private logs are masked or hidden.",
+      model: "Robot Model",
+      name: "Display Name",
+      ownership: "Status / Ownership",
+      custodian: "Custodian",
+      condition: "Condition",
+      location: "Location",
+      serial: "Serial Number",
+      accs: "Accessories & Docs",
+      notes: "Notes / Repair Log",
+      updated: "Updated",
+      empty: "No inventory records found. Run database seed or submit an inventory update.",
+      masked: "Masked",
+      maskedNotes: "Masked for privacy",
+      noLogs: "No logs."
+    },
+    th: {
+      opMode: "โหมดผู้ปฏิบัติงาน (ส่วนตัว)",
+      pubMode: "โหมดปลอดภัยสาธารณะ",
+      warnTitle: "คำเตือนการเข้าถึง:",
+      warnDesc: "คุณกำลังอยู่ในโหมดผู้ปฏิบัติงาน ข้อมูลภายในที่ละเอียดอ่อน (หมายเลขซีเรียล, สถานที่ตั้ง, และบันทึกการซ่อมแซม) จะแสดงบนหน้าจอ กรุณาอย่าแชร์หน้านี้ระหว่างการนำเสนอต่อสาธารณะ",
+      safeTitle: "เปิดใช้งานโหมดปลอดภัยสาธารณะ:",
+      safeDesc: "หมายเลขซีเรียล สถานที่ตั้ง และบันทึกส่วนตัวถูกปิดบังหรือซ่อนไว้เรียบร้อยแล้ว",
+      model: "รุ่นหุ่นยนต์",
+      name: "ชื่อที่แสดง",
+      ownership: "สถานะ / การครอบครอง",
+      custodian: "ผู้ดูแลอุปกรณ์",
+      condition: "สภาพการใช้งาน",
+      location: "สถานที่ตั้ง",
+      serial: "หมายเลขซีเรียล",
+      accs: "อุปกรณ์เสริมและคู่มือ",
+      notes: "หมายเหตุ / บันทึกการซ่อม",
+      updated: "อัปเดตล่าสุด",
+      empty: "ไม่พบข้อมูลรายการหุ่นยนต์ กรุณาเรียกใช้การตั้งค่าหรือส่งข้อมูลเพิ่มบันทึกคลัง",
+      masked: "ปิดบังข้อมูล",
+      maskedNotes: "ปิดบังข้อมูลส่วนบุคคล",
+      noLogs: "ไม่มีบันทึก"
+    }
+  }[lang];
+
   return (
     <>
       <div className="topline">
         <div>
-          <h1>Owned Inventory</h1>
-          <p className="muted">
-            Tracking robot units owned, borrowed, tested, or documented by the atlas team.
-          </p>
+          <h1>{t.inventoryTitle}</h1>
+          <p className="muted">{t.inventoryDesc}</p>
         </div>
         <div className="toolbar">
           <Link 
             className={`button ${!isPublic ? "primary" : ""}`} 
             href="/inventory?mode=operator"
           >
-            Operator Mode (Private)
+            {localT.opMode}
           </Link>
           <Link 
             className={`button ${isPublic ? "primary" : ""}`} 
             href="/inventory?mode=public"
           >
-            Public-Safe Mode
+            {localT.pubMode}
           </Link>
         </div>
       </div>
 
-
-
       {!isPublic ? (
         <div className="notice" style={{ backgroundColor: "#fdf2f2", borderLeftColor: "var(--danger)" }}>
-          <strong>Access Warning:</strong> You are currently in <strong>Operator Mode</strong>. 
-          Sensitive internal data (serial numbers, exact locations, and repair logs) are visible on screen. 
-          Do not share this view during public presentations or screenshots.
+          <strong>{localT.warnTitle}</strong> {localT.warnDesc}
         </div>
       ) : (
         <div className="notice" style={{ backgroundColor: "#f0fdf4", borderLeftColor: "var(--success)" }}>
-          <strong>Public-Safe Mode Active:</strong> Serial numbers, exact locations, and private logs are masked or hidden.
+          <strong>{localT.safeTitle}</strong> {localT.safeDesc}
         </div>
       )}
 
@@ -57,36 +104,34 @@ export default async function InventoryPage({ searchParams }: { searchParams: Se
         <table>
           <thead>
             <tr>
-              <th>Robot Model</th>
-              <th>Display Name</th>
-              <th>Status / Ownership</th>
-              <th>Custodian</th>
-              <th>Condition</th>
-              <th>Location</th>
-              <th>Serial Number</th>
-              <th>Accessories & Docs</th>
-              <th>Notes / Repair Log</th>
-              <th>Updated</th>
+              <th>{localT.model}</th>
+              <th>{localT.name}</th>
+              <th>{localT.ownership}</th>
+              <th>{localT.custodian}</th>
+              <th>{localT.condition}</th>
+              <th>{localT.location}</th>
+              <th>{localT.serial}</th>
+              <th>{localT.accs}</th>
+              <th>{localT.notes}</th>
+              <th>{localT.updated}</th>
             </tr>
           </thead>
           <tbody>
             {inventory.map((item) => {
-              // Parsing accessories and documentation links
               let accs: string[] = [];
               let docs: string[] = [];
               try {
                 accs = JSON.parse(item.accessories as string);
                 docs = JSON.parse(item.documentationLinks as string);
               } catch (e) {
-                // Fallbacks if not JSON strings
+                // Ignore parse failures
               }
 
-              // Privacy masking rules
-              const displayLocation = isPublic ? "🔒 [Masked]" : (item.locationLabel ?? "N/A");
+              const displayLocation = isPublic ? `🔒 [${localT.masked}]` : (item.locationLabel ?? "N/A");
               const displaySerial = isPublic 
-                ? (item.publicSerialSafe ? item.serialNumber : "🔒 [Masked]") 
+                ? (item.publicSerialSafe ? item.serialNumber : `🔒 [${localT.masked}]`) 
                 : (item.serialNumber ?? "N/A");
-              const displayNotes = isPublic ? "🔒 [Masked for privacy]" : (item.notes ?? "No logs.");
+              const displayNotes = isPublic ? `🔒 [${localT.maskedNotes}]` : (item.notes ?? localT.noLogs);
 
               return (
                 <tr key={item.id}>
@@ -133,7 +178,7 @@ export default async function InventoryPage({ searchParams }: { searchParams: Se
             {!inventory.length && (
               <tr>
                 <td className="empty" colSpan={10}>
-                  No inventory records found. Run database seed or submit an inventory update.
+                  {localT.empty}
                 </td>
               </tr>
             )}

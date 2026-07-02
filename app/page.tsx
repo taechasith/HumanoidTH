@@ -430,7 +430,7 @@ export default async function OverviewPage() {
               <line x1="12" y1="17" x2="12.01" y2="17"/>
             </svg>
             <div style={{ fontSize: "13px", color: "#451a03", lineHeight: "1.4" }}>
-              <strong>Database Offline:</strong> Live PostgreSQL connection failed. Serving cached datasets.
+              <strong>Database Offline:</strong> Live PostgreSQL is unavailable. Showing sample atlas records for layout preview.
             </div>
           </div>
         )}

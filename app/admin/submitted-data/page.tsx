@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import { updateSubmissionStatus } from "@/app/actions";
 import { prisma } from "@/lib/prisma";
+import { getTranslation } from "@/lib/translations";
 
 export const dynamic = "force-dynamic";
 
@@ -9,18 +10,71 @@ type SearchParams = Promise<{ selectedId?: string }>;
 
 export default async function AdminSubmittedDataPage({ searchParams }: { searchParams: SearchParams }) {
   const cookieStore = await cookies();
+  const lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
+  const t = getTranslation(lang);
   const currentRole = cookieStore.get("user_role")?.value;
   const isAdmin = currentRole === "ADMIN";
+
+  const localT = {
+    en: {
+      denied: "Access Denied",
+      deniedDesc: "You must have the ADMIN role to view the review queue or perform administrative actions.",
+      goProfile: "Go to Profile & Login as Admin",
+      titleCol: "Submitted Item",
+      typeCol: "Type",
+      statusCol: "Status",
+      dateCol: "Date",
+      actionCol: "Action",
+      inspectBtn: "Inspect",
+      empty: "No submissions to review.",
+      submittedOn: "Submitted on",
+      targetUrl: "Target URL",
+      subNotes: "Submitter Notes",
+      subMeta: "Submitter Metadata",
+      subName: "Name",
+      subContact: "Contact",
+      graphPreview: "Graph Relationship Preview",
+      verdict: "Verification Verdict",
+      approveBtn: "Approve",
+      rejectBtn: "Reject",
+      markBtn: "Mark Pending / Review",
+      emptyInspector: "Select a submission from the list to inspect and verify."
+    },
+    th: {
+      denied: "ปฏิเสธการเข้าถึง",
+      deniedDesc: "คุณต้องมีบทบาทเป็นผู้ดูแลระบบ (ADMIN) เพื่อเข้าสู่คิวการตรวจสอบและบริหารจัดการ",
+      goProfile: "ไปที่แท็บโปรไฟล์และเข้าใช้ในฐานะผู้ดูแลระบบ",
+      titleCol: "รายการที่ส่งเข้ามา",
+      typeCol: "ประเภท",
+      statusCol: "สถานะ",
+      dateCol: "วันที่ส่ง",
+      actionCol: "การจัดการ",
+      inspectBtn: "ตรวจสอบ",
+      empty: "ไม่มีรายการที่ส่งมารอการตรวจสอบ",
+      submittedOn: "ส่งข้อมูลเมื่อ",
+      targetUrl: "ลิงก์เป้าหมาย",
+      subNotes: "หมายเหตุจากผู้ส่ง",
+      subMeta: "ข้อมูลของผู้ส่งข้อมูล",
+      subName: "ชื่อ",
+      subContact: "การติดต่อ",
+      graphPreview: "ตัวอย่างความสัมพันธ์ในแผนผังเครือข่าย",
+      verdict: "คำตัดสินการตรวจสอบ",
+      approveBtn: "อนุมัติข้อมูล",
+      rejectBtn: "ปฏิเสธ",
+      markBtn: "ตั้งเป็นรอตรวจสอบ / ทบทวน",
+      emptyInspector: "กรุณาเลือกรายการที่ส่งเข้ามาเพื่อทำการตรวจสอบความถูกต้องของข้อมูล"
+    }
+  }[lang];
 
   if (!isAdmin) {
     return (
       <div style={{ maxWidth: "560px", margin: "40px auto", textAlign: "center" }} className="panel">
-        <h1 style={{ color: "var(--danger)" }}>Access Denied</h1>
+        <h1 style={{ color: "var(--danger)" }}>{localT.denied}</h1>
         <p className="muted" style={{ margin: "14px 0" }}>
-          You must have the <strong>ADMIN</strong> role to view the review queue or perform administrative actions.
+          {localT.deniedDesc}
         </p>
         <Link href="/profile" className="button primary">
-          Go to Profile & Login as Admin
+          {localT.goProfile}
         </Link>
       </div>
     );
@@ -40,14 +94,12 @@ export default async function AdminSubmittedDataPage({ searchParams }: { searchP
     <>
       <div className="topline">
         <div>
-          <h1>Admin Review Queue</h1>
+          <h1>{t.adminTitle}</h1>
           <p className="muted">
-            Inspect, edit, and approve community submissions before indexing them into the public atlas.
+            {t.adminDesc}
           </p>
         </div>
       </div>
-
-
 
       <div className="two" style={{ gridTemplateColumns: "1fr 400px", gap: "16px" }}>
         
@@ -56,11 +108,11 @@ export default async function AdminSubmittedDataPage({ searchParams }: { searchP
           <table>
             <thead>
               <tr>
-                <th>Submitted Item</th>
-                <th>Type</th>
-                <th>Status</th>
-                <th>Date</th>
-                <th>Action</th>
+                <th>{localT.titleCol}</th>
+                <th>{localT.typeCol}</th>
+                <th>{localT.statusCol}</th>
+                <th>{localT.dateCol}</th>
+                <th>{localT.actionCol}</th>
               </tr>
             </thead>
             <tbody>
@@ -93,14 +145,14 @@ export default async function AdminSubmittedDataPage({ searchParams }: { searchP
                   </td>
                   <td>
                     <Link href={`/admin/submitted-data?selectedId=${item.id}`} className="button" style={{ minHeight: "auto", padding: "4px 8px", fontSize: "11px" }}>
-                      Inspect
+                      {localT.inspectBtn}
                     </Link>
                   </td>
                 </tr>
               ))}
               {!items.length && (
                 <tr>
-                  <td className="empty" colSpan={5}>No submissions to review.</td>
+                  <td className="empty" colSpan={5}>{localT.empty}</td>
                 </tr>
               )}
             </tbody>
@@ -117,14 +169,14 @@ export default async function AdminSubmittedDataPage({ searchParams }: { searchP
                 </span>
                 <h2 style={{ fontSize: "18px", marginTop: "4px" }}>{selectedItem.title}</h2>
                 <div className="muted" style={{ fontSize: "11px" }}>
-                  Submitted on {selectedItem.createdAt.toLocaleString()}
+                  {localT.submittedOn} {selectedItem.createdAt.toLocaleString()}
                 </div>
               </div>
 
               <div style={{ borderTop: "1px solid var(--border)", paddingTop: "10px", display: "flex", flexDirection: "column", gap: "8px", fontSize: "13px" }}>
                 {selectedItem.url && (
                   <div>
-                    <strong>Target URL:</strong><br />
+                    <strong>{localT.targetUrl}:</strong><br />
                     <a href={selectedItem.url} target="_blank" rel="noreferrer" style={{ wordBreak: "break-all", fontSize: "12px" }}>
                       {selectedItem.url}
                     </a>
@@ -133,7 +185,7 @@ export default async function AdminSubmittedDataPage({ searchParams }: { searchP
                 
                 {selectedItem.notes && (
                   <div>
-                    <strong>Submitter Notes:</strong>
+                    <strong>{localT.subNotes}:</strong>
                     <p style={{ margin: "4px 0", background: "var(--surface-muted)", padding: "8px", borderRadius: "6px", fontSize: "12px", fontStyle: "italic" }}>
                       "{selectedItem.notes}"
                     </p>
@@ -141,17 +193,17 @@ export default async function AdminSubmittedDataPage({ searchParams }: { searchP
                 )}
 
                 <div style={{ background: "var(--surface-muted)", padding: "8px", borderRadius: "6px", fontSize: "12px" }}>
-                  <strong>Submitter Metadata:</strong>
+                  <strong>{localT.subMeta}:</strong>
                   <div style={{ marginTop: "4px" }}>
-                    Name: {selectedItem.submitterName || "Anonymous"}<br />
-                    Contact: {selectedItem.submitterContact || "Not provided"}
+                    {localT.subName}: {selectedItem.submitterName || "Anonymous"}<br />
+                    {localT.subContact}: {selectedItem.submitterContact || "Not provided"}
                   </div>
                 </div>
               </div>
 
               {/* Relationship Preview */}
               <div style={{ borderTop: "1px solid var(--border)", paddingTop: "10px" }}>
-                <strong>Graph Relationship Preview:</strong>
+                <strong>{localT.graphPreview}:</strong>
                 <div style={{ marginTop: "8px", background: "#f8faf9", border: "1px solid var(--border)", padding: "10px", borderRadius: "6px", fontSize: "11px" }}>
                   {selectedItem.submissionType === "robot_model" ? (
                     <div>
@@ -178,28 +230,28 @@ export default async function AdminSubmittedDataPage({ searchParams }: { searchP
 
               {/* Action Forms */}
               <div style={{ borderTop: "1px solid var(--border)", paddingTop: "10px", marginTop: "auto" }}>
-                <strong>Verification Verdict:</strong>
+                <strong>{localT.verdict}:</strong>
                 <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
                   <form action={updateSubmissionStatus.bind(null, selectedItem.id, "APPROVED")} style={{ flex: 1 }}>
                     <button type="submit" className="primary" style={{ width: "100%", background: "var(--success)", borderColor: "var(--success)", minHeight: "38px" }}>
-                      Approve
+                      {localT.approveBtn}
                     </button>
                   </form>
                   <form action={updateSubmissionStatus.bind(null, selectedItem.id, "REJECTED")} style={{ flex: 1 }}>
                     <button type="submit" className="button" style={{ width: "100%", color: "var(--danger)", borderColor: "var(--danger)", minHeight: "38px" }}>
-                      Reject
+                      {localT.rejectBtn}
                     </button>
                   </form>
                 </div>
                 <form action={updateSubmissionStatus.bind(null, selectedItem.id, "NEEDS_REVIEW")} style={{ marginTop: "8px" }}>
                   <button type="submit" className="button" style={{ width: "100%", minHeight: "38px" }}>
-                    Mark Pending / Review
+                    {localT.markBtn}
                   </button>
                 </form>
               </div>
             </>
           ) : (
-            <div className="empty">Select a submission from the list to inspect and verify.</div>
+            <div className="empty">{localT.emptyInspector}</div>
           )}
         </aside>
       </div>
