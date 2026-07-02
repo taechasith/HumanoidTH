@@ -12,12 +12,34 @@ export default async function ProfilePage() {
   const lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
   const t = getTranslation(lang);
 
-  const users = await prisma.user.findMany({ orderBy: { createdAt: "desc" }, take: 20 });
+  let users: Array<{ id: string; email: string; name: string | null; role: string; createdAt: Date }> = [];
+  let dbOffline = false;
+
+  try {
+    users = await prisma.user.findMany({ orderBy: { createdAt: "desc" }, take: 20 });
+  } catch (error) {
+    console.error("Database query failed in profile page:", error);
+    dbOffline = true;
+    users = [
+      {
+        id: "fallback-admin",
+        email: "creativelab.co.th@gmail.com",
+        name: "CreativeLabTH Group",
+        role: "ADMIN",
+        createdAt: new Date()
+      }
+    ];
+  }
 
   return (
     <>
       <h1>{t.profileTitle}</h1>
       <p className="muted" style={{ marginBottom: "18px" }}>{t.profileDesc}</p>
+      {dbOffline && (
+        <div className="notice" style={{ marginBottom: 16 }}>
+          Live user records are unavailable. Showing configured admin fallback.
+        </div>
+      )}
       
       {currentEmail ? (
         <section className="panel" style={{ border: "1px solid var(--accent)", marginBottom: "20px" }}>

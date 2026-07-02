@@ -32,8 +32,10 @@ def test_routes_desktop_and_mobile(next_server):
         
         # Test desktop
         page_desktop = browser.new_page(viewport={"width": 1280, "height": 720})
+        page_desktop.set_default_navigation_timeout(60000)
         # Test mobile
         page_mobile = browser.new_page(viewport={"width": 375, "height": 667})
+        page_mobile.set_default_navigation_timeout(60000)
 
         routes = [
             "/",

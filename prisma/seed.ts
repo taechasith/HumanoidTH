@@ -67,8 +67,10 @@ async function main() {
     ["Robot job displacement discussion in Thailand seed", "seed:source:robot-job-displacement-thailand", "Public media discussion about robot automation replace jobs in Thailand service sector with cautious support."]
   ] as const;
 
+  let firstSourceId: string | undefined;
+
   for (const [title, url, excerpt] of seedSources) {
-    await prisma.sourceRecord.upsert({
+    const source = await prisma.sourceRecord.upsert({
       where: { url },
       update: {},
       create: {
@@ -80,6 +82,32 @@ async function main() {
         relevanceStatus: "ACCEPTED",
         relevanceReason: "Seeded Thailand robotics record.",
         relevanceConfidence: 0.8
+      }
+    });
+
+    firstSourceId ??= source.id;
+  }
+
+  if (firstSourceId) {
+    await prisma.perspectiveAnnotation.upsert({
+      where: {
+        sourceId_perspectiveTheme_targetEntity_evidenceExcerpt: {
+          sourceId: firstSourceId,
+          perspectiveTheme: "healthcare_and_eldercare_trust",
+          targetEntity: "humanoid/social robots in Thailand",
+          evidenceExcerpt: "Seed evidence excerpt for the first public/media signal."
+        }
+      },
+      update: {},
+      create: {
+        sourceId: firstSourceId,
+        perspectiveTheme: "healthcare_and_eldercare_trust",
+        stance: "cautious_supportive",
+        sentiment: "mixed",
+        targetEntity: "humanoid/social robots in Thailand",
+        evidenceExcerpt: "Seed evidence excerpt for the first public/media signal.",
+        confidence: 0.72,
+        method: "seed"
       }
     });
   }

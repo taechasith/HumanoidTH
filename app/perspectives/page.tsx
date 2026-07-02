@@ -9,16 +9,48 @@ export default async function PerspectivesPage() {
   const lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
   const t = getTranslation(lang);
 
-  const items = await prisma.perspectiveAnnotation.findMany({
-    include: { source: true },
-    orderBy: { createdAt: "desc" },
-    take: 200
-  });
+  let items: Array<{
+    id: string;
+    perspectiveTheme: string;
+    stance: string;
+    sentiment: string;
+    confidence: number;
+    evidenceExcerpt: string;
+    source: { title: string; url: string; platform: string | null };
+  }> = [];
+  let dbOffline = false;
+
+  try {
+    items = await prisma.perspectiveAnnotation.findMany({
+      include: { source: true },
+      orderBy: { createdAt: "desc" },
+      take: 200
+    });
+  } catch (error) {
+    console.error("Database query failed in perspectives page:", error);
+    dbOffline = true;
+    items = [
+      {
+        id: "fallback-perspective-1",
+        perspectiveTheme: "healthcare_and_eldercare_trust",
+        stance: "cautious_supportive",
+        sentiment: "mixed",
+        confidence: 0.72,
+        evidenceExcerpt: "Fallback example showing how media signals will appear after ingestion.",
+        source: { title: "Example Thai eldercare robot media signal", url: "#", platform: "fallback" }
+      }
+    ];
+  }
 
   return (
     <>
       <h1>{t.perspectivesTitle}</h1>
       <p className="muted">{t.perspectivesDesc}</p>
+      {dbOffline && (
+        <div className="notice" style={{ marginBottom: 16 }}>
+          Live perspective annotations are unavailable. Showing fallback signal examples.
+        </div>
+      )}
       <div className="table-wrap">
         <table>
           <thead><tr><th>Source</th><th>Theme</th><th>Stance</th><th>Sentiment</th><th>Confidence</th><th>Evidence</th></tr></thead>
@@ -40,4 +72,3 @@ export default async function PerspectivesPage() {
     </>
   );
 }
-
