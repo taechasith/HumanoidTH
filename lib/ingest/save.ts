@@ -23,9 +23,11 @@ export async function saveSources(records: NormalizedSource[]) {
       method: string;
     } | null = null;
 
+    let geminiResult: any = null;
+
     if (process.env.GEMINI_API_KEY) {
       try {
-        const geminiResult = await classifyWithGemini(record.title, record.excerpt ?? "");
+        geminiResult = await classifyWithGemini(record.title, record.excerpt ?? "");
         relevance = {
           relevanceStatus: geminiResult.isRelevant ? "ACCEPTED" : "REJECTED",
           relevanceReason: geminiResult.relevanceReason,
@@ -93,6 +95,32 @@ export async function saveSources(records: NormalizedSource[]) {
         create: { sourceId: source.id, ...annotation },
         update: annotation
       });
+
+      // Save extracted relationship triplets if available
+      if (geminiResult?.triplets && geminiResult.triplets.length > 0) {
+        for (const t of geminiResult.triplets) {
+          await prisma.triplet.upsert({
+            where: {
+              subject_relation_object_sourceId: {
+                subject: t.subject,
+                relation: t.relation,
+                object: t.object,
+                sourceId: source.id
+              }
+            },
+            create: {
+              subject: t.subject,
+              relation: t.relation,
+              object: t.object,
+              confidence: t.confidence,
+              sourceId: source.id
+            },
+            update: {
+              confidence: t.confidence
+            }
+          });
+        }
+      }
     }
 
     saved += 1;

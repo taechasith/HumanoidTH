@@ -129,6 +129,10 @@ Please evaluate and classify this article. Set:
 - 'targetEntity': The specific robot name (e.g., NAO, Dinsaw, Pepper), university/lab, or general focus entity.
 - 'evidenceExcerpt': A one-sentence key quote or excerpt from the title/text that supports the theme or stance. Keep it short.
 - 'confidence': Overall classification confidence (float between 0.0 and 1.0).
+- 'triplets': Extract any semantic relationships (triplets) mentioned in the text. Each triplet represents a relationship between entities. 
+  Example: {"subject": "Chulalongkorn University", "relation": "developed", "object": "Dinsaw Robot", "confidence": 0.85}.
+  Common relations: developed, deployed_in, collaborated_with, researched, studied, uses, funds, discusses.
+  Keep entity names clean and canonical. Return an empty array if no clear relationships can be extracted.
 `;
 
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
@@ -163,9 +167,22 @@ Please evaluate and classify this article. Set:
             },
             targetEntity: { type: "STRING" },
             evidenceExcerpt: { type: "STRING" },
-            confidence: { type: "NUMBER" }
+            confidence: { type: "NUMBER" },
+            triplets: {
+              type: "ARRAY",
+              items: {
+                type: "OBJECT",
+                properties: {
+                  subject: { type: "STRING" },
+                  relation: { type: "STRING" },
+                  object: { type: "STRING" },
+                  confidence: { type: "NUMBER" }
+                },
+                required: ["subject", "relation", "object", "confidence"]
+              }
+            }
           },
-          required: ["isRelevant", "relevanceReason", "relevanceConfidence", "theme", "stance", "sentiment", "targetEntity", "evidenceExcerpt", "confidence"]
+          required: ["isRelevant", "relevanceReason", "relevanceConfidence", "theme", "stance", "sentiment", "targetEntity", "evidenceExcerpt", "confidence", "triplets"]
         }
       }
     }),
@@ -193,6 +210,12 @@ Please evaluate and classify this article. Set:
     targetEntity: string;
     evidenceExcerpt: string;
     confidence: number;
+    triplets?: Array<{
+      subject: string;
+      relation: string;
+      object: string;
+      confidence: number;
+    }>;
   };
 }
 

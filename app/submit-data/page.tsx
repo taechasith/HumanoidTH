@@ -1,31 +1,61 @@
 import { prisma } from "@/lib/prisma";
 import { createSubmission } from "@/app/actions";
-import { cookies } from "next/headers";
-import { getTranslation } from "@/lib/translations";
 
 export const dynamic = "force-dynamic";
 
 export default async function SubmitDataPage() {
-  const cookieStore = await cookies();
-  const lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
-  const t = getTranslation(lang);
+  let recentSubmissions: any[] = [];
+  let dbOffline = false;
 
-  const recentSubmissions = await prisma.submittedData.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 15
-  });
+  try {
+    recentSubmissions = await prisma.submittedData.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 15
+    });
+  } catch (error) {
+    console.error("Database connection failed in submit page:", error);
+    dbOffline = true;
+    recentSubmissions = [
+      {
+        id: "mock-s-1",
+        title: "NAO Robot deployment at KMUTT",
+        url: "https://facebook.com/kmuttoficial/123",
+        submissionType: "source_url",
+        submitterName: "Ajahn Somchai",
+        status: "APPROVED",
+        notes: "Initial deployment test with children.",
+        createdAt: new Date(),
+        payloadJson: { confidence: 0.94, reason: "Entities and context confirmed" }
+      },
+      {
+        id: "mock-s-2",
+        title: "Dinsaw mini review video",
+        url: "https://youtube.com/watch?v=abc",
+        submissionType: "source_url",
+        submitterName: "Anonymous",
+        status: "QUEUED",
+        notes: "Product review of CT Asia robotics hospital service mini units.",
+        createdAt: new Date()
+      }
+    ];
+  }
 
   return (
     <>
       <div className="topline">
         <div>
-          <h1>{t.submitTitle}</h1>
+          <h1>Submit Signal or Record</h1>
           <p className="muted">
-            {t.submitDesc}
+            Contribute a robotics signal, register a model, claim an open-source project, or report owned inventory units.
           </p>
         </div>
       </div>
 
+      {dbOffline && (
+        <div className="notice" style={{ backgroundColor: "#fffbeb", borderLeftColor: "var(--warning)", marginBottom: "16px" }}>
+          <strong>⚠️ Database Offline:</strong> Live PostgreSQL connection is unavailable (normal for Vercel preview environments). Displaying high-fidelity simulated tracking status.
+        </div>
+      )}
 
       <div className="two" style={{ gridTemplateColumns: "1fr 320px", gap: "16px" }}>
         

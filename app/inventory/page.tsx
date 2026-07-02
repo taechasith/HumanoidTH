@@ -1,7 +1,5 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { cookies } from "next/headers";
-import { getTranslation } from "@/lib/translations";
 
 export const dynamic = "force-dynamic";
 
@@ -11,22 +9,67 @@ export default async function InventoryPage({ searchParams }: { searchParams: Se
   const params = await searchParams;
   const isPublic = params.mode === "public";
   
-  const cookieStore = await cookies();
-  const lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
-  const t = getTranslation(lang);
-  
-  const inventory = await prisma.ownedInventory.findMany({
-    include: { robotModel: true },
-    orderBy: { updatedAt: "desc" }
-  });
+  let inventory = [];
+  let dbOffline = false;
+
+  try {
+    inventory = await prisma.ownedInventory.findMany({
+      include: { robotModel: true },
+      orderBy: { updatedAt: "desc" }
+    });
+  } catch (error) {
+    console.error("Database connection failed in inventory page:", error);
+    dbOffline = true;
+    // High-fidelity fallback simulated records
+    inventory = [
+      {
+        id: "mock-1",
+        displayName: "NAO Education Platform B",
+        ownershipStatus: "borrowed",
+        visibility: "public",
+        custodian: "FIBO KMUTT",
+        conditionStatus: "excellent",
+        locationLabel: "Robotics Lab, 3rd Floor",
+        serialNumber: "NAO-62-9981A",
+        publicSerialSafe: true,
+        accessories: JSON.stringify(["Charger", "Transport Case", "Kinetic Sensors"]),
+        documentationLinks: JSON.stringify(["https://example.com/nao-docs", "https://example.com/nao-safety"]),
+        notes: "On active loan from public grant for human-robot interaction studies.",
+        updatedAt: new Date(),
+        robotModel: {
+          canonicalName: "NAO",
+          manufacturer: "SoftBank Robotics"
+        }
+      },
+      {
+        id: "mock-2",
+        displayName: "Dinsaw Eldercare Unit A",
+        ownershipStatus: "owned",
+        visibility: "private",
+        custodian: "Siriraj Hospital Lab",
+        conditionStatus: "good",
+        locationLabel: "Geriatric Ward, Bed 12",
+        serialNumber: "DS-2026-991A",
+        publicSerialSafe: false,
+        accessories: JSON.stringify(["Power Base", "Emergency Call Button"]),
+        documentationLinks: JSON.stringify(["https://example.com/dinsaw-setup"]),
+        notes: "Private beta unit. Subject to patient confidentiality rules. Exact Ward locations are masked.",
+        updatedAt: new Date(),
+        robotModel: {
+          canonicalName: "Dinsaw Mini",
+          manufacturer: "CT Asia Robotics"
+        }
+      }
+    ];
+  }
 
   return (
     <>
       <div className="topline">
         <div>
-          <h1>{t.inventoryTitle}</h1>
+          <h1>Owned Inventory</h1>
           <p className="muted">
-            {t.inventoryDesc}
+            Tracking hardware models owned, borrowed, or operated by the team.
           </p>
         </div>
         <div className="toolbar">
@@ -45,6 +88,11 @@ export default async function InventoryPage({ searchParams }: { searchParams: Se
         </div>
       </div>
 
+      {dbOffline && (
+        <div className="notice" style={{ backgroundColor: "#fffbeb", borderLeftColor: "var(--warning)", marginBottom: "16px" }}>
+          <strong>⚠️ Database Offline:</strong> Live PostgreSQL connection is unavailable (normal for Vercel preview environments). Displaying high-fidelity simulated hardware units.
+        </div>
+      )}
 
       {!isPublic ? (
         <div className="notice" style={{ backgroundColor: "#fdf2f2", borderLeftColor: "var(--danger)" }}>
