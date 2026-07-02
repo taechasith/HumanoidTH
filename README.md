@@ -1,7 +1,7 @@
 # 🤖 Thailand Humanoid Atlas 🗺️
 
 <p align="center">
-  <img src="./docs/assets/banner-animated.svg" alt="Thailand Humanoid Atlas Banner" width="800">
+<img width="1672" height="941" alt="ChatGPT Image Jul 3, 2026, 06_45_37 AM" src="https://github.com/user-attachments/assets/c9281d22-6d95-4956-90f7-3039bad08947" />
 </p>
 
 <p align="center">
