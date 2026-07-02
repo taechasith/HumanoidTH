@@ -184,6 +184,6 @@ The original Python/FastAPI MVP remains in the `src/` directory for historical r
 ---
 
 <p align="center">
-  Made with 💚, 💛, and a lot of ☕ by developers in Thailand.
+  Made with 💚, 💛
 </p>
 
