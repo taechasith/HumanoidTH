@@ -58,7 +58,9 @@ export default async function OverviewPage() {
     pendingReviewsCount = prCount;
     
     if (plts && plts.length > 0) {
-      platforms = plts;
+      platforms = [...plts]
+        .sort((a, b) => (b._count?._all ?? 0) - (a._count?._all ?? 0))
+        .slice(0, 9);
     }
     
     if (pipelineRun) {
@@ -388,7 +390,7 @@ export default async function OverviewPage() {
           background: transparent;
           border: none;
           border-radius: 0;
-          height: 700px;
+          height: 640px;
           position: relative;
           overflow: visible;
           display: flex;
@@ -445,6 +447,10 @@ export default async function OverviewPage() {
           height: 100%;
           position: relative;
           z-index: 2;
+          overflow: hidden;
+          display: flex;
+          align-items: flex-start;
+          justify-content: center;
         }
 
 
@@ -555,7 +561,7 @@ export default async function OverviewPage() {
             gap: 20px;
           }
           .robot-stage {
-            height: 380px;
+            height: 360px;
             order: -1; /* Place interactive 3D robot model at the top on mobile */
           }
           .dashboard-stack {
@@ -603,7 +609,7 @@ export default async function OverviewPage() {
             font-size: 1.4rem;
           }
           .robot-stage {
-            height: 320px;
+            height: 300px;
           }
           .metric-card {
             padding: 14px 16px;
