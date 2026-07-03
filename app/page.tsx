@@ -94,8 +94,12 @@ export default async function OverviewPage() {
     <main className="atlas-page">
       <style dangerouslySetInnerHTML={{ __html: `
         .atlas-page {
-          display: flex;
-          flex-direction: column;
+          display: grid;
+          grid-template-areas:
+            "header robot"
+            "stack robot"
+            "terminal terminal";
+          grid-template-columns: 1.2fr 1fr;
           gap: 24px;
           width: 100%;
           position: relative;
@@ -103,7 +107,15 @@ export default async function OverviewPage() {
           font-family: var(--font-sans);
         }
 
+        .mobile-only {
+          display: none;
+        }
+        .desktop-only {
+          display: inline;
+        }
+
         .topbar {
+          grid-area: header;
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
@@ -164,15 +176,8 @@ export default async function OverviewPage() {
           transform: translateY(-1px);
         }
 
-        /* Hero grid layout */
-        .hero-grid {
-          display: grid;
-          grid-template-columns: 1.2fr 1fr;
-          gap: 24px;
-          align-items: start;
-        }
-
         .dashboard-stack {
+          grid-area: stack;
           display: flex;
           flex-direction: column;
           gap: 16px;
@@ -227,7 +232,6 @@ export default async function OverviewPage() {
           justify-content: center;
           flex-shrink: 0;
         }
-
 
         .metric-card p {
           margin: 0;
@@ -388,6 +392,7 @@ export default async function OverviewPage() {
 
         /* Robot stage */
         .robot-stage {
+          grid-area: robot;
           background: transparent;
           border: none;
           border-radius: 0;
@@ -454,9 +459,9 @@ export default async function OverviewPage() {
           justify-content: center;
         }
 
-
         /* Terminal panel empty state */
         .terminal-panel {
+          grid-area: terminal;
           background: #08130f;
           border: 1px solid #11261f;
           border-radius: 12px;
@@ -550,84 +555,119 @@ export default async function OverviewPage() {
         }
 
         @media (max-width: 860px) {
-          .topbar h1 {
-            font-size: 2.0rem;
-          }
-          .topbar h1 span {
-            font-size: 1.6rem;
-          }
-          .hero-grid {
+          .atlas-page {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 24px;
+          }
+          .mobile-only {
+            display: inline;
+          }
+          .desktop-only {
+            display: none;
+          }
+          .topbar {
+            border-bottom: none;
+            padding-bottom: 0;
+            margin-bottom: 0;
+            gap: 4px;
+          }
+          .topbar h1 {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin: 0;
+            color: #2e3230;
+          }
+          .topbar .subtitle,
+          .topbar .actions {
+            display: none !important;
           }
           .robot-stage {
-            height: 360px;
-            order: -1; /* Place interactive 3D robot model at the top on mobile */
+            height: 180px;
+            background: var(--surface-muted);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0;
+            box-shadow: none;
           }
-          .dashboard-stack {
-            order: 2;
+          .robot-stage .orbit,
+          .robot-stage .robot-glow {
+            display: none !important;
           }
           .metrics-row {
-            grid-template-columns: 1fr;
+            grid-template-columns: repeat(2, 1fr);
             gap: 12px;
+          }
+          .metric-card {
+            padding: 12px 14px;
+            gap: 10px;
+            border-radius: 8px;
+          }
+          .metric-icon {
+            width: 36px;
+            height: 36px;
+          }
+          .metric-card strong {
+            font-size: 20px;
           }
           .status-row {
             grid-template-columns: 1fr;
             gap: 12px;
           }
+          .glass-card {
+            min-height: auto;
+            padding: 14px 16px;
+          }
           .platform-grid {
-            grid-template-columns: 1fr;
+            grid-template-columns: repeat(2, 1fr);
             gap: 8px;
+          }
+          .platform-item {
+            padding: 10px;
+            gap: 8px;
+          }
+          .platform-item strong {
+            font-size: 16px;
           }
           .command-grid {
             grid-template-columns: 1fr;
             gap: 12px;
           }
-          .topbar {
-            flex-direction: column;
-            gap: 16px;
-            padding-bottom: 20px;
-          }
-          .topbar .actions {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            width: 100%;
-            gap: 8px;
-          }
-          .topbar .actions .button {
-            justify-content: center;
-            font-size: 12.5px;
-            padding: 8px;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .topbar h1 {
-            font-size: 1.8rem;
-          }
-          .topbar h1 span {
-            font-size: 1.4rem;
-          }
-          .robot-stage {
-            height: 300px;
-          }
-          .metric-card {
-            padding: 14px 16px;
-          }
-          .metric-card strong {
-            font-size: 24px;
-          }
         }
       `}} />
+
+      {/* 3D Immersive Robot Embodiment View */}
+      <section className="robot-stage">
+        <div className="orbit orbit-one" />
+        <div className="orbit orbit-two" />
+        <div className="robot-glow" />
+
+        <div className="robot-model-wrapper">
+          <RobotViewer />
+        </div>
+      </section>
 
       {/* Header Section */}
       <header className="topbar">
         <div>
-          <p className="eyebrow">{lang === "th" ? "คอนโซลวิจัยระบบ" : "Research Console"}</p>
+          <p className="eyebrow">
+            <span className="desktop-only">{lang === "th" ? "คอนโซลวิจัยระบบ" : "Research Console"}</span>
+            <span className="mobile-only">{lang === "th" ? "คลังข้อมูลประเทศไทย" : "THAILAND ATLAS"}</span>
+          </p>
           <h1>
-            {lang === "th" ? "ภาพรวม" : "Overview"}{" "}
-            <span>& {lang === "th" ? "สรุปคลังข้อมูล" : "Corpus Summary"}</span>
+            <span className="desktop-only">
+              {lang === "th" ? "ภาพรวม" : "Overview"}{" "}
+              <span>& {lang === "th" ? "สรุปคลังข้อมูล" : "Corpus Summary"}</span>
+            </span>
+            <span className="mobile-only">
+              {lang === "th" ? "ภาพรวมและสรุปคลังข้อมูล" : "OVERVIEW & CORPUS SUMMARY"}
+            </span>
           </h1>
           <p className="subtitle">{t.overviewDesc}</p>
         </div>
@@ -651,142 +691,128 @@ export default async function OverviewPage() {
         </div>
       </header>
 
-      {/* Main Hero grid layout */}
-      <div className="hero-grid">
-        <section className="dashboard-stack">
-          {/* Database Offline warning alert container */}
-          {dbOffline && (
-            <div className="alert">
-              <strong>Database Offline:</strong> Live PostgreSQL is unavailable. Showing sample atlas records for layout preview.
+      {/* Main Dashboard stack */}
+      <section className="dashboard-stack">
+        {/* Database Offline warning alert container */}
+        {dbOffline && (
+          <div className="alert">
+            <strong>Database Offline:</strong> Live PostgreSQL is unavailable. Showing sample atlas records for layout preview.
+          </div>
+        )}
+
+        {/* Primary Metrics Row */}
+        <div className="metrics-row">
+          {/* Metric 1 */}
+          <article className="metric-card">
+            <div className="metric-icon">
+              <Database size={18} />
             </div>
-          )}
+            <div>
+              <p>{t.totalSources}</p>
+              <strong>{sourcesCount}</strong>
+              <small>{lang === "th" ? `อนุมัติแล้ว: ${acceptedCount}` : `Accepted: ${acceptedCount}`}</small>
+            </div>
+          </article>
 
-          {/* Primary Metrics Row */}
-          <div className="metrics-row">
-            {/* Metric 1 */}
-            <article className="metric-card">
-              <div className="metric-icon">
-                <Database size={18} />
-              </div>
-              <div>
-                <p>{t.totalSources}</p>
-                <strong>{sourcesCount}</strong>
-                <small>{lang === "th" ? `อนุมัติแล้ว: ${acceptedCount}` : `Accepted: ${acceptedCount}`}</small>
-              </div>
-            </article>
+          {/* Metric 2 */}
+          <article className="metric-card">
+            <div className="metric-icon">
+              <Bot size={18} />
+            </div>
+            <div>
+              <p>{t.robotModels}</p>
+              <strong>{robotsCount}</strong>
+              <small>{lang === "th" ? "รุ่นที่ลงทะเบียน" : "Registered models"}</small>
+            </div>
+          </article>
 
-            {/* Metric 2 */}
-            <article className="metric-card">
-              <div className="metric-icon">
-                <Bot size={18} />
-              </div>
-              <div>
-                <p>{t.robotModels}</p>
-                <strong>{robotsCount}</strong>
-                <small>{lang === "th" ? "รุ่นที่ลงทะเบียน" : "Registered models"}</small>
-              </div>
-            </article>
+          {/* Metric 3 */}
+          <article className="metric-card">
+            <div className="metric-icon">
+              <Box size={18} />
+            </div>
+            <div>
+              <p>{t.ownedUnits}</p>
+              <strong>{inventoryCount}</strong>
+              <small>{lang === "th" ? "คลังอุปกรณ์ของทีม" : "Team inventory"}</small>
+            </div>
+          </article>
 
-            {/* Metric 3 */}
-            <article className="metric-card">
-              <div className="metric-icon">
-                <Box size={18} />
-              </div>
-              <div>
-                <p>{t.ownedUnits}</p>
-                <strong>{inventoryCount}</strong>
-                <small>{lang === "th" ? "คลังอุปกรณ์ของทีม" : "Team inventory"}</small>
-              </div>
-            </article>
+          {/* Metric 4 */}
+          <article className="metric-card">
+            <div className="metric-icon">
+              <Users size={18} />
+            </div>
+            <div>
+              <p>{t.contributors}</p>
+              <strong>{contributionsCount}</strong>
+              <small>{lang === "th" ? "คลังโค้ดและเอกสาร" : "Repos & papers"}</small>
+            </div>
+          </article>
+        </div>
 
-            {/* Metric 4 */}
-            <article className="metric-card">
-              <div className="metric-icon">
-                <Users size={18} />
+        {/* Secondary Status Row */}
+        <div className="status-row">
+          {/* Pipeline Status */}
+          <div className="glass-card">
+            <p className="card-label">{t.pipelineStatus}</p>
+            {latestPipelineRun ? (
+              <div className="success-pill">
+                {latestPipelineRun.pipelineName}: {latestPipelineRun.status}
               </div>
-              <div>
-                <p>{t.contributors}</p>
-                <strong>{contributionsCount}</strong>
-                <small>{lang === "th" ? "คลังโค้ดและเอกสาร" : "Repos & papers"}</small>
+            ) : (
+              <div className="success-pill" style={{ background: "rgba(100, 116, 139, 0.1)", color: "#94a3b8", borderColor: "#475569" }}>
+                No active runs
               </div>
-            </article>
+            )}
+            <small>{lastUpdatedStr}</small>
           </div>
 
-          {/* Secondary Status Row */}
-          <div className="status-row">
-            {/* Pipeline Status */}
-            <div className="glass-card">
-              <p className="card-label">{t.pipelineStatus}</p>
-              {latestPipelineRun ? (
-                <div className="success-pill">
-                  {latestPipelineRun.pipelineName}: {latestPipelineRun.status}
-                </div>
-              ) : (
-                <div className="success-pill" style={{ background: "rgba(100, 116, 139, 0.1)", color: "#94a3b8", borderColor: "#475569" }}>
-                  No active runs
-                </div>
-              )}
-              <small>{lastUpdatedStr}</small>
-            </div>
-
-            {/* Temporal Coverage */}
-            <div className="glass-card">
-              <p className="card-label">{t.temporalCoverage}</p>
-              <h3>{yearRangeStr}</h3>
-              <small>{t.activeMediaPubs}</small>
-            </div>
+          {/* Temporal Coverage */}
+          <div className="glass-card">
+            <p className="card-label">{t.temporalCoverage}</p>
+            <h3>{yearRangeStr}</h3>
+            <small>{t.activeMediaPubs}</small>
           </div>
+        </div>
 
-          {/* Sources by Ingestion Platform */}
-          <div className="platform-card">
-            <h3>{t.sourcesByPlatform}</h3>
+        {/* Sources by Ingestion Platform */}
+        <div className="platform-card">
+          <h3>{t.sourcesByPlatform}</h3>
 
-            <div className="platform-grid">
-              {platforms.map((p) => {
-                const name = String(p.platform || "unknown").toLowerCase();
-                let logoClass = "website";
-                let IconComponent = Globe;
+          <div className="platform-grid">
+            {platforms.map((p) => {
+              const name = String(p.platform || "unknown").toLowerCase();
+              let logoClass = "website";
+              let IconComponent = Globe;
 
-                if (name.includes("facebook")) {
-                  logoClass = "facebook";
-                  IconComponent = Facebook;
-                } else if (name.includes("youtube")) {
-                  logoClass = "youtube";
-                  IconComponent = Youtube;
-                } else if (name.includes("github")) {
-                  logoClass = "github";
-                  IconComponent = Github;
-                }
+              if (name.includes("facebook")) {
+                logoClass = "facebook";
+                IconComponent = Facebook;
+              } else if (name.includes("youtube")) {
+                logoClass = "youtube";
+                IconComponent = Youtube;
+              } else if (name.includes("github")) {
+                logoClass = "github";
+                IconComponent = Github;
+              }
 
-                return (
-                  <div className={`platform-item ${logoClass}`} key={p.platform || "unknown"}>
-                    <span>
-                      <IconComponent size={16} />
-                    </span>
-                    <div>
-                      <p style={{ textTransform: "capitalize" }}>{p.platform || "unknown"}</p>
-                      <strong>{p._count?._all ?? p._count ?? 0}</strong>
-                    </div>
-                    <div className="sparkline" />
+              return (
+                <div className={`platform-item ${logoClass}`} key={p.platform || "unknown"}>
+                  <span>
+                    <IconComponent size={16} />
+                  </span>
+                  <div>
+                    <p style={{ textTransform: "capitalize" }}>{p.platform || "unknown"}</p>
+                    <strong>{p._count?._all ?? p._count ?? 0}</strong>
                   </div>
-                );
-              })}
-            </div>
+                  <div className="sparkline" />
+                </div>
+              );
+            })}
           </div>
-
-        </section>
-
-        {/* 3D Immersive Robot Embodiment View */}
-        <section className="robot-stage">
-          <div className="orbit orbit-one" />
-          <div className="orbit orbit-two" />
-          <div className="robot-glow" />
-
-          <div className="robot-model-wrapper">
-            <RobotViewer />
-          </div>
-        </section>
-      </div>
+        </div>
+      </section>
 
       {/* Database Empty State Guide */}
       <section className="terminal-panel">
@@ -816,5 +842,6 @@ export default async function OverviewPage() {
         </div>
       </section>
     </main>
+
   );
 }

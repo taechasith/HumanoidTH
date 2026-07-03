@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import { Literata, Nunito_Sans, Noto_Sans_Thai } from "next/font/google";
+import { Literata, Inter, Noto_Sans_Thai } from "next/font/google";
 import SidebarNav from "./components/SidebarNav";
 import LanguageSelector from "./components/LanguageSelector";
 import MobileHeader from "./components/MobileHeader";
@@ -15,11 +15,10 @@ const literata = Literata({
   weight: ["300", "400", "500", "600", "700", "800", "900"],
 });
 
-const nunitoSans = Nunito_Sans({
+const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-nunito-sans",
+  variable: "--font-inter",
   display: "swap",
-  weight: ["300", "400", "500", "600", "700", "800", "900"],
 });
 
 const notoSansThai = Noto_Sans_Thai({
@@ -40,7 +39,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const t = getTranslation(lang);
 
   return (
-    <html lang={lang} className={`${literata.variable} ${nunitoSans.variable} ${notoSansThai.variable}`}>
+    <html lang={lang} className={`${literata.variable} ${inter.variable} ${notoSansThai.variable}`}>
       <body>
         <div className="app-shell">
           <MobileHeader />

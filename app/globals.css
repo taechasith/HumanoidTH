@@ -17,7 +17,7 @@
   --low-confidence: #705c30;
 
   --font-serif: var(--font-literata), Georgia, serif;
-  --font-sans: var(--font-nunito-sans), var(--font-noto-sans-thai), sans-serif;
+  --font-sans: var(--font-inter), var(--font-noto-sans-thai), sans-serif;
   --shadow-soft: 0 4px 20px rgba(46, 50, 48, 0.06);
 }
 
