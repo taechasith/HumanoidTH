@@ -21,7 +21,7 @@ test("smoke test - crawl all routes as admin", async ({ page }) => {
     "/analytics",
     "/database",
     "/submit-data",
-    "/admin/submitted-data",
+    "/admin",
   ];
 
   for (const route of routes) {

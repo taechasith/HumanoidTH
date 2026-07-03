@@ -47,6 +47,7 @@ function revalidateAtlasCms() {
     "/perspectives",
     "/analytics",
     "/submit-data",
+    "/admin",
     "/admin/submitted-data",
     "/admin/cms"
   ];
@@ -70,7 +71,7 @@ export async function createSubmission(formData: FormData) {
   });
 
   revalidateAtlasCms();
-  redirect("/admin/submitted-data");
+  redirect("/admin?collection=submitted-data");
 }
 
 export async function updateSubmissionStatus(id: string, status: "APPROVED" | "REJECTED" | "NEEDS_REVIEW") {
@@ -207,7 +208,7 @@ export async function adminLoginAction(formData: FormData) {
     cookieStore.set("admin_session", "true", { path: "/" });
     
     revalidateAtlasCms();
-    redirect("/admin/submitted-data");
+    redirect("/admin?collection=submitted-data");
   } else {
     redirect("/admin-login?error=invalid_credentials");
   }

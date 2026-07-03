@@ -14,7 +14,7 @@ const tabs = [
   { href: "/", label: "Home", icon: Home },
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/robots", label: "Robots", icon: Bot },
-  { href: "/admin/submitted-data", label: "Admin", icon: Settings2 },
+  { href: "/admin", label: "Admin", icon: Settings2 },
   { href: "/profile", label: "Profile", icon: CircleUserRound }
 ];
 
@@ -27,7 +27,7 @@ export default function MobileTabNav() {
         const Icon = tab.icon;
         const isExact = pathname === tab.href;
         const isPrefix = tab.href !== "/" && pathname.startsWith(`${tab.href}/`);
-        const isAdminSection = tab.href === "/admin/submitted-data" && pathname.startsWith("/admin");
+        const isAdminSection = tab.href === "/admin" && pathname.startsWith("/admin");
         const isActive = isExact || isPrefix;
 
         return (

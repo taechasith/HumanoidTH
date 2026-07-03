@@ -39,8 +39,7 @@ export default function SidebarNav({ currentLang = "en" }: SidebarNavProps) {
     { href: "/analytics", label: t.analytics, icon: BarChart3 },
     { href: "/database", label: t.database, icon: Database },
     { href: "/submit-data", label: t.submit, icon: Send },
-    { href: "/admin/submitted-data", label: t.admin, icon: Settings2 },
-    { href: "/admin/cms", label: t.cms, icon: Settings2 },
+    { href: "/admin", label: t.admin, icon: Settings2 },
     { href: "/profile", label: t.profile, icon: CircleUserRound }
   ];
 
@@ -48,7 +47,7 @@ export default function SidebarNav({ currentLang = "en" }: SidebarNavProps) {
     <nav className="nav" aria-label="Primary">
       {navItems.map((item) => {
         const Icon = item.icon;
-        const isActive = pathname === item.href;
+        const isActive = item.href === "/admin" ? pathname.startsWith("/admin") : pathname === item.href;
         return (
           <Link 
             key={item.href} 

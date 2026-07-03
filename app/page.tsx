@@ -498,7 +498,7 @@ export default async function OverviewPage() {
           display: flex;
           align-items: flex-start;
           justify-content: center;
-          transform: translateY(-18px) scale(1.12);
+          transform: translateY(-46px) scale(1.12);
           transform-origin: center top;
         }
 
@@ -736,7 +736,7 @@ export default async function OverviewPage() {
             <Send size={15} color="#9a7bd8" />
             <span>📨</span> {t.submitRecord}
           </Link>
-          <Link className="button" href="/admin/submitted-data">
+          <Link className="button" href="/admin">
             <ClipboardList size={15} color="#b17c56" />
             <span>📋</span> {t.reviewQueue}{" "}
             <span style={{ color: "var(--success)", fontWeight: "800" }}>

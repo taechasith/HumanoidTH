@@ -48,7 +48,7 @@ def test_routes_desktop_and_mobile(next_server):
             "/database",
             "/submit-data",
             "/profile",
-            "/admin/submitted-data"
+            "/admin"
         ]
 
         # Process each viewport
