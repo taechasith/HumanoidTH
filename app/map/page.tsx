@@ -1,9 +1,11 @@
 import { cookies } from "next/headers";
-import { Globe2, MapPinned } from "lucide-react";
+import { Globe2, Radar } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { hostnameFromUrl } from "@/lib/geo";
 import { sourceToMapPoint } from "@/lib/map-points";
 import { getTranslation } from "@/lib/translations";
 import GoogleMapClient from "./GoogleMapClient";
+import { backfillSourceIpGeolocation } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -12,22 +14,26 @@ export default async function MapPage() {
   const lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
   const t = getTranslation(lang);
 
-  const sources = await prisma.sourceRecord.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 300,
-    select: {
-      id: true,
-      title: true,
-      url: true,
-      platform: true,
-      sourceType: true,
-      rawMeta: true,
-      publishedAt: true
-    }
-  });
+  const [totalSourceCount, sources] = await Promise.all([
+    prisma.sourceRecord.count(),
+    prisma.sourceRecord.findMany({
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        title: true,
+        url: true,
+        platform: true,
+        sourceType: true,
+        rawMeta: true,
+        publishedAt: true
+      }
+    })
+  ]);
 
   const points = sources.map(sourceToMapPoint).filter((point): point is NonNullable<typeof point> => Boolean(point));
-  const unmapped = sources.length - points.length;
+  const mappedIds = new Set(points.map((point) => point.id));
+  const unmappedSources = sources.filter((source) => !mappedIds.has(source.id));
+  const unmapped = totalSourceCount - points.length;
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
 
   return (
@@ -45,8 +51,8 @@ export default async function MapPage() {
           <div className="stat">{points.length}</div>
         </div>
         <div className="panel motion-panel">
-          <p className="muted" style={{ margin: 0 }}>Recent source records</p>
-          <div className="stat">{sources.length}</div>
+          <p className="muted" style={{ margin: 0 }}>Real source records</p>
+          <div className="stat">{totalSourceCount}</div>
         </div>
         <div className="panel motion-panel">
           <p className="muted" style={{ margin: 0 }}>Unmapped records</p>
@@ -59,24 +65,18 @@ export default async function MapPage() {
       </div>
 
       <div className="notice" style={{ marginBottom: 12 }}>
-        New data pulls store source host, resolved IP address, and IP geolocation in <code>rawMeta.networkGeo</code>.
-        IP location is approximate and depends on DNS plus the public IP geolocation lookup succeeding.
+        This page uses only database source records. It does not create mock map points. Existing records may need real DNS/IP geolocation backfill before markers appear.
       </div>
 
-      {points.length ? (
-        <GoogleMapClient apiKey={apiKey} points={points} />
-      ) : (
-        <div className="panel" style={{ minHeight: 420, display: "grid", placeItems: "center", textAlign: "center" }}>
-          <div>
-            <MapPinned size={36} aria-hidden="true" />
-            <h2 style={{ marginTop: 10 }}>No geolocated source IPs yet</h2>
-            <p className="muted" style={{ maxWidth: 560 }}>
-              Run a new pull from Data Pulls so incoming records can be enriched with host IP geolocation.
-              Existing records without <code>rawMeta.networkGeo</code> will appear in the unmapped list below.
-            </p>
-          </div>
-        </div>
-      )}
+      <form action={backfillSourceIpGeolocation} className="toolbar" style={{ marginTop: 0 }}>
+        <button className="primary" type="submit">
+          <Radar size={16} aria-hidden="true" />
+          Backfill real IP geolocation
+        </button>
+        <span className="muted">Processes up to 40 existing source records per click.</span>
+      </form>
+
+      <GoogleMapClient apiKey={apiKey} points={points} />
 
       <div className="table-wrap" style={{ marginTop: 14 }}>
         <table>
@@ -103,13 +103,45 @@ export default async function MapPage() {
                 <td>{point.locationLabel}</td>
               </tr>
             ))}
-            {!points.length && (
+            {!points.length ? (
               <tr>
                 <td colSpan={5} className="empty">
-                  <Globe2 size={22} aria-hidden="true" /> No mapped source rows.
+                  <Globe2 size={22} aria-hidden="true" /> No source records have resolved IP coordinates yet.
                 </td>
               </tr>
-            )}
+            ) : null}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="table-wrap" style={{ marginTop: 14 }}>
+        <table>
+          <thead>
+            <tr>
+              <th>Unmapped real source</th>
+              <th>Platform</th>
+              <th>Host</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {unmappedSources.slice(0, 100).map((source) => (
+              <tr key={source.id}>
+                <td>
+                  <a href={source.url} target="_blank" rel="noreferrer">{source.title}</a>
+                  <br />
+                  <span className="muted">{source.sourceType}</span>
+                </td>
+                <td>{source.platform ?? "unknown"}</td>
+                <td>{hostnameFromUrl(source.url) ?? "invalid url"}</td>
+                <td>Needs real IP geolocation</td>
+              </tr>
+            ))}
+            {!unmappedSources.length ? (
+              <tr>
+                <td colSpan={4} className="empty">All source records currently loaded on this page are mapped.</td>
+              </tr>
+            ) : null}
           </tbody>
         </table>
       </div>

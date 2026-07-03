@@ -106,6 +106,7 @@ const fieldCatalog: Record<Scope, Array<{ value: string; label: string }>> = {
 };
 
 const palette = ["#19523c", "#28744b", "#4f8b62", "#7fa87f", "#a9bea9", "#d4af37", "#c5931b", "#9c2e26", "#5e7568"];
+const remainderLabel = "Remaining live categories";
 
 function humanize(value: string) {
   return value.replace(/_/g, " ");
@@ -213,22 +214,28 @@ export default function AnalyticsPlayground({ events }: AnalyticsPlaygroundProps
     : availableFields[1]?.value || matrixRowField;
 
   const trendTopValues = useMemo(() => topValues(scopeEvents, trendSeriesField), [scopeEvents, trendSeriesField]);
+  const trendSeriesTotals = useMemo(() => {
+    const totals = new Map<string, number>();
+    for (const event of scopeEvents) {
+      const value = getFieldValue(event, trendSeriesField) || "unknown";
+      totals.set(value, (totals.get(value) ?? 0) + 1);
+    }
+    return [...totals.entries()].sort((a, b) => b[1] - a[1]);
+  }, [scopeEvents, trendSeriesField]);
 
   const trendRows = useMemo(() => {
     const byBucket = new Map<string, Record<string, number>>();
-    const totals = new Map<string, number>();
 
     for (const event of scopeEvents) {
       const timeKey = normalizeDateKey(event.date, timeBucket);
       const seriesValue = getFieldValue(event, trendSeriesField) || "unknown";
-      const normalizedSeries = trendTopValues.includes(seriesValue) ? seriesValue : "Other";
+      const normalizedSeries = trendTopValues.includes(seriesValue) ? seriesValue : remainderLabel;
 
       if (!byBucket.has(timeKey)) {
         byBucket.set(timeKey, {});
       }
       const bucket = byBucket.get(timeKey)!;
       bucket[normalizedSeries] = (bucket[normalizedSeries] ?? 0) + 1;
-      totals.set(normalizedSeries, (totals.get(normalizedSeries) ?? 0) + 1);
     }
 
     return [...byBucket.entries()]
@@ -257,14 +264,14 @@ export default function AnalyticsPlayground({ events }: AnalyticsPlaygroundProps
     for (const event of scopeEvents) {
       const rowValue = getFieldValue(event, matrixRowField) || "unknown";
       const colValue = getFieldValue(event, matrixColumnField) || "unknown";
-      const rowKey = rowLabels.includes(rowValue) ? rowValue : "Other";
-      const colKey = colLabels.includes(colValue) ? colValue : "Other";
+      const rowKey = rowLabels.includes(rowValue) ? rowValue : remainderLabel;
+      const colKey = colLabels.includes(colValue) ? colValue : remainderLabel;
       const key = `${rowKey}|||${colKey}`;
       counts.set(key, (counts.get(key) ?? 0) + 1);
     }
 
-    const normalizedRows = rowLabels.includes("Other") ? rowLabels : [...rowLabels, "Other"];
-    const normalizedCols = colLabels.includes("Other") ? colLabels : [...colLabels, "Other"];
+    const normalizedRows = rowLabels.includes(remainderLabel) ? rowLabels : [...rowLabels, remainderLabel];
+    const normalizedCols = colLabels.includes(remainderLabel) ? colLabels : [...colLabels, remainderLabel];
 
     const max = Math.max(1, ...counts.values());
     return {
@@ -296,10 +303,14 @@ export default function AnalyticsPlayground({ events }: AnalyticsPlaygroundProps
       total: scopeEvents.length,
       dated: withDates.length,
       avgConfidence,
-      topSeries: trendKeys[0] || "N/A",
-      topRow: matrix.rowLabels[0] || "N/A"
+      topSeries: trendSeriesTotals[0]?.[0] || "No live records",
+      topRow: [...matrix.rowLabels].sort((a, b) => {
+        const totalA = matrix.colLabels.reduce((sum, col) => sum + (matrix.counts.get(`${a}|||${col}`) ?? 0), 0);
+        const totalB = matrix.colLabels.reduce((sum, col) => sum + (matrix.counts.get(`${b}|||${col}`) ?? 0), 0);
+        return totalB - totalA;
+      })[0] || "No live records"
     };
-  }, [matrix.rowLabels, scopeEvents, trendKeys]);
+  }, [matrix, scopeEvents, trendSeriesTotals]);
 
   return (
     <div style={{ display: "grid", gap: "16px" }}>
@@ -362,7 +373,7 @@ export default function AnalyticsPlayground({ events }: AnalyticsPlaygroundProps
         </div>
         <div className="panel motion-panel motion-pop" style={{ animationDelay: "120ms" }}>
           <div className="muted">Average confidence</div>
-          <div className="stat">{summary.avgConfidence === null ? "N/A" : summary.avgConfidence.toFixed(2)}</div>
+          <div className="stat">{summary.avgConfidence === null ? "No live confidence" : summary.avgConfidence.toFixed(2)}</div>
         </div>
         <div className="panel motion-panel motion-pop" style={{ animationDelay: "180ms" }}>
           <div className="muted">Top trend factor</div>
@@ -407,10 +418,10 @@ export default function AnalyticsPlayground({ events }: AnalyticsPlaygroundProps
                     animationDuration={650}
                   />
                 ))}
-                {trendRows.some((row) => "Other" in row) && (
+                {trendRows.some((row) => remainderLabel in row) && (
                   <Area
                     type="monotone"
-                    dataKey="Other"
+                    dataKey={remainderLabel}
                     stackId="1"
                     stroke="#7a8a80"
                     fill="#7a8a80"

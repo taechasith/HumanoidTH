@@ -75,20 +75,17 @@ def test_routes_desktop_and_mobile(next_server):
                 assert h1_el is not None, f"Blank page on {route}"
                 assert len(h1_el.inner_text().strip()) > 0, f"Empty h1 on {route}"
 
-            # Verify network graph elements on the network page
+            # Verify the path-copy tool renders on the network route
             page.goto(f"{next_server}/network")
             page.wait_for_timeout(2000) # wait for cytoscape to load
             
-            # Check canvas/container renders
-            canvas_container = page.query_selector('.two')
-            assert canvas_container is not None, "Network graph split view container not found"
+            title = page.query_selector('h1:has-text("Copy Local Graph Paths")')
+            assert title is not None, "Path-copy title not found"
 
-            # Check that zoom/pan buttons are rendered
-            zoom_btn = page.query_selector('button[title="Zoom In"]')
-            assert zoom_btn is not None, "Zoom controls not found"
+            copy_btn = page.query_selector('button:has-text("Copy Local Graph Paths")')
+            assert copy_btn is not None, "Copy button not found"
 
-            # Check search form is present
-            search_input = page.query_selector('input[placeholder*="Search nodes"]')
+            search_input = page.query_selector('input[placeholder*="Find sources, robots, or notes"]')
             assert search_input is not None, "Search input not found"
 
         browser.close()

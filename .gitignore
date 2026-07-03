@@ -50,3 +50,7 @@ data/*.log
 # OS files
 .DS_Store
 Thumbs.db
+
+# Reference UI Mockups
+*humanoidth.ui/
+*humamnoidth.ui/

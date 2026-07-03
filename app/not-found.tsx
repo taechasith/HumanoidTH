@@ -144,7 +144,7 @@ export default function NotFound() {
             <Link href="/" className="suggestion-chip">Dashboard</Link>
             <Link href="/inventory" className="suggestion-chip">Robot Inventory</Link>
             <Link href="/contributions" className="suggestion-chip">Contributions</Link>
-            <Link href="/network" className="suggestion-chip">Ecosystem Network</Link>
+            <Link href="/network" className="suggestion-chip">Graph Paths</Link>
             <Link href="/database" className="suggestion-chip">Atlas DB Schema</Link>
           </div>
         </div>

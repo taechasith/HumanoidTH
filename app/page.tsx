@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import RobotViewer from "./components/RobotViewer";
 import CopyCommands from "./components/CopyCommands";
 import { getTranslation } from "@/lib/translations";
+import { Database, Bot, Box, Users, Facebook, Youtube, Github, Globe } from "lucide-react";
+
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +19,7 @@ export default async function OverviewPage() {
   let robotsCount = 3;
   let contributionsCount = 8;
   let inventoryCount = 2;
-  let pendingReviewsCount = 1;
+  let pendingReviewsCount = 0;
   let platforms: any[] = [
     { platform: "Facebook", _count: { _all: 84 } },
     { platform: "Youtube", _count: { _all: 41 } },
@@ -98,7 +100,7 @@ export default async function OverviewPage() {
           width: 100%;
           position: relative;
           z-index: 10;
-          font-family: var(--font-inter), var(--font-noto-sans-thai), sans-serif;
+          font-family: var(--font-sans);
         }
 
         .topbar {
@@ -111,11 +113,12 @@ export default async function OverviewPage() {
         }
 
         .topbar h1 {
+          font-family: var(--font-serif);
           font-size: 2.8rem;
-          font-weight: 900;
+          font-weight: 800;
           text-transform: uppercase;
-          letter-spacing: -1.5px;
-          line-height: 0.95;
+          letter-spacing: -1px;
+          line-height: 1.1;
           margin: 8px 0;
           color: var(--accent);
         }
@@ -123,16 +126,13 @@ export default async function OverviewPage() {
         .topbar h1 span {
           color: var(--warning);
           font-weight: 800;
-          display: block;
-          font-size: 2.2rem;
-          margin-top: 4px;
         }
 
         .eyebrow {
           font-size: 11px;
           text-transform: uppercase;
           letter-spacing: 1.5px;
-          color: var(--text-secondary);
+          color: var(--warning);
           font-weight: 750;
           margin: 0;
         }
@@ -205,28 +205,29 @@ export default async function OverviewPage() {
           display: flex;
           gap: 16px;
           align-items: flex-start;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+          box-shadow: var(--shadow-soft);
           transition: all 0.2s ease;
         }
 
         .metric-card:hover {
           transform: translateY(-2px);
-          box-shadow: 0 8px 20px rgba(25, 82, 60, 0.06);
+          box-shadow: 0 8px 20px rgba(74, 124, 89, 0.08);
           border-color: var(--accent);
         }
 
         .metric-icon {
-          font-size: 20px;
-          color: var(--accent);
-          background: rgba(25, 82, 60, 0.05);
-          width: 40px;
-          height: 40px;
-          border-radius: 8px;
+          font-size: 18px;
+          color: #ffffff;
+          background: var(--accent);
+          width: 44px;
+          height: 44px;
+          border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
         }
+
 
         .metric-card p {
           margin: 0;
@@ -664,7 +665,9 @@ export default async function OverviewPage() {
           <div className="metrics-row">
             {/* Metric 1 */}
             <article className="metric-card">
-              <div className="metric-icon">◈</div>
+              <div className="metric-icon">
+                <Database size={18} />
+              </div>
               <div>
                 <p>{t.totalSources}</p>
                 <strong>{sourcesCount}</strong>
@@ -674,7 +677,9 @@ export default async function OverviewPage() {
 
             {/* Metric 2 */}
             <article className="metric-card">
-              <div className="metric-icon">◈</div>
+              <div className="metric-icon">
+                <Bot size={18} />
+              </div>
               <div>
                 <p>{t.robotModels}</p>
                 <strong>{robotsCount}</strong>
@@ -684,7 +689,9 @@ export default async function OverviewPage() {
 
             {/* Metric 3 */}
             <article className="metric-card">
-              <div className="metric-icon">◈</div>
+              <div className="metric-icon">
+                <Box size={18} />
+              </div>
               <div>
                 <p>{t.ownedUnits}</p>
                 <strong>{inventoryCount}</strong>
@@ -694,7 +701,9 @@ export default async function OverviewPage() {
 
             {/* Metric 4 */}
             <article className="metric-card">
-              <div className="metric-icon">◈</div>
+              <div className="metric-icon">
+                <Users size={18} />
+              </div>
               <div>
                 <p>{t.contributors}</p>
                 <strong>{contributionsCount}</strong>
@@ -736,22 +745,24 @@ export default async function OverviewPage() {
               {platforms.map((p) => {
                 const name = String(p.platform || "unknown").toLowerCase();
                 let logoClass = "website";
-                let initials = "W";
+                let IconComponent = Globe;
 
                 if (name.includes("facebook")) {
                   logoClass = "facebook";
-                  initials = "f";
+                  IconComponent = Facebook;
                 } else if (name.includes("youtube")) {
                   logoClass = "youtube";
-                  initials = "▶";
-                } else if (name.includes("website")) {
-                  logoClass = "website";
-                  initials = "◎";
+                  IconComponent = Youtube;
+                } else if (name.includes("github")) {
+                  logoClass = "github";
+                  IconComponent = Github;
                 }
 
                 return (
                   <div className={`platform-item ${logoClass}`} key={p.platform || "unknown"}>
-                    <span>{initials}</span>
+                    <span>
+                      <IconComponent size={16} />
+                    </span>
                     <div>
                       <p style={{ textTransform: "capitalize" }}>{p.platform || "unknown"}</p>
                       <strong>{p._count?._all ?? p._count ?? 0}</strong>
@@ -762,6 +773,7 @@ export default async function OverviewPage() {
               })}
             </div>
           </div>
+
         </section>
 
         {/* 3D Immersive Robot Embodiment View */}

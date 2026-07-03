@@ -237,7 +237,7 @@ export default async function AnalyticsPage() {
     <>
       <h1>{t.analyticsTitle}</h1>
       <p className="muted" style={{ marginBottom: "18px" }}>{t.analyticsDesc}</p>
-      <div className="notice">This workspace combines live data from sources, robots, contributions, perspectives, and submissions.</div>
+      <div className="notice">This workspace uses live database rows only. No sample data is injected here.</div>
       {dbOffline && (
         <div className="notice" style={{ marginBottom: 16 }}>
           Live analytics are unavailable. This page needs PostgreSQL to build the analysis workspace.

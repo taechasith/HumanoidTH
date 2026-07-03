@@ -84,6 +84,7 @@ export default async function AdminSubmittedDataPage({ searchParams }: { searchP
   const selectedId = params.selectedId;
 
   const items = await prisma.submittedData.findMany({ 
+    where: { status: { in: ["QUEUED", "NEEDS_REVIEW"] } },
     orderBy: { createdAt: "desc" }, 
     take: 100 
   });

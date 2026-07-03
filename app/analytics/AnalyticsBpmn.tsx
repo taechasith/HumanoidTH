@@ -270,7 +270,8 @@ export default function AnalyticsBpmn({ counts }: AnalyticsBpmnProps) {
         className="motion-fade"
         style={{
           marginTop: "12px",
-          minHeight: "460px",
+          minHeight: "clamp(520px, 72vh, 860px)",
+          height: "clamp(520px, 72vh, 860px)",
           border: "1px solid var(--border)",
           borderRadius: "8px",
           background: "#fff"

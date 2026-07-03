@@ -1,15 +1,25 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import { Inter, Noto_Sans_Thai } from "next/font/google";
+import { Literata, Nunito_Sans, Noto_Sans_Thai } from "next/font/google";
 import SidebarNav from "./components/SidebarNav";
 import LanguageSelector from "./components/LanguageSelector";
+import MobileHeader from "./components/MobileHeader";
+import MobileTabNav from "./components/MobileTabNav";
 import { getTranslation } from "@/lib/translations";
 import "./globals.css";
 
-const inter = Inter({
+const literata = Literata({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-literata",
   display: "swap",
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
+});
+
+const nunitoSans = Nunito_Sans({
+  subsets: ["latin"],
+  variable: "--font-nunito-sans",
+  display: "swap",
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
 });
 
 const notoSansThai = Noto_Sans_Thai({
@@ -30,9 +40,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const t = getTranslation(lang);
 
   return (
-    <html lang={lang} className={`${inter.variable} ${notoSansThai.variable}`}>
+    <html lang={lang} className={`${literata.variable} ${nunitoSans.variable} ${notoSansThai.variable}`}>
       <body>
         <div className="app-shell">
+          <MobileHeader />
           <aside className="sidebar">
             <div className="brand-logo-container">
               <img src="/logo.png" alt="Thailand Humanoid Atlas" className="brand-logo" />
@@ -45,9 +56,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </div>
           </aside>
           <main className="main">{children}</main>
+          <MobileTabNav />
         </div>
       </body>
     </html>
   );
 }
+
 

@@ -36,14 +36,17 @@ test("smoke test - crawl all routes as admin", async ({ page }) => {
     expect(text.trim().length).toBeGreaterThan(0);
   }
 
-  // Visit network page and check zoom controls
+  // Visit the graph-paths page and check the path copy tool
   await page.goto("/network");
-  const cytoscapePanel = page.locator(".two");
-  await expect(cytoscapePanel).toBeVisible({ timeout: 10000 });
+  const toolTitle = page.locator('h1:has-text("Copy Local Graph Paths")');
+  await expect(toolTitle).toBeVisible({ timeout: 10000 });
 
-  const zoomBtn = page.locator('button[title="Zoom In"]');
-  await expect(zoomBtn).toBeVisible({ timeout: 5000 });
+  const copyButton = page.locator('button:has-text("Copy Local Graph Paths")');
+  await expect(copyButton).toBeVisible({ timeout: 5000 });
 
-  const searchInput = page.locator('input[placeholder*="Search nodes"]');
+  const searchInput = page.locator('input[placeholder*="Find sources, robots, or notes"]');
   await expect(searchInput).toBeVisible({ timeout: 5000 });
+
+  const previewBox = page.locator('div').filter({ hasText: "Local neighbors" });
+  await expect(previewBox.first()).toBeVisible({ timeout: 5000 });
 });
