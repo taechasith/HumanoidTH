@@ -2,6 +2,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import RobotViewer from "./components/RobotViewer";
+import CopyCommands from "./components/CopyCommands";
 import { getTranslation } from "@/lib/translations";
 
 export const dynamic = "force-dynamic";
@@ -24,7 +25,6 @@ export default async function OverviewPage() {
   ];
   let yearRangeStr = "2020 – 2026";
   let latestPipelineRun: any = { pipelineName: "RSS Ingestion", status: "SUCCEEDED", finishedAt: new Date("2026-07-02T12:00:00") };
-  let jobs: any[] = [];
   let dbOffline = false;
 
   try {
@@ -37,8 +37,7 @@ export default async function OverviewPage() {
       prCount,
       plts,
       dateRange,
-      pipelineRun,
-      jbs
+      pipelineRun
     ] = await Promise.all([
       prisma.sourceRecord.count(),
       prisma.sourceRecord.count({ where: { relevanceStatus: "ACCEPTED" } }),
@@ -48,8 +47,7 @@ export default async function OverviewPage() {
       prisma.submittedData.count({ where: { status: { in: ["QUEUED", "NEEDS_REVIEW"] } } }),
       prisma.sourceRecord.groupBy({ by: ["platform"], _count: { _all: true } }),
       prisma.sourceRecord.aggregate({ _min: { publishedAt: true }, _max: { publishedAt: true } }),
-      prisma.pipelineRun.findFirst({ orderBy: { startedAt: "desc" } }),
-      prisma.sourcePullJob.findMany({ orderBy: { createdAt: "desc" }, take: 5 })
+      prisma.pipelineRun.findFirst({ orderBy: { startedAt: "desc" } })
     ]);
 
     sourcesCount = sCount;
@@ -58,9 +56,14 @@ export default async function OverviewPage() {
     contributionsCount = cCount;
     inventoryCount = iCount;
     pendingReviewsCount = prCount;
-    platforms = plts;
-    latestPipelineRun = pipelineRun;
-    jobs = jbs;
+    
+    if (plts && plts.length > 0) {
+      platforms = plts;
+    }
+    
+    if (pipelineRun) {
+      latestPipelineRun = pipelineRun;
+    }
 
     const minYear = dateRange._min.publishedAt ? dateRange._min.publishedAt.getFullYear() : "N/A";
     const maxYear = dateRange._max.publishedAt ? dateRange._max.publishedAt.getFullYear() : "N/A";
@@ -68,603 +71,708 @@ export default async function OverviewPage() {
   } catch (error) {
     console.error("Database connection failed, falling back to simulated research data:", error);
     dbOffline = true;
-    
-    // Fallback jobs list when DB is offline
-    jobs = [
-      { id: "1", adapter: "Facebook", query: "Thailand humanoid", status: "SUCCEEDED", recordsFound: 5, recordsSaved: 5, finishedAt: new Date() },
-      { id: "2", adapter: "RSS", query: "robotics.mi.th", status: "SUCCEEDED", recordsFound: 12, recordsSaved: 10, finishedAt: new Date() }
-    ];
   }
 
   // Format date for Pipeline status card
-  let lastUpdatedStr = "Last: N/A";
+  let lastUpdatedStr = lang === "th" ? "ล่าสุด: ไม่มีข้อมูล" : "Last: N/A";
   if (latestPipelineRun?.finishedAt) {
     const finishedDate = new Date(latestPipelineRun.finishedAt);
-    lastUpdatedStr = `Last: ${finishedDate.getMonth() + 1}/${finishedDate.getDate()}/${finishedDate.getFullYear()}`;
+    lastUpdatedStr = `${lang === "th" ? "ล่าสุด" : "Last"}: ${finishedDate.getMonth() + 1}/${finishedDate.getDate()}/${finishedDate.getFullYear()}`;
   }
 
+  const cliCommands = [
+    "python -m humanoid_atlas db init",
+    "python -m humanoid_atlas ingest seeds --file data/seeds/robot_models.seed.yml",
+    "python -m humanoid_atlas ingest seeds --file data/seeds/inventory.seed.yml"
+  ];
+
   return (
-    <div className="console-wrapper">
+    <main className="atlas-page">
       <style dangerouslySetInnerHTML={{ __html: `
-        .console-wrapper {
-          position: relative;
-          min-height: calc(100vh - 36px);
-          background: #eae9df; /* Warm cream background */
-          background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px);
-          background-size: 24px 24px;
-          padding: 30px 40px;
+        .atlas-page {
           display: flex;
           flex-direction: column;
-          overflow: hidden;
+          gap: 24px;
+          width: 100%;
+          position: relative;
+          z-index: 10;
           font-family: var(--font-inter), var(--font-noto-sans-thai), sans-serif;
         }
 
-        /* Ambient glowing circles surrounding the robot */
-        .ambient-glow {
-          position: absolute;
-          top: 15%;
-          right: -8%;
-          width: 580px;
-          height: 580px;
-          background: radial-gradient(circle, rgba(16, 185, 129, 0.16) 0%, rgba(234, 179, 8, 0.04) 50%, transparent 80%);
-          border-radius: 50%;
-          pointer-events: none;
-          z-index: 1;
+        .topbar {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 24px;
+          border-bottom: 1px solid var(--border);
+          padding-bottom: 24px;
         }
 
-        /* 3D Immersive Robot Stage */
-        .immersive-stage {
-          position: absolute;
-          top: 6%;
-          right: -40px;
-          width: 48%;
-          height: 88%;
-          pointer-events: none;
-          z-index: 2;
+        .topbar h2 {
+          font-size: 2.8rem;
+          font-weight: 900;
+          text-transform: uppercase;
+          letter-spacing: -1.5px;
+          line-height: 0.95;
+          margin: 8px 0;
+          color: var(--accent);
+        }
+
+        .topbar h2 span {
+          color: var(--warning);
+          font-weight: 800;
+          display: block;
+          font-size: 2.2rem;
+          margin-top: 4px;
+        }
+
+        .eyebrow {
+          font-size: 11px;
+          text-transform: uppercase;
+          letter-spacing: 1.5px;
+          color: var(--text-secondary);
+          font-weight: 750;
+          margin: 0;
+        }
+
+        .subtitle {
+          font-size: 13.5px;
+          color: var(--text-secondary);
+          margin: 8px 0 0 0;
+          max-width: 600px;
+          line-height: 1.5;
+        }
+
+        .topbar .actions {
+          display: flex;
+          gap: 10px;
+          flex-wrap: wrap;
+        }
+
+        .topbar .actions .button {
+          font-weight: 700;
           display: flex;
           align-items: center;
-          justify-content: center;
+          gap: 6px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+          transition: all 0.2s ease;
         }
 
-        .model-container {
-          width: 100%;
-          height: 100%;
-          position: relative;
-          pointer-events: auto;
+        .topbar .actions .button:hover {
+          transform: translateY(-1px);
         }
 
-        /* Orbit rings with golden glow and gradient */
-        .orbit-ring {
-          position: absolute;
-          border-radius: 50%;
-          pointer-events: none;
-        }
-
-        .ring-1 {
-          width: 440px;
-          height: 440px;
-          border: 1.5px dashed rgba(234, 179, 8, 0.35);
-          box-shadow: 0 0 15px rgba(234, 179, 8, 0.2);
-          transform: rotateX(70deg) rotateY(12deg);
-          animation: spinRing 24s linear infinite;
-        }
-
-        .ring-2 {
-          width: 500px;
-          height: 500px;
-          border: 1px solid rgba(16, 185, 129, 0.2);
-          box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
-          transform: rotateX(75deg) rotateY(-18deg);
-          animation: spinRingInverse 30s linear infinite;
-        }
-
-        /* Metrics Strip styling */
-        .metrics-strip {
+        /* Hero grid layout */
+        .hero-grid {
           display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          background: #08130f; /* Very deep dark green */
-          border: 1px solid #11261f;
-          border-radius: 14px;
-          padding: 20px 24px;
-          margin-bottom: 16px;
-          box-shadow: 0 12px 35px rgba(5, 13, 10, 0.3);
-          position: relative;
-          z-index: 3;
-          max-width: 680px;
+          grid-template-columns: 1.2fr 1fr;
+          gap: 24px;
+          align-items: start;
         }
 
-        .metric-block {
-          display: flex;
-          align-items: center;
-          gap: 16px;
-          padding: 0 10px;
-        }
-
-        .metric-block:not(:last-child) {
-          border-right: 1px solid rgba(20, 53, 42, 0.45);
-        }
-
-        .metric-icon-badge {
-          width: 46px;
-          height: 46px;
-          border-radius: 10px;
-          background: rgba(20, 53, 42, 0.6);
-          border: 1px solid rgba(16, 185, 129, 0.25);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #10B981; /* Emerald green */
-        }
-
-        .metric-info {
+        .dashboard-stack {
           display: flex;
           flex-direction: column;
+          gap: 16px;
         }
 
-        .metric-label {
+        /* Alert styling */
+        .alert {
+          background: rgba(156, 46, 38, 0.08);
+          border: 1px solid rgba(156, 46, 38, 0.2);
+          border-left: 4px solid var(--danger);
+          border-radius: 8px;
+          padding: 12px 16px;
+          font-size: 13px;
+          color: #7f221c;
+          line-height: 1.5;
+        }
+
+        /* Metrics grid */
+        .metrics-row {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 16px;
+        }
+
+        .metric-card {
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: 12px;
+          padding: 18px 20px;
+          display: flex;
+          gap: 16px;
+          align-items: flex-start;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+          transition: all 0.2s ease;
+        }
+
+        .metric-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 20px rgba(25, 82, 60, 0.06);
+          border-color: var(--accent);
+        }
+
+        .metric-icon {
+          font-size: 20px;
+          color: var(--accent);
+          background: rgba(25, 82, 60, 0.05);
+          width: 40px;
+          height: 40px;
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+
+        .metric-card p {
+          margin: 0;
           font-size: 11px;
           text-transform: uppercase;
           letter-spacing: 0.5px;
-          color: #78998c;
-          font-weight: 500;
+          color: var(--text-secondary);
+          font-weight: 600;
         }
 
-        .metric-val {
-          font-size: 26px;
+        .metric-card strong {
+          display: block;
+          font-size: 28px;
           font-weight: 800;
-          color: #ffffff;
+          color: var(--text-primary);
+          margin-top: 4px;
           line-height: 1.1;
-          margin-top: 2px;
         }
 
-        .metric-sub {
-          font-size: 10.5px;
-          font-weight: 500;
-          color: #a3c2b5;
-          margin-top: 2px;
+        .metric-card small {
+          display: block;
+          font-size: 11px;
+          color: var(--text-secondary);
+          margin-top: 4px;
         }
 
-        .metric-sub.green-highlight {
-          color: #10B981;
-        }
-
-        /* Secondary Row */
+        /* Status row: Glassmorphism cards */
         .status-row {
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 16px;
-          margin-bottom: 16px;
-          position: relative;
-          z-index: 3;
-          max-width: 680px;
         }
 
-        .status-card {
-          background: #08130f;
-          border: 1px solid #11261f;
-          border-radius: 14px;
-          padding: 20px 24px;
-          box-shadow: 0 8px 24px rgba(5, 13, 10, 0.25);
+        .glass-card {
+          background: rgba(255, 255, 255, 0.6);
+          backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.4);
+          border-radius: 12px;
+          padding: 18px 20px;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
           display: flex;
           flex-direction: column;
+          justify-content: space-between;
           min-height: 120px;
-          position: relative;
         }
 
-        .status-header {
-          display: flex;
-          align-items: center;
-          gap: 8px;
+        .card-label {
+          margin: 0 0 10px 0;
           font-size: 11px;
           text-transform: uppercase;
           letter-spacing: 0.5px;
-          color: #78998c;
-          margin-bottom: 14px;
+          color: var(--text-secondary);
+          font-weight: 600;
         }
 
-        .status-icon-top {
-          position: absolute;
-          top: 20px;
-          right: 24px;
-          color: #78998c;
-          opacity: 0.6;
+        .success-pill {
+          background: rgba(40, 116, 75, 0.1);
+          border: 1px solid rgba(40, 116, 75, 0.25);
+          color: var(--success);
+          font-size: 12px;
+          font-weight: 700;
+          padding: 6px 12px;
+          border-radius: 20px;
+          align-self: flex-start;
+          letter-spacing: 0.2px;
         }
 
-        .status-val {
+        .glass-card h3 {
+          margin: 0;
           font-size: 24px;
           font-weight: 800;
-          color: #ffffff;
+          color: var(--text-primary);
         }
 
-        .status-badge-pill {
-          display: inline-block;
-          background: rgba(16, 185, 129, 0.15);
-          border: 1px solid rgba(16, 185, 129, 0.4);
-          color: #10B981;
-          font-weight: 700;
+        .glass-card small {
+          font-size: 11px;
+          color: var(--text-secondary);
+          margin-top: 8px;
+          display: block;
+        }
+
+        /* Platform Ingestion Card */
+        .platform-card {
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: 12px;
+          padding: 20px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+        }
+
+        .platform-card h3 {
+          margin: 0 0 16px 0;
           font-size: 12px;
-          padding: 5px 12px;
-          border-radius: 20px;
+          text-transform: uppercase;
           letter-spacing: 0.5px;
-        }
-
-        /* Platform Panel */
-        .platform-panel {
-          background: #08130f;
-          border: 1px solid #11261f;
-          border-radius: 14px;
-          padding: 20px 24px;
-          box-shadow: 0 8px 24px rgba(5, 13, 10, 0.25);
-          margin-bottom: 16px;
-          position: relative;
-          z-index: 3;
-          max-width: 680px;
+          color: var(--text-primary);
+          font-weight: 800;
         }
 
         .platform-grid {
-          display: flex;
-          gap: 16px;
-          margin-top: 16px;
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 12px;
         }
 
-        .platform-block {
-          flex: 1;
-          background: rgba(20, 53, 42, 0.35);
-          border: 1px solid rgba(20, 53, 42, 0.6);
-          border-radius: 10px;
-          padding: 12px 16px;
+        .platform-item {
+          background: var(--background);
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          padding: 12px;
           display: flex;
           align-items: center;
           gap: 12px;
-          transition: all 0.2s ease;
+          position: relative;
+          overflow: hidden;
         }
 
-        .platform-block:hover {
-          border-color: rgba(16, 185, 129, 0.4);
-          background: rgba(20, 53, 42, 0.5);
-        }
-
-        .platform-logo-circle {
-          width: 36px;
-          height: 36px;
+        .platform-item span {
+          width: 32px;
+          height: 32px;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
-          color: #ffffff;
-          font-weight: 800;
-          font-size: 16px;
+          font-weight: bold;
+          font-size: 14px;
+          color: white;
+          flex-shrink: 0;
         }
 
-        .platform-logo-circle.facebook { background: #1877F2; }
-        .platform-logo-circle.youtube { background: #FF0000; }
-        .platform-logo-circle.website { background: #10B981; }
+        .platform-item.facebook span { background: #1877F2; }
+        .platform-item.youtube span { background: #FF0000; }
+        .platform-item.website span { background: #10B981; }
 
-        .platform-info {
+        .platform-item p {
+          margin: 0;
+          font-size: 10px;
+          color: var(--text-secondary);
+          text-transform: uppercase;
+          font-weight: 600;
+        }
+
+        .platform-item strong {
+          font-size: 18px;
+          font-weight: 800;
+          color: var(--text-primary);
+        }
+
+        .platform-item .sparkline {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 100%;
+          height: 3px;
+          background: var(--accent);
+          opacity: 0.4;
+        }
+
+        /* Robot stage */
+        .robot-stage {
+          background: #08130f;
+          border: 1px solid #11261f;
+          border-radius: 16px;
+          height: 480px;
+          position: relative;
+          overflow: hidden;
           display: flex;
           flex-direction: column;
+          justify-content: space-between;
+          padding: 24px;
+          box-shadow: 0 10px 30px rgba(5, 13, 10, 0.4);
         }
 
-        /* Step cards Empty state */
-        .step-grid {
+        .robot-glow {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 300px;
+          height: 300px;
+          background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
+          pointer-events: none;
+          z-index: 1;
+        }
+
+        .orbit {
+          position: absolute;
+          border-radius: 50%;
+          pointer-events: none;
+          top: 45%;
+          left: 50%;
+          z-index: 1;
+        }
+
+        .orbit-one {
+          width: 280px;
+          height: 280px;
+          border: 1.5px dashed rgba(234, 179, 8, 0.25);
+          margin-top: -140px;
+          margin-left: -140px;
+          transform: rotateX(72deg) rotateY(15deg);
+          animation: spinRing 20s linear infinite;
+        }
+
+        .orbit-two {
+          width: 340px;
+          height: 340px;
+          border: 1px solid rgba(16, 185, 129, 0.15);
+          margin-top: -170px;
+          margin-left: -170px;
+          transform: rotateX(75deg) rotateY(-15deg);
+          animation: spinRingInverse 25s linear infinite;
+        }
+
+        .robot-model-wrapper {
+          width: 100%;
+          height: 340px;
+          position: relative;
+          z-index: 2;
+        }
+
+        .robot-notes {
+          position: relative;
+          z-index: 3;
+          color: #a3c2b5;
+          font-size: 11.5px;
+          background: rgba(8, 19, 15, 0.7);
+          padding: 8px 12px;
+          border-radius: 8px;
+          border: 1px solid rgba(20, 53, 42, 0.5);
+        }
+
+        .robot-notes p {
+          margin: 0 0 6px 0;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          color: var(--warning);
+        }
+
+        .robot-notes ul {
+          margin: 0;
+          padding-left: 16px;
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+
+        /* Terminal panel empty state */
+        .terminal-panel {
+          background: #08130f;
+          border: 1px solid #11261f;
+          border-radius: 12px;
+          padding: 24px;
+          color: #eef7f2;
+        }
+
+        .terminal-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          border-bottom: 1px solid #14352a;
+          padding-bottom: 12px;
+          margin-bottom: 16px;
+        }
+
+        .terminal-header h3 {
+          margin: 0;
+          font-size: 14px;
+          font-weight: 800;
+          color: var(--warning);
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .terminal-panel p {
+          margin: 0 0 16px 0;
+          font-size: 13px;
+          color: #a3c2b5;
+          line-height: 1.5;
+        }
+
+        .command-grid {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
           gap: 16px;
-          margin-top: 14px;
         }
 
-        .step-card {
-          background: #ecebe4;
-          border: 1px solid rgba(20, 53, 42, 0.1);
-          border-radius: 10px;
+        .command-card {
+          background: rgba(20, 53, 42, 0.3);
+          border: 1px solid rgba(20, 53, 42, 0.6);
+          border-radius: 8px;
           padding: 16px;
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
+          position: relative;
+          padding-top: 32px;
         }
 
-        .step-badge {
-          width: 24px;
-          height: 24px;
+        .command-card .step {
+          position: absolute;
+          top: 12px;
+          left: 16px;
+          background: var(--warning);
+          color: #0b1a15;
+          font-weight: 800;
+          font-size: 10px;
+          width: 18px;
+          height: 18px;
           border-radius: 50%;
-          background: #14352a;
-          color: #ffffff;
-          font-size: 12px;
-          font-weight: 700;
           display: flex;
           align-items: center;
           justify-content: center;
         }
 
+        .command-card strong {
+          display: block;
+          font-size: 12.5px;
+          color: #ffffff;
+          margin-bottom: 8px;
+        }
+
+        .command-card code {
+          display: block;
+          background: #040a08;
+          padding: 8px 10px;
+          border-radius: 4px;
+          color: #10B981;
+          font-family: monospace;
+          font-size: 11px;
+          word-break: break-all;
+          white-space: pre-wrap;
+        }
+
         @keyframes spinRing {
-          0% { transform: rotateX(70deg) rotateY(12deg) rotate(0deg); }
-          100% { transform: rotateX(70deg) rotateY(12deg) rotate(360deg); }
+          0% { transform: rotateX(72deg) rotateY(15deg) rotate(0deg); }
+          100% { transform: rotateX(72deg) rotateY(15deg) rotate(360deg); }
         }
 
         @keyframes spinRingInverse {
-          0% { transform: rotateX(75deg) rotateY(-18deg) rotate(360deg); }
-          100% { transform: rotateX(75deg) rotateY(-18deg) rotate(0deg); }
+          0% { transform: rotateX(75deg) rotateY(-15deg) rotate(360deg); }
+          100% { transform: rotateX(75deg) rotateY(-15deg) rotate(0deg); }
         }
 
-        @media (max-width: 1024px) {
-          .immersive-stage {
-            position: relative;
-            width: 100%;
-            height: 380px;
-            top: 0;
-            right: 0;
+        @media (max-width: 960px) {
+          .hero-grid {
+            grid-template-columns: 1fr;
           }
-          .console-wrapper {
-            overflow-y: auto;
+          .command-grid {
+            grid-template-columns: 1fr;
           }
-          .metrics-strip {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-          }
-          .metric-block:nth-child(2) {
-            border-right: none;
+          .topbar {
+            flex-direction: column;
+            align-items: flex-start;
           }
         }
       `}} />
 
-      {/* Atmospheric glow effect background */}
-      <div className="ambient-glow" />
-
-      {/* 3D Immersive Robot Stage */}
-      <div className="immersive-stage">
-        <div className="orbit-ring ring-1" />
-        <div className="orbit-ring ring-2" />
-        
-        <div className="model-container">
-          <RobotViewer />
-        </div>
-      </div>
-
-      {/* Left/Middle Content Console */}
-      <div style={{ width: "55%", position: "relative", zIndex: 3, display: "flex", flexDirection: "column", gap: "16px" }}>
-        
-        {/* Header Section */}
-        <div className="topline" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "20px" }}>
-          <div>
-            <h1 style={{ fontSize: "3.2rem", fontWeight: "900", textTransform: "uppercase", letterSpacing: "-1px", lineHeight: "0.95", margin: 0, color: "#14352a" }}>
-              OVERVIEW
-            </h1>
-            <h1 style={{ fontSize: "2.4rem", fontWeight: "800", textTransform: "uppercase", letterSpacing: "-1px", lineHeight: "1.0", margin: "4px 0 0 0", color: "#EAB308" }}>
-              & CORPUS SUMMARY
-            </h1>
-            <p className="muted font-mono" style={{ margin: "12px 0 0 0", fontSize: "13px", color: "#56645c" }}>
-              {t.overviewDesc}
-            </p>
-          </div>
-          
-          <div className="toolbar" style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-            <Link className="button" href="/data-pulls" style={{ background: "#0b291d", color: "#ffffff", border: "1px solid #0b291d", fontWeight: "700", display: "flex", alignItems: "center", gap: "6px" }}>
-              <span style={{ fontSize: "10px" }}>▶</span> {t.runDataPull}
-            </Link>
-            <Link className="button" href="/database" style={{ background: "#ffffff", border: "1px solid #cbd5e1", color: "#334155", boxShadow: "0 2px 4px rgba(0,0,0,0.03)", display: "flex", alignItems: "center", gap: "6px" }}>
-              <span>📂</span> {t.browseDatabase}
-            </Link>
-            <Link className="button" href="/submit-data" style={{ background: "#ffffff", border: "1px solid #cbd5e1", color: "#334155", boxShadow: "0 2px 4px rgba(0,0,0,0.03)", display: "flex", alignItems: "center", gap: "6px" }}>
-              <span>📨</span> {t.submitRecord}
-            </Link>
-            <Link className="button" href="/admin/submitted-data" style={{ background: "#ffffff", border: "1px solid #cbd5e1", color: "#334155", boxShadow: "0 2px 4px rgba(0,0,0,0.03)", display: "flex", alignItems: "center", gap: "6px" }}>
-              <span>📋</span> {t.reviewQueue} <span style={{ color: "#10B981", fontWeight: "800" }}>({pendingReviewsCount})</span>
-            </Link>
-          </div>
+      {/* Header Section */}
+      <header className="topbar">
+        <div>
+          <p className="eyebrow">{lang === "th" ? "คอนโซลวิจัยระบบ" : "Research Console"}</p>
+          <h2>
+            {lang === "th" ? "ภาพรวม" : "Overview"}{" "}
+            <span>& {lang === "th" ? "สรุปคลังข้อมูล" : "Corpus Summary"}</span>
+          </h2>
+          <p className="subtitle">{t.overviewDesc}</p>
         </div>
 
-        {/* Database Offline warning alert container */}
-        {dbOffline && (
-          <div className="notice" style={{
-            backgroundColor: "#fffdf5",
-            border: "1px solid #fef08a",
-            borderLeft: "4px solid #EAB308",
-            borderRadius: "8px",
-            padding: "14px 20px",
-            display: "flex",
-            alignItems: "center",
-            gap: "14px",
-            boxShadow: "0 4px 12px rgba(234, 179, 8, 0.05)",
-            margin: "0",
-            maxWidth: "680px"
-          }}>
-            <span style={{ fontSize: "20px" }}>⚠️</span>
-            <div style={{ fontSize: "13.5px", color: "#451a03", lineHeight: "1.4" }}>
-              <strong>Database Offline:</strong> Live PostgreSQL is unavailable. Showing sample atlas records for layout preview.
+        <div className="actions">
+          <Link className="button primary" href="/data-pulls">
+            <span style={{ fontSize: "10px" }}>▶</span> {t.runDataPull}
+          </Link>
+          <Link className="button" href="/database">
+            <span>📂</span> {t.browseDatabase}
+          </Link>
+          <Link className="button" href="/submit-data">
+            <span>📨</span> {t.submitRecord}
+          </Link>
+          <Link className="button" href="/admin/submitted-data">
+            <span>📋</span> {t.reviewQueue}{" "}
+            <span style={{ color: "var(--success)", fontWeight: "800" }}>
+              ({pendingReviewsCount})
+            </span>
+          </Link>
+        </div>
+      </header>
+
+      {/* Main Hero grid layout */}
+      <div className="hero-grid">
+        <section className="dashboard-stack">
+          {/* Database Offline warning alert container */}
+          {dbOffline && (
+            <div className="alert">
+              <strong>Database Offline:</strong> Live PostgreSQL connection is unavailable. Displaying high-fidelity simulated research data.
+            </div>
+          )}
+
+          {/* Primary Metrics Row */}
+          <div className="metrics-row">
+            {/* Metric 1 */}
+            <article className="metric-card">
+              <div className="metric-icon">◈</div>
+              <div>
+                <p>{t.totalSources}</p>
+                <strong>{sourcesCount}</strong>
+                <small>{lang === "th" ? `อนุมัติแล้ว: ${acceptedCount}` : `Accepted: ${acceptedCount}`}</small>
+              </div>
+            </article>
+
+            {/* Metric 2 */}
+            <article className="metric-card">
+              <div className="metric-icon">◈</div>
+              <div>
+                <p>{t.robotModels}</p>
+                <strong>{robotsCount}</strong>
+                <small>{lang === "th" ? "รุ่นที่ลงทะเบียน" : "Registered models"}</small>
+              </div>
+            </article>
+
+            {/* Metric 3 */}
+            <article className="metric-card">
+              <div className="metric-icon">◈</div>
+              <div>
+                <p>{t.ownedUnits}</p>
+                <strong>{inventoryCount}</strong>
+                <small>{lang === "th" ? "คลังอุปกรณ์ของทีม" : "Team inventory"}</small>
+              </div>
+            </article>
+
+            {/* Metric 4 */}
+            <article className="metric-card">
+              <div className="metric-icon">◈</div>
+              <div>
+                <p>{t.contributors}</p>
+                <strong>{contributionsCount}</strong>
+                <small>{lang === "th" ? "คลังโค้ดและเอกสาร" : "Repos & papers"}</small>
+              </div>
+            </article>
+          </div>
+
+          {/* Secondary Status Row */}
+          <div className="status-row">
+            {/* Pipeline Status */}
+            <div className="glass-card">
+              <p className="card-label">{t.pipelineStatus}</p>
+              {latestPipelineRun ? (
+                <div className="success-pill">
+                  {latestPipelineRun.pipelineName}: {latestPipelineRun.status}
+                </div>
+              ) : (
+                <div className="success-pill" style={{ background: "rgba(100, 116, 139, 0.1)", color: "#94a3b8", borderColor: "#475569" }}>
+                  No active runs
+                </div>
+              )}
+              <small>{lastUpdatedStr}</small>
+            </div>
+
+            {/* Temporal Coverage */}
+            <div className="glass-card">
+              <p className="card-label">{t.temporalCoverage}</p>
+              <h3>{yearRangeStr}</h3>
+              <small>{t.activeMediaPubs}</small>
             </div>
           </div>
-        )}
 
-        {/* Primary Metrics Strip */}
-        <section className="metrics-strip">
-          {/* Metric 1 */}
-          <div className="metric-block">
-            <div className="metric-icon-badge">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-            </div>
-            <div className="metric-info">
-              <span className="metric-label">{t.totalSources}</span>
-              <span className="metric-val">{sourcesCount}</span>
-              <span className="metric-sub green-highlight">Accepted: {acceptedCount}</span>
-            </div>
-          </div>
+          {/* Sources by Ingestion Platform */}
+          <div className="platform-card">
+            <h3>{t.sourcesByPlatform}</h3>
 
-          {/* Metric 2 */}
-          <div className="metric-block">
-            <div className="metric-icon-badge">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
-            </div>
-            <div className="metric-info">
-              <span className="metric-label">{t.robotModels}</span>
-              <span className="metric-val">{robotsCount}</span>
-              <span className="metric-sub">Registered models</span>
-            </div>
-          </div>
+            <div className="platform-grid">
+              {platforms.map((p) => {
+                const name = String(p.platform || "unknown").toLowerCase();
+                let logoClass = "website";
+                let initials = "W";
 
-          {/* Metric 3 */}
-          <div className="metric-block">
-            <div className="metric-icon-badge">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            </div>
-            <div className="metric-info">
-              <span className="metric-label">{t.ownedUnits}</span>
-              <span className="metric-val">{inventoryCount}</span>
-              <span className="metric-sub">Team inventory</span>
-            </div>
-          </div>
+                if (name.includes("facebook")) {
+                  logoClass = "facebook";
+                  initials = "f";
+                } else if (name.includes("youtube")) {
+                  logoClass = "youtube";
+                  initials = "▶";
+                } else if (name.includes("website")) {
+                  logoClass = "website";
+                  initials = "◎";
+                }
 
-          {/* Metric 4 */}
-          <div className="metric-block">
-            <div className="metric-icon-badge">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 6v6l4 2"/></svg>
-            </div>
-            <div className="metric-info">
-              <span className="metric-label">{t.contributors}</span>
-              <span className="metric-val">{contributionsCount}</span>
-              <span className="metric-sub">Repos & papers</span>
+                return (
+                  <div className={`platform-item ${logoClass}`} key={p.platform || "unknown"}>
+                    <span>{initials}</span>
+                    <div>
+                      <p style={{ textTransform: "capitalize" }}>{p.platform || "unknown"}</p>
+                      <strong>{p._count?._all ?? p._count ?? 0}</strong>
+                    </div>
+                    <div className="sparkline" />
+                  </div>
+                );
+              })}
             </div>
           </div>
         </section>
 
-        {/* Secondary Status Row */}
-        <div className="status-row">
-          {/* Pipeline Status */}
-          <div className="status-card">
-            <div className="status-header">
-              <span>{t.pipelineStatus}</span>
-            </div>
-            <div className="status-icon-top">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-            </div>
-            <div style={{ flex: 1, display: "flex", alignItems: "center", marginTop: "4px" }}>
-              {latestPipelineRun ? (
-                <div className="status-badge-pill">
-                  {latestPipelineRun.pipelineName}: {latestPipelineRun.status}
-                </div>
-              ) : (
-                <div className="status-badge-pill" style={{ color: "#94a3b8", borderColor: "#475569" }}>
-                  No active pipeline runs
-                </div>
-              )}
-            </div>
-            <div style={{ fontSize: "10.5px", color: "#78998c", marginTop: "10px" }}>
-              {lastUpdatedStr}
-            </div>
+        {/* 3D Immersive Robot Embodiment View */}
+        <section className="robot-stage">
+          <div className="orbit orbit-one" />
+          <div className="orbit orbit-two" />
+          <div className="robot-glow" />
+
+          <div className="robot-model-wrapper">
+            <RobotViewer />
           </div>
 
-          {/* Temporal Coverage */}
-          <div className="status-card">
-            <div className="status-header">
-              <span>{t.temporalCoverage}</span>
-            </div>
-            <div className="status-icon-top">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            </div>
-            <div className="status-val" style={{ marginTop: "4px", fontSize: "28px", fontWeight: "800" }}>
-              {yearRangeStr}
-            </div>
-            <div style={{ fontSize: "10.5px", color: "#78998c", marginTop: "10px" }}>
-              {t.activeMediaPubs}
-            </div>
+          <div className="robot-notes">
+            <p>{lang === "th" ? "มุมมองสัญรูปหุ่นยนต์โต้ตอบได้" : "Interactive embodiment view"}</p>
+            <ul>
+              <li>{lang === "th" ? "ลากเพื่อหมุนมุมกล้อง" : "Drag to orbit"}</li>
+              <li>{lang === "th" ? "เลื่อนเมาส์หรือหยิกนิ้วเพื่อย่อขยาย" : "Scroll or pinch to zoom"}</li>
+              <li>{lang === "th" ? "การจำลองทางจลนศาสตร์ในโหมดวนซ้ำ" : "Kinematics animation on active loop"}</li>
+            </ul>
           </div>
-        </div>
-
-        {/* Sources by Ingestion Platform */}
-        <div className="platform-panel">
-          <h3 style={{ margin: 0, fontSize: "11px", fontWeight: "800", color: "#ffffff", textTransform: "uppercase", letterSpacing: "0.8px" }}>
-            {t.sourcesByPlatform}
-          </h3>
-          <div className="platform-grid">
-            {platforms.map((p) => {
-              const name = String(p.platform || "unknown").toLowerCase();
-              let logoClass = "website";
-              let initials = "W";
-              let sparklineD = "M0 12 Q15 5 30 16 T60 6"; // Default Website Sparkline
-
-              if (name.includes("facebook")) {
-                logoClass = "facebook";
-                initials = "f";
-                sparklineD = "M0 18 Q15 5 30 14 T60 8";
-              } else if (name.includes("youtube")) {
-                logoClass = "youtube";
-                initials = "Y";
-                sparklineD = "M0 15 Q15 18 30 8 T60 12";
-              }
-
-              return (
-                <div className="platform-block" key={p.platform || "unknown"}>
-                  <div className={`platform-logo-circle ${logoClass}`}>
-                    {initials}
-                  </div>
-                  <div className="platform-info">
-                    <span className="muted" style={{ textTransform: "capitalize", fontSize: "10.5px", color: "#78998c", fontWeight: "600" }}>
-                      {p.platform || "unknown"}
-                    </span>
-                    <div style={{ fontSize: "20px", fontWeight: "800", color: "#ffffff", marginTop: "2px", lineHeight: "1" }}>
-                      {p._count._all}
-                    </div>
-                  </div>
-                  
-                  {/* Decorative sparkline chart */}
-                  <svg width="60" height="20" viewBox="0 0 60 20" style={{ marginLeft: "auto", alignSelf: "center" }}>
-                    <path d={sparklineD} fill="none" stroke="#10B981" strokeWidth="2.5" strokeLinecap="round" />
-                  </svg>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Database Empty State Guide */}
-        {robotsCount === 0 && (
-          <div className="panel" style={{
-            background: "#ecebe4",
-            border: "1px solid rgba(20, 53, 42, 0.15)",
-            boxShadow: "0 4px 14px rgba(0, 0, 0, 0.03)",
-            borderRadius: "14px",
-            padding: "20px 24px",
-            marginTop: "10px",
-            maxWidth: "680px"
-          }}>
-            <h3 style={{ margin: 0, fontSize: "13px", fontWeight: "800", color: "#14352a", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-              {t.emptyStateTitle}
-            </h3>
-            <p className="muted" style={{ fontSize: "12px", margin: "6px 0 14px 0", color: "#4b534f", lineHeight: "1.4" }}>
-              If there are no robot models or source signals populated, run the following CLI commands in the root of the project to initialize:
-            </p>
-            <div className="step-grid">
-              <div className="step-card">
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <div className="step-badge">1</div>
-                  <span style={{ fontSize: "12px", fontWeight: "700", color: "#14352a" }}>Initialize DB tables</span>
-                </div>
-                <code style={{ fontSize: "10.5px", background: "#0b130f", padding: "8px 10px", borderRadius: "6px", color: "#ffffff", fontFamily: "monospace", display: "block", marginTop: "4px" }}>
-                  python -m humanoid_atlas db init
-                </code>
-              </div>
-              <div className="step-card">
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <div className="step-badge">2</div>
-                  <span style={{ fontSize: "12px", fontWeight: "700", color: "#14352a" }}>Seed robot models</span>
-                </div>
-                <code style={{ fontSize: "10.5px", background: "#0b130f", padding: "8px 10px", borderRadius: "6px", color: "#ffffff", fontFamily: "monospace", display: "block", marginTop: "4px", overflowX: "auto" }}>
-                  python -m humanoid_atlas ingest seeds --file data/seeds/robot_models.seed.yml
-                </code>
-              </div>
-              <div className="step-card">
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <div className="step-badge">3</div>
-                  <span style={{ fontSize: "12px", fontWeight: "700", color: "#14352a" }}>Seed inventory and relations</span>
-                </div>
-                <code style={{ fontSize: "10.5px", background: "#0b130f", padding: "8px 10px", borderRadius: "6px", color: "#ffffff", fontFamily: "monospace", display: "block", marginTop: "4px", overflowX: "auto" }}>
-                  python -m humanoid_atlas ingest seeds --file data/seeds/inventory.seed.yml
-                </code>
-              </div>
-            </div>
-          </div>
-        )}
-
+        </section>
       </div>
-    </div>
+
+      {/* Database Empty State Guide */}
+      <section className="terminal-panel">
+        <div className="terminal-header">
+          <h3>{t.emptyStateTitle}</h3>
+          <CopyCommands commands={cliCommands} />
+        </div>
+
+        <p>{t.emptyStateDesc}</p>
+
+        <div className="command-grid">
+          <div className="command-card">
+            <div className="step">1</div>
+            <strong>Initialize DB tables</strong>
+            <code>python -m humanoid_atlas db init</code>
+          </div>
+          <div className="command-card">
+            <div className="step">2</div>
+            <strong>Seed robot models</strong>
+            <code>python -m humanoid_atlas ingest seeds --file data/seeds/robot_models.seed.yml</code>
+          </div>
+          <div className="command-card">
+            <div className="step">3</div>
+            <strong>Seed inventory and relations</strong>
+            <code>python -m humanoid_atlas ingest seeds --file data/seeds/inventory.seed.yml</code>
+          </div>
+        </div>
+      </section>
+    </main>
   );
 }
