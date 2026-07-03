@@ -27,30 +27,7 @@ export default async function RobotsPage() {
   } catch (error) {
     console.error("Database query failed in robots page:", error);
     dbOffline = true;
-    robots = [
-      {
-        id: "fallback-dinsaw",
-        canonicalName: "Dinsaw Robot",
-        description: "Thai eldercare and service robot seed record. Connect Prisma and run seed to replace this fallback.",
-        robotType: "eldercare_robot",
-        thailandStatus: "developed_in_thailand",
-        manufacturer: "CT Asia Robotics",
-        developerOrg: "CT Asia Robotics",
-        primaryUseCase: "eldercare and hospital assistance",
-        officialUrl: null
-      },
-      {
-        id: "fallback-nao",
-        canonicalName: "NAO",
-        description: "Imported humanoid platform used as a registry example until database records are available.",
-        robotType: "humanoid_full_body",
-        thailandStatus: "observed_in_thailand",
-        manufacturer: "SoftBank Robotics",
-        developerOrg: null,
-        primaryUseCase: "education and HRI research",
-        officialUrl: null
-      }
-    ];
+    robots = [];
   }
 
   return (
@@ -59,7 +36,7 @@ export default async function RobotsPage() {
       <p className="muted" style={{ marginBottom: "18px" }}>{t.robotsDesc}</p>
       {dbOffline && (
         <div className="notice" style={{ marginBottom: 16 }}>
-          Live database records are unavailable. Showing fallback robot registry examples.
+          Live database records are unavailable. No substitute robot registry records are being shown.
         </div>
       )}
       <div className="cards">

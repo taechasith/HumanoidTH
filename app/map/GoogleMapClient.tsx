@@ -2,8 +2,8 @@
 
 import Script from "next/script";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ExternalLink, MapPin } from "lucide-react";
-import type { SourceMapPoint } from "@/lib/map-points";
+import { MapPin } from "lucide-react";
+import type { ContributionMapPoint } from "./actions";
 
 declare global {
   interface Window {
@@ -13,11 +13,11 @@ declare global {
 
 type Props = {
   apiKey: string;
-  points: SourceMapPoint[];
+  points: ContributionMapPoint[];
 };
 
-function centerFor(points: SourceMapPoint[]) {
-  if (!points.length) return { lat: 13.7563, lng: 100.5018 };
+function centerFor(points: ContributionMapPoint[]) {
+  if (!points.length) return { lat: 13.7563, lng: 100.5018 }; // Bangkok default center
   return {
     lat: points.reduce((sum, point) => sum + point.latitude, 0) / points.length,
     lng: points.reduce((sum, point) => sum + point.longitude, 0) / points.length
@@ -27,7 +27,7 @@ function centerFor(points: SourceMapPoint[]) {
 export default function GoogleMapClient({ apiKey, points }: Props) {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const [scriptReady, setScriptReady] = useState(false);
-  const [activePoint, setActivePoint] = useState<SourceMapPoint | null>(points[0] ?? null);
+  const [activePoint, setActivePoint] = useState<ContributionMapPoint | null>(points[0] ?? null);
   const mapCenter = useMemo(() => centerFor(points), [points]);
 
   useEffect(() => {
@@ -35,7 +35,7 @@ export default function GoogleMapClient({ apiKey, points }: Props) {
 
     const map = new window.google.maps.Map(mapRef.current, {
       center: mapCenter,
-      zoom: points.length > 1 ? 3 : 8,
+      zoom: 6, // Focused zoom level for Thailand
       mapTypeControl: false,
       streetViewControl: false,
       fullscreenControl: true
@@ -57,10 +57,11 @@ export default function GoogleMapClient({ apiKey, points }: Props) {
       marker.addListener("click", () => {
         setActivePoint(point);
         infoWindow.setContent(`
-          <div style="max-width:260px">
-            <strong>${point.title.replace(/[<>&"]/g, "")}</strong>
-            <div>${point.host} / ${point.ipAddress}</div>
-            <div>${point.locationLabel}</div>
+          <div style="max-width:260px; font-family:var(--font-sans); color:var(--text-primary); padding:2px;">
+            <strong style="font-size:13px; display:block; margin-bottom:2px;">${point.title.replace(/[<>&"]/g, "")}</strong>
+            <span style="font-size:11px; font-weight:700; color:var(--accent); text-transform:uppercase;">${point.contributorType}</span>
+            <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">${point.locationLabel}</div>
+            <div style="margin-top:6px; font-size:11px; line-height:1.45; border-top:1px solid #eee; padding-top:4px;">${point.summary.replace(/[<>&"]/g, "")}</div>
           </div>
         `);
         infoWindow.open({ anchor: marker, map });
@@ -74,13 +75,13 @@ export default function GoogleMapClient({ apiKey, points }: Props) {
 
   if (!apiKey) {
     return (
-      <div className="panel" style={{ minHeight: 420, display: "grid", placeItems: "center", textAlign: "center" }}>
+      <div className="panel" style={{ minHeight: 520, display: "grid", placeItems: "center", textAlign: "center" }}>
         <div>
-          <MapPin size={34} aria-hidden="true" />
+          <MapPin size={34} aria-hidden="true" style={{ color: "var(--accent)" }} />
           <h2 style={{ marginTop: 10 }}>Google Maps API key required</h2>
-          <p className="muted" style={{ maxWidth: 520 }}>
+          <p className="muted" style={{ maxWidth: 520, margin: "8px auto" }}>
             Add <code>NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</code> to the environment to render the live Google Map.
-            Stored IP geolocation points are still listed below.
+            AI-mapped contribution clusters are still listed below.
           </p>
         </div>
       </div>
@@ -96,22 +97,34 @@ export default function GoogleMapClient({ apiKey, points }: Props) {
       />
       <div className="map-layout">
         <div ref={mapRef} className="panel" style={{ minHeight: 520, padding: 0, overflow: "hidden" }} />
-        <aside className="panel" style={{ minHeight: 520 }}>
-          <h2>Selected source</h2>
+        <aside className="panel" style={{ minHeight: 520, display: "flex", flexDirection: "column", gap: 12 }}>
+          <h2>Selected Cluster</h2>
           {activePoint ? (
-            <div style={{ display: "grid", gap: 10 }}>
-              <strong>{activePoint.title}</strong>
-              <span className="badge">{activePoint.platform}</span>
-              <div className="muted">{activePoint.locationLabel}</div>
-              <div><strong>Host:</strong> {activePoint.host}</div>
-              <div><strong>IP:</strong> {activePoint.ipAddress}</div>
-              <a className="button" href={activePoint.url} target="_blank" rel="noreferrer">
-                <ExternalLink size={16} aria-hidden="true" />
-                Open source
-              </a>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <div>
+                <strong style={{ fontSize: 16, display: "block" }}>{activePoint.title}</strong>
+                <span className="badge" style={{ marginTop: 6, display: "inline-block", background: "rgba(74, 124, 89, 0.1)", color: "var(--accent)", borderColor: "rgba(74, 124, 89, 0.2)" }}>{activePoint.contributorType}</span>
+              </div>
+              <div className="muted" style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13 }}>
+                <span>📍</span> {activePoint.locationLabel}
+              </div>
+              
+              <div style={{ borderTop: "1px solid var(--border)", paddingTop: 12, marginTop: 4 }}>
+                <strong style={{ fontSize: 11, textTransform: "uppercase", color: "var(--text-secondary)", letterSpacing: 0.5 }}>Ecosystem Summary</strong>
+                <p style={{ margin: "6px 0 0 0", fontSize: 13.5, lineHeight: 1.5, color: "var(--text-primary)" }}>{activePoint.summary}</p>
+              </div>
+
+              <div style={{ borderTop: "1px solid var(--border)", paddingTop: 12, marginTop: 4 }}>
+                <strong style={{ fontSize: 11, textTransform: "uppercase", color: "var(--text-secondary)", letterSpacing: 0.5 }}>Connected Projects ({activePoint.contributionCount})</strong>
+                <ul style={{ margin: "8px 0 0 0", paddingLeft: 16, fontSize: 13, display: "grid", gap: 6 }}>
+                  {activePoint.detailsList.map((item, idx) => (
+                    <li key={idx} style={{ lineHeight: 1.4 }}>{item}</li>
+                  ))}
+                </ul>
+              </div>
             </div>
           ) : (
-            <div className="empty">No mapped source selected.</div>
+            <div className="empty">No location cluster selected. Click a map marker to explore humanoid contributions.</div>
           )}
         </aside>
       </div>

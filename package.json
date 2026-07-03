@@ -16,6 +16,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "node ./node_modules/typescript/bin/tsc --noEmit",
+    "check:no-mock-data": "tsx scripts/assert-no-mock-data.ts",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",

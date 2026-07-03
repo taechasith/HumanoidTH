@@ -4,7 +4,20 @@ import { prisma } from "@/lib/prisma";
 import RobotViewer from "./components/RobotViewer";
 import CopyCommands from "./components/CopyCommands";
 import { getTranslation } from "@/lib/translations";
-import { Database, Bot, Box, Users, Facebook, Youtube, Github, Globe } from "lucide-react";
+import {
+  Bot,
+  Box,
+  ClipboardList,
+  Database,
+  Facebook,
+  FolderOpen,
+  Github,
+  Globe,
+  Play,
+  Send,
+  Users,
+  Youtube
+} from "lucide-react";
 
 
 export const dynamic = "force-dynamic";
@@ -14,19 +27,15 @@ export default async function OverviewPage() {
   const lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
   const t = getTranslation(lang);
 
-  let sourcesCount = 154;
-  let acceptedCount = 132;
-  let robotsCount = 3;
-  let contributionsCount = 8;
-  let inventoryCount = 2;
-  let pendingReviewsCount = 0;
-  let platforms: any[] = [
-    { platform: "Facebook", _count: { _all: 84 } },
-    { platform: "Youtube", _count: { _all: 41 } },
-    { platform: "Website", _count: { _all: 29 } }
-  ];
-  let yearRangeStr = "2020 – 2026";
-  let latestPipelineRun: any = { pipelineName: "RSS Ingestion", status: "SUCCEEDED", finishedAt: new Date("2026-07-02T12:00:00") };
+  let sourcesCount: number | null = null;
+  let acceptedCount: number | null = null;
+  let robotsCount: number | null = null;
+  let contributionsCount: number | null = null;
+  let inventoryCount: number | null = null;
+  let pendingReviewsCount: number | null = null;
+  let platforms: any[] = [];
+  let yearRangeStr = "No date data";
+  let latestPipelineRun: any = null;
   let dbOffline = false;
 
   try {
@@ -73,7 +82,7 @@ export default async function OverviewPage() {
     const maxYear = dateRange._max.publishedAt ? dateRange._max.publishedAt.getFullYear() : "N/A";
     yearRangeStr = minYear !== "N/A" || maxYear !== "N/A" ? `${minYear} – ${maxYear}` : "No date data";
   } catch (error) {
-    console.error("Database connection failed, falling back to simulated research data:", error);
+    console.error("Database connection failed in overview page:", error);
     dbOffline = true;
   }
 
@@ -90,21 +99,25 @@ export default async function OverviewPage() {
     "python -m humanoid_atlas ingest seeds --file data/seeds/inventory.seed.yml"
   ];
 
+  const formatMetric = (value: number | null) => value?.toLocaleString() ?? "Unavailable";
+
   return (
     <main className="atlas-page">
       <style dangerouslySetInnerHTML={{ __html: `
         .atlas-page {
           display: grid;
           grid-template-areas:
-            "header robot"
+            "header header"
             "stack robot"
             "terminal terminal";
-          grid-template-columns: 1.2fr 1fr;
-          gap: 24px;
+          grid-template-columns: minmax(560px, 0.98fr) minmax(420px, 1.02fr);
+          column-gap: 34px;
+          row-gap: 18px;
           width: 100%;
           position: relative;
           z-index: 10;
           font-family: var(--font-sans);
+          min-height: calc(100vh - 44px);
         }
 
         .mobile-only {
@@ -121,18 +134,18 @@ export default async function OverviewPage() {
           align-items: flex-start;
           gap: 24px;
           border-bottom: 1px solid var(--border);
-          padding-bottom: 24px;
+          padding-bottom: 19px;
         }
 
         .topbar h1 {
-          font-family: var(--font-serif);
-          font-size: 2.8rem;
-          font-weight: 800;
+          font-family: var(--font-sans);
+          font-size: clamp(36px, 3vw, 48px);
+          font-weight: 950;
           text-transform: uppercase;
-          letter-spacing: -1px;
-          line-height: 1.1;
-          margin: 8px 0;
-          color: var(--accent);
+          letter-spacing: 0;
+          line-height: 0.98;
+          margin: 6px 0 0;
+          color: #07150f;
         }
 
         .topbar h1 span {
@@ -150,17 +163,19 @@ export default async function OverviewPage() {
         }
 
         .subtitle {
-          font-size: 13.5px;
-          color: var(--text-secondary);
-          margin: 8px 0 0 0;
+          font-size: 13px;
+          color: #17221d;
+          margin: 9px 0 0 0;
           max-width: 600px;
           line-height: 1.5;
         }
 
         .topbar .actions {
           display: flex;
-          gap: 10px;
+          gap: 9px;
           flex-wrap: wrap;
+          justify-content: flex-end;
+          padding-top: 0;
         }
 
         .topbar .actions .button {
@@ -168,7 +183,11 @@ export default async function OverviewPage() {
           display: flex;
           align-items: center;
           gap: 6px;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+          min-height: 42px;
+          border-radius: 7px;
+          border-color: rgba(177, 143, 47, 0.35);
+          color: #08150f;
+          box-shadow: 0 8px 18px rgba(112, 92, 48, 0.07);
           transition: all 0.2s ease;
         }
 
@@ -176,11 +195,16 @@ export default async function OverviewPage() {
           transform: translateY(-1px);
         }
 
+        .topbar .actions .button > span:first-of-type {
+          display: none;
+        }
+
         .dashboard-stack {
           grid-area: stack;
           display: flex;
           flex-direction: column;
-          gap: 16px;
+          gap: 14px;
+          max-width: 760px;
         }
 
         /* Alert styling */
@@ -199,18 +223,19 @@ export default async function OverviewPage() {
         .metrics-row {
           display: grid;
           grid-template-columns: repeat(2, 1fr);
-          gap: 16px;
+          gap: 14px;
         }
 
         .metric-card {
           background: var(--surface);
-          border: 1px solid var(--border);
-          border-radius: 12px;
-          padding: 18px 20px;
+          border: 1px solid rgba(74, 124, 89, 0.22);
+          border-radius: 10px;
+          min-height: 98px;
+          padding: 18px 17px;
           display: flex;
-          gap: 16px;
+          gap: 14px;
           align-items: flex-start;
-          box-shadow: var(--shadow-soft);
+          box-shadow: 0 10px 24px rgba(31, 37, 33, 0.1);
           transition: all 0.2s ease;
         }
 
@@ -223,10 +248,10 @@ export default async function OverviewPage() {
         .metric-icon {
           font-size: 18px;
           color: #ffffff;
-          background: var(--accent);
-          width: 44px;
-          height: 44px;
-          border-radius: 50%;
+          background: #12a879;
+          width: 38px;
+          height: 38px;
+          border-radius: 8px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -237,16 +262,16 @@ export default async function OverviewPage() {
           margin: 0;
           font-size: 11px;
           text-transform: uppercase;
-          letter-spacing: 0.5px;
-          color: var(--text-secondary);
-          font-weight: 600;
+          letter-spacing: 0;
+          color: #07150f;
+          font-weight: 850;
         }
 
         .metric-card strong {
           display: block;
-          font-size: 28px;
-          font-weight: 800;
-          color: var(--text-primary);
+          font-size: 29px;
+          font-weight: 950;
+          color: #07150f;
           margin-top: 4px;
           line-height: 1.1;
         }
@@ -262,16 +287,16 @@ export default async function OverviewPage() {
         .status-row {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 16px;
+          gap: 14px;
         }
 
         .glass-card {
-          background: rgba(255, 255, 255, 0.6);
-          backdrop-filter: blur(12px);
-          border: 1px solid rgba(255, 255, 255, 0.4);
-          border-radius: 12px;
-          padding: 18px 20px;
-          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+          background: rgba(255, 255, 255, 0.72);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(74, 124, 89, 0.12);
+          border-radius: 10px;
+          padding: 17px;
+          box-shadow: 0 10px 22px rgba(31, 37, 33, 0.07);
           display: flex;
           flex-direction: column;
           justify-content: space-between;
@@ -293,7 +318,7 @@ export default async function OverviewPage() {
           color: var(--success);
           font-size: 12px;
           font-weight: 700;
-          padding: 6px 12px;
+          padding: 6px 13px;
           border-radius: 20px;
           align-self: flex-start;
           letter-spacing: 0.2px;
@@ -301,9 +326,9 @@ export default async function OverviewPage() {
 
         .glass-card h3 {
           margin: 0;
-          font-size: 24px;
-          font-weight: 800;
-          color: var(--text-primary);
+          font-size: 25px;
+          font-weight: 950;
+          color: #07150f;
         }
 
         .glass-card small {
@@ -316,10 +341,10 @@ export default async function OverviewPage() {
         /* Platform Ingestion Card */
         .platform-card {
           background: var(--surface);
-          border: 1px solid var(--border);
-          border-radius: 12px;
-          padding: 20px;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+          border: 1px solid rgba(74, 124, 89, 0.18);
+          border-radius: 10px;
+          padding: 20px 20px 18px;
+          box-shadow: 0 9px 22px rgba(31, 37, 33, 0.06);
         }
 
         .platform-card h3 {
@@ -334,14 +359,16 @@ export default async function OverviewPage() {
         .platform-grid {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
-          gap: 12px;
+          gap: 11px;
         }
 
         .platform-item {
-          background: var(--background);
-          border: 1px solid var(--border);
-          border-radius: 8px;
-          padding: 12px;
+          background: linear-gradient(180deg, rgba(255,255,255,0.75), rgba(244,240,232,0.78));
+          border: 1px solid rgba(74, 124, 89, 0.23);
+          border-bottom-color: rgba(74, 124, 89, 0.42);
+          border-radius: 7px;
+          min-height: 56px;
+          padding: 10px 12px;
           display: flex;
           align-items: center;
           gap: 12px;
@@ -350,8 +377,8 @@ export default async function OverviewPage() {
         }
 
         .platform-item span {
-          width: 32px;
-          height: 32px;
+          width: 31px;
+          height: 31px;
           border-radius: 50%;
           display: flex;
           align-items: center;
@@ -369,15 +396,15 @@ export default async function OverviewPage() {
         .platform-item p {
           margin: 0;
           font-size: 10px;
-          color: var(--text-secondary);
-          text-transform: uppercase;
-          font-weight: 600;
+          color: #07150f;
+          text-transform: capitalize;
+          font-weight: 650;
         }
 
         .platform-item strong {
-          font-size: 18px;
-          font-weight: 800;
-          color: var(--text-primary);
+          font-size: 19px;
+          font-weight: 950;
+          color: #07150f;
         }
 
         .platform-item .sparkline {
@@ -396,7 +423,8 @@ export default async function OverviewPage() {
           background: transparent;
           border: none;
           border-radius: 0;
-          height: 640px;
+          height: min(68vh, 680px);
+          min-height: 560px;
           position: relative;
           overflow: visible;
           display: flex;
@@ -404,6 +432,7 @@ export default async function OverviewPage() {
           justify-content: center;
           align-items: center;
           padding: 0;
+          margin-top: 12px;
           box-shadow: none;
         }
 
@@ -412,9 +441,9 @@ export default async function OverviewPage() {
           top: 50%;
           left: 50%;
           transform: translate(-50%, -50%);
-          width: 600px;
-          height: 600px;
-          background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
+          width: 680px;
+          height: 680px;
+          background: radial-gradient(circle, rgba(16, 185, 129, 0.17) 0%, rgba(16, 185, 129, 0.05) 38%, transparent 72%);
           pointer-events: none;
           z-index: 1;
         }
@@ -429,34 +458,48 @@ export default async function OverviewPage() {
         }
 
         .orbit-one {
-          width: 520px;
-          height: 520px;
-          border: 1.5px dashed rgba(234, 179, 8, 0.25);
-          margin-top: -260px;
-          margin-left: -260px;
+          width: 620px;
+          height: 360px;
+          border: 2px solid rgba(16, 185, 129, 0.36);
+          margin-top: -150px;
+          margin-left: -310px;
           transform: rotateX(72deg) rotateY(15deg);
-          animation: spinRing 20s linear infinite;
+          animation: spinRing 24s linear infinite;
         }
 
         .orbit-two {
-          width: 640px;
-          height: 640px;
-          border: 1px solid rgba(16, 185, 129, 0.15);
-          margin-top: -320px;
-          margin-left: -320px;
+          width: 720px;
+          height: 440px;
+          border: 1px solid rgba(16, 185, 129, 0.22);
+          margin-top: -185px;
+          margin-left: -360px;
           transform: rotateX(75deg) rotateY(-15deg);
-          animation: spinRingInverse 25s linear infinite;
+          animation: spinRingInverse 29s linear infinite;
+        }
+
+        .orbit::after {
+          content: "";
+          position: absolute;
+          right: 9%;
+          top: 49%;
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          background: #99f6d4;
+          box-shadow: 0 0 18px #38e4a9, 0 0 34px rgba(56, 228, 169, 0.5);
         }
 
         .robot-model-wrapper {
-          width: 100%;
-          height: 100%;
+          width: min(760px, 112%);
+          height: 112%;
           position: relative;
           z-index: 2;
           overflow: hidden;
           display: flex;
           align-items: flex-start;
           justify-content: center;
+          transform: translateY(-8px) scale(1.08);
+          transform-origin: center top;
         }
 
         /* Terminal panel empty state */
@@ -465,8 +508,9 @@ export default async function OverviewPage() {
           background: #08130f;
           border: 1px solid #11261f;
           border-radius: 12px;
-          padding: 24px;
+          padding: 22px;
           color: #eef7f2;
+          margin-top: 2px;
         }
 
         .terminal-header {
@@ -567,6 +611,7 @@ export default async function OverviewPage() {
             display: none;
           }
           .topbar {
+            display: block;
             border-bottom: none;
             padding-bottom: 0;
             margin-bottom: 0;
@@ -585,6 +630,7 @@ export default async function OverviewPage() {
           }
           .robot-stage {
             height: 180px;
+            min-height: 180px;
             background: var(--surface-muted);
             border: 1px solid var(--border);
             border-radius: 12px;
@@ -599,6 +645,11 @@ export default async function OverviewPage() {
           .robot-stage .orbit,
           .robot-stage .robot-glow {
             display: none !important;
+          }
+          .robot-model-wrapper {
+            width: 100%;
+            height: 100%;
+            transform: none;
           }
           .metrics-row {
             grid-template-columns: repeat(2, 1fr);
@@ -674,18 +725,22 @@ export default async function OverviewPage() {
 
         <div className="actions">
           <Link className="button primary" href="/data-pulls">
+            <Play size={14} fill="currentColor" />
             <span style={{ fontSize: "10px" }}>▶</span> {t.runDataPull}
           </Link>
           <Link className="button" href="/database">
+            <FolderOpen size={15} color="#d19a1b" />
             <span>📂</span> {t.browseDatabase}
           </Link>
           <Link className="button" href="/submit-data">
+            <Send size={15} color="#9a7bd8" />
             <span>📨</span> {t.submitRecord}
           </Link>
           <Link className="button" href="/admin/submitted-data">
+            <ClipboardList size={15} color="#b17c56" />
             <span>📋</span> {t.reviewQueue}{" "}
             <span style={{ color: "var(--success)", fontWeight: "800" }}>
-              ({pendingReviewsCount})
+              ({pendingReviewsCount ?? "Unavailable"})
             </span>
           </Link>
         </div>
@@ -696,7 +751,7 @@ export default async function OverviewPage() {
         {/* Database Offline warning alert container */}
         {dbOffline && (
           <div className="alert">
-            <strong>Database Offline:</strong> Live PostgreSQL is unavailable. Showing sample atlas records for layout preview.
+            <strong>Database Offline:</strong> Live PostgreSQL is unavailable. Overview metrics are not being substituted.
           </div>
         )}
 
@@ -709,8 +764,8 @@ export default async function OverviewPage() {
             </div>
             <div>
               <p>{t.totalSources}</p>
-              <strong>{sourcesCount}</strong>
-              <small>{lang === "th" ? `อนุมัติแล้ว: ${acceptedCount}` : `Accepted: ${acceptedCount}`}</small>
+              <strong>{formatMetric(sourcesCount)}</strong>
+              <small>{lang === "th" ? `อนุมัติแล้ว: ${formatMetric(acceptedCount)}` : `Accepted: ${formatMetric(acceptedCount)}`}</small>
             </div>
           </article>
 
@@ -721,7 +776,7 @@ export default async function OverviewPage() {
             </div>
             <div>
               <p>{t.robotModels}</p>
-              <strong>{robotsCount}</strong>
+              <strong>{formatMetric(robotsCount)}</strong>
               <small>{lang === "th" ? "รุ่นที่ลงทะเบียน" : "Registered models"}</small>
             </div>
           </article>
@@ -733,7 +788,7 @@ export default async function OverviewPage() {
             </div>
             <div>
               <p>{t.ownedUnits}</p>
-              <strong>{inventoryCount}</strong>
+              <strong>{formatMetric(inventoryCount)}</strong>
               <small>{lang === "th" ? "คลังอุปกรณ์ของทีม" : "Team inventory"}</small>
             </div>
           </article>
@@ -745,7 +800,7 @@ export default async function OverviewPage() {
             </div>
             <div>
               <p>{t.contributors}</p>
-              <strong>{contributionsCount}</strong>
+              <strong>{formatMetric(contributionsCount)}</strong>
               <small>{lang === "th" ? "คลังโค้ดและเอกสาร" : "Repos & papers"}</small>
             </div>
           </article>

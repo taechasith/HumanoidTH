@@ -71,42 +71,20 @@ export default async function DashboardPage() {
       dbOffline: false
     };
   } catch (error) {
-    console.error("Database connection failed in dashboard, using fallback data:", error);
+    console.error("Database connection failed in dashboard:", error);
     data = {
-      locations: [
-        { countryOfOrigin: "Thailand", _count: { _all: 3 } },
-        { countryOfOrigin: "Japan", _count: { _all: 2 } },
-        { countryOfOrigin: "United States", _count: { _all: 1 } }
-      ],
-      robotTypes: [
-        { robotType: "humanoid", _count: { _all: 4 } },
-        { robotType: "social", _count: { _all: 2 } }
-      ],
-      sourceTypes: [
-        { sourceType: "news_article", _count: { _all: 98 } },
-        { sourceType: "social_media", _count: { _all: 34 } },
-        { sourceType: "academic_paper", _count: { _all: 22 } }
-      ],
-      embodimentLevels: [
-        { embodimentLevel: "full_humanoid", _count: { _all: 3 } },
-        { embodimentLevel: "upper_body", _count: { _all: 2 } },
-        { embodimentLevel: "wheeled_base", _count: { _all: 1 } }
-      ],
-      contributionTypes: [
-        { contributionType: "code_repository", _count: { _all: 5 } },
-        { contributionType: "research_paper", _count: { _all: 3 } }
-      ],
-      themes: [
-        { perspectiveTheme: "economic_impact", _count: { _all: 15 } },
-        { perspectiveTheme: "safety_concern", _count: { _all: 8 } },
-        { perspectiveTheme: "technological_advancement", _count: { _all: 22 } }
-      ],
-      highConfidenceAnn: 8,
-      medConfidenceAnn: 3,
-      lowConfidenceAnn: 1,
-      highConfidenceSrc: 110,
-      medConfidenceSrc: 32,
-      lowConfidenceSrc: 12,
+      locations: [],
+      robotTypes: [],
+      sourceTypes: [],
+      embodimentLevels: [],
+      contributionTypes: [],
+      themes: [],
+      highConfidenceAnn: 0,
+      medConfidenceAnn: 0,
+      lowConfidenceAnn: 0,
+      highConfidenceSrc: 0,
+      medConfidenceSrc: 0,
+      lowConfidenceSrc: 0,
       dbOffline: true
     };
   }
@@ -138,7 +116,7 @@ export default async function DashboardPage() {
 
       {data.dbOffline && (
         <div className="notice" style={{ backgroundColor: "#fffbeb", borderLeftColor: "var(--warning)", marginBottom: "16px" }}>
-          <strong>Database Offline:</strong> Live PostgreSQL is unavailable. Showing sample aggregate records for layout preview.
+          <strong>Database Offline:</strong> Live PostgreSQL is unavailable. This dashboard is not substituting example records.
         </div>
       )}
 

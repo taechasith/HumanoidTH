@@ -76,11 +76,6 @@ def create_app() -> FastAPI:
         items = rows("SELECT * FROM contributions ORDER BY updated_at DESC")
         return render(request, "contributions.html", items=items)
 
-    @app.get("/network")
-    def network(request: Request):
-        triplets = rows("SELECT * FROM triplets ORDER BY confidence DESC LIMIT 300")
-        return render(request, "network.html", graph=_graph(), triplets=triplets)
-
     @app.get("/analytics")
     def analytics(request: Request):
         return render(request, "analytics.html", graph=_graph())

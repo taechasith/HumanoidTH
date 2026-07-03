@@ -14,7 +14,6 @@ def test_required_routes_render():
         "/robots",
         "/inventory",
         "/contributions",
-        "/network",
         "/analytics",
         "/database",
         "/submit-data",

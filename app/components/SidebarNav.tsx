@@ -15,8 +15,7 @@ import {
   UsersRound,
   Home,
   MapPinned,
-  Package,
-  Link2
+  Package
 } from "lucide-react";
 import { getTranslation } from "@/lib/translations";
 
@@ -37,7 +36,6 @@ export default function SidebarNav({ currentLang = "en" }: SidebarNavProps) {
     { href: "/robots", label: t.robots, icon: Bot },
     { href: "/inventory", label: t.inventory, icon: Package },
     { href: "/contributions", label: t.contributors, icon: UsersRound },
-    { href: "/network", label: t.network, icon: Link2 },
     { href: "/analytics", label: t.analytics, icon: BarChart3 },
     { href: "/database", label: t.database, icon: Database },
     { href: "/submit-data", label: t.submit, icon: Send },

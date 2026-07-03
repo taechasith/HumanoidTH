@@ -29,17 +29,7 @@ export default async function PerspectivesPage() {
   } catch (error) {
     console.error("Database query failed in perspectives page:", error);
     dbOffline = true;
-    items = [
-      {
-        id: "fallback-perspective-1",
-        perspectiveTheme: "healthcare_and_eldercare_trust",
-        stance: "cautious_supportive",
-        sentiment: "mixed",
-        confidence: 0.72,
-        evidenceExcerpt: "Fallback example showing how media signals will appear after ingestion.",
-        source: { title: "Example Thai eldercare robot media signal", url: "#", platform: "fallback" }
-      }
-    ];
+    items = [];
   }
 
   return (
@@ -48,7 +38,7 @@ export default async function PerspectivesPage() {
       <p className="muted">{t.perspectivesDesc}</p>
       {dbOffline && (
         <div className="notice" style={{ marginBottom: 16 }}>
-          Live perspective annotations are unavailable. Showing fallback signal examples.
+          Live perspective annotations are unavailable. No substitute perspective records are being shown.
         </div>
       )}
       <div className="table-wrap">

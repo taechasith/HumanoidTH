@@ -44,7 +44,6 @@ def test_routes_desktop_and_mobile(next_server):
             "/robots",
             "/inventory",
             "/contributions",
-            "/network",
             "/analytics",
             "/database",
             "/submit-data",
@@ -74,18 +73,5 @@ def test_routes_desktop_and_mobile(next_server):
                 h1_el = page.query_selector("h1")
                 assert h1_el is not None, f"Blank page on {route}"
                 assert len(h1_el.inner_text().strip()) > 0, f"Empty h1 on {route}"
-
-            # Verify the path-copy tool renders on the network route
-            page.goto(f"{next_server}/network")
-            page.wait_for_timeout(2000) # wait for cytoscape to load
-            
-            title = page.query_selector('h1:has-text("Copy Local Graph Paths")')
-            assert title is not None, "Path-copy title not found"
-
-            copy_btn = page.query_selector('button:has-text("Copy Local Graph Paths")')
-            assert copy_btn is not None, "Copy button not found"
-
-            search_input = page.query_selector('input[placeholder*="Find sources, robots, or notes"]')
-            assert search_input is not None, "Search input not found"
 
         browser.close()
