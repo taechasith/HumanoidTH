@@ -39,8 +39,8 @@ export default function RobotViewer() {
     scene.background = null;
 
     const camera = new PerspectiveCamera(26, 1, 0.01, 100);
-    camera.position.set(0, 0.35, 5.15);
-    camera.lookAt(0, 0.15, 0);
+    camera.position.set(0, 0.35, 4.75);
+    camera.lookAt(0, 0.18, 0);
 
     const renderer = new WebGLRenderer({ alpha: true, antialias: true });
     renderer.setClearColor(new Color(0xffffff), 0);
@@ -116,7 +116,7 @@ export default function RobotViewer() {
       box.getSize(size);
       box.getCenter(center);
 
-      const scale = size.y > 0 ? 2.82 / size.y : 1;
+      const scale = size.y > 0 ? 3.35 / size.y : 1;
       model.scale.setScalar(scale);
 
       const scaledCenter = center.multiplyScalar(scale);
@@ -160,7 +160,7 @@ export default function RobotViewer() {
         MathUtils.clamp(y, -1, 1)
       );
 
-      targetHead.set(pointer.x * 0.38, pointer.y * -0.26);
+      targetHead.set(pointer.x * 0.38, pointer.y * 0.26);
     };
 
     const onPointerDown = (event: PointerEvent) => {

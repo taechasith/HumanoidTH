@@ -423,8 +423,8 @@ export default async function OverviewPage() {
           background: transparent;
           border: none;
           border-radius: 0;
-          height: min(68vh, 680px);
-          min-height: 560px;
+          height: min(74vh, 760px);
+          min-height: 620px;
           position: relative;
           overflow: visible;
           display: flex;
@@ -441,8 +441,8 @@ export default async function OverviewPage() {
           top: 50%;
           left: 50%;
           transform: translate(-50%, -50%);
-          width: 680px;
-          height: 680px;
+          width: 760px;
+          height: 760px;
           background: radial-gradient(circle, rgba(16, 185, 129, 0.17) 0%, rgba(16, 185, 129, 0.05) 38%, transparent 72%);
           pointer-events: none;
           z-index: 1;
@@ -458,21 +458,21 @@ export default async function OverviewPage() {
         }
 
         .orbit-one {
-          width: 620px;
-          height: 360px;
+          width: 700px;
+          height: 410px;
           border: 2px solid rgba(16, 185, 129, 0.36);
-          margin-top: -150px;
-          margin-left: -310px;
+          margin-top: -172px;
+          margin-left: -350px;
           transform: rotateX(72deg) rotateY(15deg);
           animation: spinRing 24s linear infinite;
         }
 
         .orbit-two {
-          width: 720px;
-          height: 440px;
+          width: 820px;
+          height: 500px;
           border: 1px solid rgba(16, 185, 129, 0.22);
-          margin-top: -185px;
-          margin-left: -360px;
+          margin-top: -210px;
+          margin-left: -410px;
           transform: rotateX(75deg) rotateY(-15deg);
           animation: spinRingInverse 29s linear infinite;
         }
@@ -490,15 +490,15 @@ export default async function OverviewPage() {
         }
 
         .robot-model-wrapper {
-          width: min(760px, 112%);
-          height: 112%;
+          width: min(860px, 120%);
+          height: 120%;
           position: relative;
           z-index: 2;
           overflow: hidden;
           display: flex;
           align-items: flex-start;
           justify-content: center;
-          transform: translateY(-8px) scale(1.08);
+          transform: translateY(-18px) scale(1.12);
           transform-origin: center top;
         }
 
