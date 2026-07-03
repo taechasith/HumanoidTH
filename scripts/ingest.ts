@@ -1,5 +1,5 @@
 import { loadEnvFile } from "node:process";
-import type { SourceType } from "@prisma/client";
+import type { SourceType } from "../generated/prisma";
 
 loadEnvFile(".env");
 

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { SourceType } from "@prisma/client";
+import type { SourceType } from "../generated/prisma";
 import { prisma } from "@/lib/prisma";
 import { runAdapter } from "@/lib/ingest/adapters";
 
@@ -83,6 +83,11 @@ export async function loginAsUser(email: string, role: string) {
   const cookieStore = await cookies();
   cookieStore.set("user_email", user.email, { path: "/" });
   cookieStore.set("user_role", user.role, { path: "/" });
+  if (user.role === "ADMIN") {
+    cookieStore.set("admin_session", "true", { path: "/" });
+  } else {
+    cookieStore.delete("admin_session");
+  }
   revalidatePath("/profile");
   revalidatePath("/admin/submitted-data");
   redirect("/profile");
@@ -113,6 +118,11 @@ export async function registerAndLoginUser(formData: FormData) {
   const cookieStore = await cookies();
   cookieStore.set("user_email", user.email, { path: "/" });
   cookieStore.set("user_role", user.role, { path: "/" });
+  if (user.role === "ADMIN") {
+    cookieStore.set("admin_session", "true", { path: "/" });
+  } else {
+    cookieStore.delete("admin_session");
+  }
   revalidatePath("/profile");
   revalidatePath("/admin/submitted-data");
   redirect("/profile");
@@ -122,9 +132,37 @@ export async function logoutUser() {
   const cookieStore = await cookies();
   cookieStore.delete("user_email");
   cookieStore.delete("user_role");
+  cookieStore.delete("admin_session");
   revalidatePath("/profile");
   revalidatePath("/admin/submitted-data");
   redirect("/profile");
+}
+
+export async function adminLoginAction(formData: FormData) {
+  const email = String(formData.get("email") ?? "").trim();
+  const password = String(formData.get("password") ?? "").trim();
+
+  const expectedUser = process.env.ADMIN_BASIC_USER || "creativelab.co.th@gmail.com";
+  const expectedPassword = process.env.ADMIN_BASIC_PASSWORD || "I@M_Cr3LabTH_F4M";
+
+  if (email === expectedUser && password === expectedPassword) {
+    const user = await prisma.user.upsert({
+      where: { email },
+      update: { role: "ADMIN" },
+      create: { email, name: "Admin", role: "ADMIN" }
+    });
+
+    const cookieStore = await cookies();
+    cookieStore.set("user_email", user.email, { path: "/" });
+    cookieStore.set("user_role", "ADMIN", { path: "/" });
+    cookieStore.set("admin_session", "true", { path: "/" });
+    
+    revalidatePath("/admin/submitted-data");
+    revalidatePath("/");
+    redirect("/admin/submitted-data");
+  } else {
+    redirect("/admin-login?error=invalid_credentials");
+  }
 }
 
 export async function setLanguage(lang: "en" | "th") {
@@ -132,4 +170,3 @@ export async function setLanguage(lang: "en" | "th") {
   cookieStore.set("lang", lang, { path: "/" });
   revalidatePath("/", "layout");
 }
-

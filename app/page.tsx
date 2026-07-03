@@ -470,7 +470,7 @@ export default async function OverviewPage() {
           }}>
             <span style={{ fontSize: "20px" }}>⚠️</span>
             <div style={{ fontSize: "13.5px", color: "#451a03", lineHeight: "1.4" }}>
-              <strong>Database Offline:</strong> Live PostgreSQL connection is unavailable (normal for Vercel preview environments). Displaying high-fidelity simulated research data.
+              <strong>Database Offline:</strong> Live PostgreSQL is unavailable. Showing sample atlas records for layout preview.
             </div>
           </div>
         )}

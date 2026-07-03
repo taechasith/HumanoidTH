@@ -54,6 +54,8 @@ textarea {
   top: 0;
   height: 100vh;
   border-right: 1px solid #14352a;
+  display: flex;
+  flex-direction: column;
 }
 
 .brand {
@@ -281,6 +283,8 @@ th {
   .sidebar {
     height: auto;
     position: static;
+    display: flex;
+    flex-direction: column;
   }
 
   .nav {

@@ -12,6 +12,7 @@ node_modules/
 out/
 .vercel/
 tsconfig.tsbuildinfo
+generated/
 
 # Test, coverage, and temporary output
 coverage/

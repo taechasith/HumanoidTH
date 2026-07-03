@@ -33,7 +33,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang={lang} className={`${inter.variable} ${notoSansThai.variable}`}>
       <body>
         <div className="app-shell">
-          <aside className="sidebar" style={{ display: "flex", flexDirection: "column", height: "100vh", position: "sticky", top: "0" }}>
+          <aside className="sidebar">
             <div className="brand" style={{ marginBottom: "22px", display: "flex", justifyContent: "center" }}>
               <img src="/logo.png" alt="Thailand Humanoid Atlas" style={{ width: "100%", height: "auto", maxHeight: "360px", objectFit: "contain" }} />
             </div>

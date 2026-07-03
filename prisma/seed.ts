@@ -2,9 +2,18 @@ import { loadEnvFile } from "node:process";
 
 loadEnvFile(".env");
 
-const { PrismaClient } = await import("@prisma/client");
+const { PrismaClient } = await import("../generated/prisma");
+const { PrismaPg } = await import("@prisma/adapter-pg");
 
-const prisma = new PrismaClient();
+const connectionString = process.env.DATABASE_URL;
+
+if (!connectionString) {
+  throw new Error("DATABASE_URL is required for seeding.");
+}
+
+const prisma = new PrismaClient({
+  adapter: new PrismaPg(connectionString)
+});
 
 async function main() {
   await prisma.user.upsert({

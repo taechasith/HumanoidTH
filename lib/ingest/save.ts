@@ -1,6 +1,6 @@
 import type { NormalizedSource } from "@/lib/ingest/types";
 import { prisma } from "@/lib/prisma";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../../generated/prisma";
 import { classifyRelevance, extractPerspective, classifyWithGemini } from "@/lib/classifiers";
 
 export async function saveSources(records: NormalizedSource[]) {
@@ -128,4 +128,3 @@ export async function saveSources(records: NormalizedSource[]) {
 
   return saved;
 }
-

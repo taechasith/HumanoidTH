@@ -15,10 +15,15 @@ export default async function InventoryPage({ searchParams }: { searchParams: Se
   const lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
   const t = getTranslation(lang);
 
-  const inventory = await prisma.ownedInventory.findMany({
-    include: { robotModel: true },
-    orderBy: { updatedAt: "desc" }
-  });
+  let inventory: any[] = [];
+  try {
+    inventory = await prisma.ownedInventory.findMany({
+      include: { robotModel: true },
+      orderBy: { updatedAt: "desc" }
+    });
+  } catch (error) {
+    console.error("Failed to query inventory in inventory page:", error);
+  }
 
   const localT = {
     en: {

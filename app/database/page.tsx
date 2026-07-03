@@ -28,55 +28,59 @@ export default async function DatabasePage({ searchParams }: { searchParams: Sea
 
   let data: any[] = [];
 
-  switch (table) {
-    case "robots":
-      data = await prisma.robotModel.findMany({
-        where: q ? { canonicalName: { contains: q, mode: "insensitive" } } : {},
-        orderBy: { createdAt: "desc" },
-        take: 250
-      });
-      break;
-    case "owned_inventory":
-      data = await prisma.ownedInventory.findMany({
-        where: q ? { displayName: { contains: q, mode: "insensitive" } } : {},
-        orderBy: { createdAt: "desc" },
-        take: 250
-      });
-      break;
-    case "contributions":
-      data = await prisma.contribution.findMany({
-        where: q ? { title: { contains: q, mode: "insensitive" } } : {},
-        orderBy: { createdAt: "desc" },
-        take: 250
-      });
-      break;
-    case "submissions":
-      data = await prisma.submittedData.findMany({
-        where: q ? { title: { contains: q, mode: "insensitive" } } : {},
-        orderBy: { createdAt: "desc" },
-        take: 250
-      });
-      break;
-    case "perspective_annotations":
-      data = await prisma.perspectiveAnnotation.findMany({
-        where: q ? { perspectiveTheme: { contains: q, mode: "insensitive" } } : {},
-        orderBy: { createdAt: "desc" },
-        take: 250
-      });
-      break;
-    case "pull_jobs":
-      data = await prisma.sourcePullJob.findMany({
-        where: q ? { query: { contains: q, mode: "insensitive" } } : {},
-        orderBy: { createdAt: "desc" },
-        take: 250
-      });
-      break;
-    default:
-      data = await prisma.sourceRecord.findMany({
-        where: q ? { title: { contains: q, mode: "insensitive" } } : {},
-        orderBy: { createdAt: "desc" },
-        take: 250
-      });
+  try {
+    switch (table) {
+      case "robots":
+        data = await prisma.robotModel.findMany({
+          where: q ? { canonicalName: { contains: q, mode: "insensitive" } } : {},
+          orderBy: { createdAt: "desc" },
+          take: 250
+        });
+        break;
+      case "owned_inventory":
+        data = await prisma.ownedInventory.findMany({
+          where: q ? { displayName: { contains: q, mode: "insensitive" } } : {},
+          orderBy: { createdAt: "desc" },
+          take: 250
+        });
+        break;
+      case "contributions":
+        data = await prisma.contribution.findMany({
+          where: q ? { title: { contains: q, mode: "insensitive" } } : {},
+          orderBy: { createdAt: "desc" },
+          take: 250
+        });
+        break;
+      case "submissions":
+        data = await prisma.submittedData.findMany({
+          where: q ? { title: { contains: q, mode: "insensitive" } } : {},
+          orderBy: { createdAt: "desc" },
+          take: 250
+        });
+        break;
+      case "perspective_annotations":
+        data = await prisma.perspectiveAnnotation.findMany({
+          where: q ? { perspectiveTheme: { contains: q, mode: "insensitive" } } : {},
+          orderBy: { createdAt: "desc" },
+          take: 250
+        });
+        break;
+      case "pull_jobs":
+        data = await prisma.sourcePullJob.findMany({
+          where: q ? { query: { contains: q, mode: "insensitive" } } : {},
+          orderBy: { createdAt: "desc" },
+          take: 250
+        });
+        break;
+      default:
+        data = await prisma.sourceRecord.findMany({
+          where: q ? { title: { contains: q, mode: "insensitive" } } : {},
+          orderBy: { createdAt: "desc" },
+          take: 250
+        });
+    }
+  } catch (error) {
+    console.error("Database query failed in database browser page:", error);
   }
 
   // Column headers based on keys in records

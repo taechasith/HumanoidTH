@@ -12,7 +12,12 @@ export default async function ProfilePage() {
   const lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
   const t = getTranslation(lang);
 
-  const users = await prisma.user.findMany({ orderBy: { createdAt: "desc" }, take: 20 });
+  let users: any[] = [];
+  try {
+    users = await prisma.user.findMany({ orderBy: { createdAt: "desc" }, take: 20 });
+  } catch (error) {
+    console.error("Failed to query users in profile page:", error);
+  }
 
   return (
     <>
@@ -67,7 +72,7 @@ export default async function ProfilePage() {
             <div style={{ display: "flex", gap: "10px", marginTop: "8px" }}>
               <form action={loginAsUser.bind(null, "creativelab.co.th@gmail.com", "ADMIN")}>
                 <button type="submit" className="button" style={{ fontSize: "11px", minHeight: "28px" }}>
-                  💻 Quick Admin
+                  Login as Administrator
                 </button>
               </form>
               <form action={loginAsUser.bind(null, "researcher@example.com", "RESEARCHER")}>

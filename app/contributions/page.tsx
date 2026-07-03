@@ -34,20 +34,31 @@ export default async function ContributionsPage({ searchParams }: { searchParams
     ];
   }
 
-  const [dbItems, dbRobots, dbOrganizations] = await Promise.all([
-    prisma.contribution.findMany({
-      where,
-      include: { relatedRobotModel: true },
-      orderBy: { updatedAt: "desc" },
-      take: 200
-    }),
-    prisma.robotModel.findMany({ select: { id: true, canonicalName: true } }),
-    prisma.contribution.findMany({
-      select: { organization: true },
-      distinct: ["organization"],
-      where: { organization: { not: null } }
-    })
-  ]);
+  let dbItems: any[] = [];
+  let dbRobots: any[] = [];
+  let dbOrganizations: any[] = [];
+
+  try {
+    const [resItems, resRobots, resOrgs] = await Promise.all([
+      prisma.contribution.findMany({
+        where,
+        include: { relatedRobotModel: true },
+        orderBy: { updatedAt: "desc" },
+        take: 200
+      }),
+      prisma.robotModel.findMany({ select: { id: true, canonicalName: true } }),
+      prisma.contribution.findMany({
+        select: { organization: true },
+        distinct: ["organization"],
+        where: { organization: { not: null } }
+      })
+    ]);
+    dbItems = resItems;
+    dbRobots = resRobots;
+    dbOrganizations = resOrgs;
+  } catch (error) {
+    console.error("Failed to query contributions in contributions page:", error);
+  }
 
   const items = dbItems;
   const robots = dbRobots;
