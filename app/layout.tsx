@@ -6,6 +6,7 @@ import LanguageSelector from "./components/LanguageSelector";
 import MobileHeader from "./components/MobileHeader";
 import MobileTabNav from "./components/MobileTabNav";
 import DataPullFab from "./components/DataPullFab";
+import FirstTimeLoader from "./components/FirstTimeLoader";
 import { getTranslation } from "@/lib/translations";
 import "./globals.css";
 
@@ -42,6 +43,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang={lang} className={`${literata.variable} ${inter.variable} ${notoSansThai.variable}`}>
       <body>
+        <FirstTimeLoader />
         <div className="app-shell">
           <MobileHeader />
           <aside className="sidebar">
