@@ -13,6 +13,7 @@ export const translations = {
     database: "Database",
     submit: "Submit",
     admin: "Admin",
+    cms: "CMS",
     profile: "Profile",
     
     // Overview page
@@ -64,6 +65,8 @@ export const translations = {
     submitDesc: "Submit source evidence, model details, contribution claims, corrections, or inventory updates for review.",
     adminTitle: "Admin Review Console",
     adminDesc: "Approve or moderate community submissions before they go public.",
+    cmsTitle: "Admin CMS",
+    cmsDesc: "Edit source records, robot models, and community content in one place.",
     profileTitle: "User Profile & Simulation",
     profileDesc: "Manage your current session user email and role for simulation purposes."
   },
@@ -81,6 +84,7 @@ export const translations = {
     database: "ฐานข้อมูลดิบ",
     submit: "ส่งข้อมูล",
     admin: "ผู้ดูแลระบบ",
+    cms: "CMS",
     profile: "โปรไฟล์ระบบ",
 
     // Overview page
@@ -132,6 +136,8 @@ export const translations = {
     submitDesc: "ร่วมเป็นส่วนหนึ่งของคลังข้อมูลด้วยการส่งรายละเอียดรุ่นหุ่นยนต์หรืองานวิจัยใหม่ๆ",
     adminTitle: "คอนโซลสำหรับผู้ดูแลระบบ",
     adminDesc: "อนุมัติหรือตรวจสอบความเหมาะสมของข้อมูลที่ส่งเข้ามาก่อนนำไปเผยแพร่ต่อสาธารณะ",
+    cmsTitle: "CMS สำหรับผู้ดูแล",
+    cmsDesc: "แก้ไขข้อมูลต้นทาง โมเดลหุ่นยนต์ และข้อมูลจากชุมชนได้ในที่เดียว",
     profileTitle: "โปรไฟล์และจำลองสิทธิ์ผู้ใช้งาน",
     profileDesc: "กำหนดอีเมลและสิทธิ์ผู้ใช้งานปัจจุบันเพื่อจุดประสงค์ในการจำลองและทดสอบระบบ"
   }

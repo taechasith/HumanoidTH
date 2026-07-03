@@ -99,6 +99,9 @@ export default async function AdminSubmittedDataPage({ searchParams }: { searchP
             {t.adminDesc}
           </p>
         </div>
+        <Link href="/admin/cms" className="button primary">
+          CMS
+        </Link>
       </div>
 
       <div className="two" style={{ gap: "16px" }}>

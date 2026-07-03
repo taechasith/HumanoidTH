@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 import { getTranslation } from "@/lib/translations";
+import AnalyticsCharts from "./AnalyticsCharts";
 
 export const dynamic = "force-dynamic";
 
@@ -41,20 +42,26 @@ export default async function AnalyticsPage() {
           Live analytics are unavailable. Showing sample aggregate examples.
         </div>
       )}
-      <h2>Perspective Themes</h2>
+      <div className="grid" style={{ margin: "18px 0" }}>
+        <div className="panel">
+          <div className="muted">Perspective Themes</div>
+          <div className="stat">{themes.reduce((sum, row) => sum + row._count._all, 0)}</div>
+        </div>
+        <div className="panel">
+          <div className="muted">Source Relevance Records</div>
+          <div className="stat">{statuses.reduce((sum, row) => sum + row._count._all, 0)}</div>
+        </div>
+        <div className="panel">
+          <div className="muted">Top Theme</div>
+          <div className="stat">{themes[0]?.perspectiveTheme?.replace(/_/g, " ") ?? "N/A"}</div>
+        </div>
+        <div className="panel">
+          <div className="muted">Top Status</div>
+          <div className="stat">{statuses[0]?.relevanceStatus ?? "N/A"}</div>
+        </div>
+      </div>
 
-      <section className="grid">
-        {themes.map((row) => (
-          <div className="panel" key={row.perspectiveTheme}><div className="muted">{row.perspectiveTheme}</div><div className="stat">{row._count._all}</div></div>
-        ))}
-        {!themes.length && <div className="panel">Insufficient perspective data.</div>}
-      </section>
-      <h2 style={{ marginTop: 18 }}>Relevance Status</h2>
-      <section className="grid">
-        {statuses.map((row) => (
-          <div className="panel" key={row.relevanceStatus}><div className="muted">{row.relevanceStatus}</div><div className="stat">{row._count._all}</div></div>
-        ))}
-      </section>
+      <AnalyticsCharts themes={themes} statuses={statuses} />
     </>
   );
 }

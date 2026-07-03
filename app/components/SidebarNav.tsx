@@ -40,6 +40,7 @@ export default function SidebarNav({ currentLang = "en" }: SidebarNavProps) {
     { href: "/database", label: t.database, icon: Database },
     { href: "/submit-data", label: t.submit, icon: Send },
     { href: "/admin/submitted-data", label: t.admin, icon: Settings2 },
+    { href: "/admin/cms", label: t.cms, icon: Settings2 },
     { href: "/profile", label: t.profile, icon: CircleUserRound }
   ];
 
@@ -62,4 +63,3 @@ export default function SidebarNav({ currentLang = "en" }: SidebarNavProps) {
     </nav>
   );
 }
-

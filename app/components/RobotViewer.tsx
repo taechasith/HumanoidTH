@@ -16,7 +16,7 @@ export default function RobotViewer() {
         camera-controls
         shadow-intensity="1.5"
         style={{ width: "100%", height: "100%", background: "transparent" }}
-        camera-orbit="0deg 75deg 32%"
+        camera-orbit="0deg 75deg 48%"
       />
     </>
   );
