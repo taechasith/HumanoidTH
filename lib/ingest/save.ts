@@ -2,11 +2,13 @@ import type { NormalizedSource } from "@/lib/ingest/types";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "../../generated/prisma";
 import { classifyRelevance, extractPerspective, classifyWithGemini } from "@/lib/classifiers";
+import { canonicalizeUrl } from "@/lib/url";
 
 export async function saveSources(records: NormalizedSource[]) {
   let saved = 0;
 
   for (const record of records) {
+    const url = canonicalizeUrl(record.url);
     let relevance: {
       relevanceStatus: "ACCEPTED" | "REJECTED" | "UNCERTAIN";
       relevanceReason: string;
@@ -59,11 +61,11 @@ export async function saveSources(records: NormalizedSource[]) {
     }
 
     const source = await prisma.sourceRecord.upsert({
-      where: { url: record.url },
+      where: { url },
       create: {
         sourceType: record.sourceType,
         title: record.title,
-        url: record.url,
+        url,
         excerpt: record.excerpt ?? "",
         publishedAt: record.publishedAt,
         author: record.author,

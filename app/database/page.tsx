@@ -102,8 +102,26 @@ export default async function DatabasePage({ searchParams }: { searchParams: Sea
 
 
 
+      <style dangerouslySetInnerHTML={{ __html: `
+        .db-form {
+          display: grid;
+          grid-template-columns: 1fr 2fr 100px;
+          gap: 10px;
+          align-items: end;
+          margin-bottom: 16px;
+        }
+        @media (max-width: 768px) {
+          .db-form {
+            grid-template-columns: 1fr;
+          }
+          .db-form .query-btn {
+            width: 100%;
+          }
+        }
+      `}} />
+
       {/* Selector & Search Form */}
-      <form method="GET" className="panel grid" style={{ gridTemplateColumns: "1fr 2fr 80px", gap: "10px", alignItems: "end", marginBottom: "16px" }}>
+      <form method="GET" className="panel db-form">
         <label style={{ fontSize: "12px", display: "flex", flexDirection: "column", gap: "4px" }}>
           Table selection
           <select name="table" defaultValue={table}>
@@ -118,7 +136,7 @@ export default async function DatabasePage({ searchParams }: { searchParams: Sea
           <input name="q" defaultValue={q} placeholder={`Search fields in ${table}...`} />
         </label>
 
-        <button type="submit" className="primary" style={{ minHeight: "36px" }}>Query</button>
+        <button type="submit" className="primary query-btn" style={{ minHeight: "36px" }}>Query</button>
       </form>
 
       {/* Dense Monospace Grid view */}

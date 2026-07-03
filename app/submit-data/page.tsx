@@ -57,7 +57,7 @@ export default async function SubmitDataPage() {
         </div>
       </div>
 
-      <div className="two" style={{ gridTemplateColumns: "1fr 320px", gap: "16px" }}>
+      <div className="two" style={{ gap: "16px" }}>
         
         {/* Left Side: Submission Form */}
         <form className="form panel" action={createSubmission}>
@@ -88,7 +88,7 @@ export default async function SubmitDataPage() {
             <textarea name="notes" rows={5} placeholder="Provide source excerpts, model details, correction notes, or inventory context." />
           </label>
           
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "10px" }}>
             <label>
               {localT.name}
               <input name="submitterName" placeholder="Ajahn Somchai" />

@@ -85,8 +85,32 @@ export default async function ContributionsPage({ searchParams }: { searchParams
 
 
 
+      <style dangerouslySetInnerHTML={{ __html: `
+        .filter-form {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) 100px;
+          gap: 10px;
+          align-items: end;
+          margin-bottom: 16px;
+        }
+        @media (max-width: 860px) {
+          .filter-form {
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+          }
+          .filter-form .submit-btn {
+            grid-column: span 1;
+            width: 100%;
+          }
+        }
+        @media (max-width: 480px) {
+          .filter-form {
+            grid-template-columns: 1fr;
+          }
+        }
+      `}} />
+
       {/* Filter Toolbar */}
-      <form method="GET" className="panel grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr)) 80px", gap: "10px", alignItems: "end", marginBottom: "16px" }}>
+      <form method="GET" className="panel filter-form">
         <label style={{ fontSize: "12px", display: "flex", flexDirection: "column", gap: "4px" }}>
           Type
           <select name="type" defaultValue={type || ""}>
@@ -132,7 +156,7 @@ export default async function ContributionsPage({ searchParams }: { searchParams
           <input name="q" defaultValue={q || ""} placeholder="e.g. SLAM, study" />
         </label>
 
-        <button type="submit" className="primary" style={{ minHeight: "36px" }}>Apply</button>
+        <button type="submit" className="primary submit-btn" style={{ minHeight: "36px" }}>Apply</button>
       </form>
 
       {/* Contributions Table */}

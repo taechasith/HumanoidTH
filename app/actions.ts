@@ -6,13 +6,14 @@ import { cookies } from "next/headers";
 import type { SourceType } from "../generated/prisma";
 import { prisma } from "@/lib/prisma";
 import { runAdapter } from "@/lib/ingest/adapters";
+import { canonicalizeUrl } from "@/lib/url";
 
 export async function createSubmission(formData: FormData) {
   await prisma.submittedData.create({
     data: {
       submissionType: String(formData.get("submissionType") ?? "source_url"),
       title: String(formData.get("title") ?? ""),
-      url: String(formData.get("url") ?? "") || null,
+      url: canonicalizeUrl(String(formData.get("url") ?? "")) || null,
       notes: String(formData.get("notes") ?? "") || null,
       submitterName: String(formData.get("submitterName") ?? "") || null,
       submitterContact: String(formData.get("submitterContact") ?? "") || null,

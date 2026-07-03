@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { Prisma, PrismaClient } from "../generated/prisma";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { canonicalizeUrl } from "./url";
 
 export type SeedRecord = {
   category: string;
@@ -124,12 +125,13 @@ export async function seedAtlasData(prisma: PrismaClient, datasetPath = resolve(
 
   for (const record of records) {
     if (record.category === "source_record") {
+      const url = canonicalizeUrl(record.url);
       await prisma.sourceRecord.upsert({
-        where: { url: record.url },
+        where: { url },
         create: {
           sourceType: normalizeSourceType(record.source_platform),
           title: record.title,
-          url: record.url,
+          url,
           excerpt: record.evidence_excerpt ?? record.description ?? "",
           publishedAt: parsePublishedAt(record.published_at),
           author: record.author,
@@ -173,6 +175,7 @@ export async function seedAtlasData(prisma: PrismaClient, datasetPath = resolve(
     }
 
     if (record.category === "robot_model") {
+      const officialUrl = canonicalizeUrl(record.url);
       await prisma.robotModel.upsert({
         where: { canonicalName: record.canonical_name ?? record.title },
         create: {
@@ -185,7 +188,7 @@ export async function seedAtlasData(prisma: PrismaClient, datasetPath = resolve(
           primaryUseCase: record.notes ?? record.description ?? null,
           thailandStatus: "observed_in_thailand",
           statusConfidence: record.confidence ?? 0.5,
-          officialUrl: record.url,
+          officialUrl,
           description: record.description ?? record.evidence_excerpt ?? null,
           sourceMeta: {
             category: record.category,
@@ -201,7 +204,7 @@ export async function seedAtlasData(prisma: PrismaClient, datasetPath = resolve(
           robotType: record.robot_type ?? "unknown",
           embodimentLevel: record.embodiment_level,
           primaryUseCase: record.notes ?? record.description ?? null,
-          officialUrl: record.url,
+          officialUrl,
           description: record.description ?? record.evidence_excerpt ?? null,
           sourceMeta: {
             category: record.category,
@@ -215,12 +218,13 @@ export async function seedAtlasData(prisma: PrismaClient, datasetPath = resolve(
     }
 
     if (record.category === "triplet_relation") {
+      const url = canonicalizeUrl(record.url);
       const source = await prisma.sourceRecord.upsert({
-        where: { url: record.url },
+        where: { url },
         create: {
           sourceType: normalizeSourceType(record.source_platform),
           title: record.title,
-          url: record.url,
+          url,
           excerpt: record.evidence_excerpt ?? record.description ?? "",
           publishedAt: parsePublishedAt(record.published_at),
           author: record.author,
@@ -279,12 +283,13 @@ export async function seedAtlasData(prisma: PrismaClient, datasetPath = resolve(
     }
 
     if (record.category === "perspective_annotation") {
+      const url = canonicalizeUrl(record.url);
       const source = await prisma.sourceRecord.upsert({
-        where: { url: record.url },
+        where: { url },
         create: {
           sourceType: normalizeSourceType(record.source_platform),
           title: record.title,
-          url: record.url,
+          url,
           excerpt: record.evidence_excerpt ?? record.description ?? "",
           publishedAt: parsePublishedAt(record.published_at),
           author: record.author,
@@ -353,8 +358,9 @@ export async function seedAtlasData(prisma: PrismaClient, datasetPath = resolve(
     }
 
     if (record.category === "contribution") {
+      const sourceUrl = canonicalizeUrl(record.url);
       await prisma.contribution.upsert({
-        where: { sourceUrl: record.url },
+        where: { sourceUrl },
         create: {
           contributorName: record.author,
           contributorType: record.organization ? "organization" : "individual",
@@ -362,7 +368,7 @@ export async function seedAtlasData(prisma: PrismaClient, datasetPath = resolve(
           contributionType: record.contribution_type ?? "other",
           title: record.title,
           description: record.description ?? record.evidence_excerpt ?? null,
-          sourceUrl: record.url,
+          sourceUrl,
           license: "unknown",
           visibility: "public",
           verificationStatus: "APPROVED"
@@ -396,11 +402,12 @@ export async function seedAtlasData(prisma: PrismaClient, datasetPath = resolve(
     }
 
     if (record.category === "submission_record") {
+      const url = canonicalizeUrl(record.url);
       await prisma.submittedData.create({
         data: {
           submissionType: record.contribution_type ?? "source_url",
           title: record.title,
-          url: record.url,
+          url,
           notes: record.notes ?? record.description ?? null,
           submitterName: record.author,
           submitterContact: null,

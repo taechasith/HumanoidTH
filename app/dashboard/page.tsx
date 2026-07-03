@@ -286,7 +286,7 @@ export default async function DashboardPage() {
 
       {/* Confidence Score Buckets */}
       <h2 style={{ marginTop: "24px" }}>Extracted Confidence Distribution</h2>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginTop: "12px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "16px", marginTop: "12px" }}>
         
         {/* Perspective Confidence Distribution */}
         <section className="panel">

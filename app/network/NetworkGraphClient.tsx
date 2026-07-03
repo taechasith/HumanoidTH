@@ -568,6 +568,28 @@ export default function NetworkGraphClient({
 
   return (
     <>
+      <style dangerouslySetInnerHTML={{ __html: `
+        .cy-canvas-wrapper {
+          position: relative;
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          background: #f8faf9;
+          min-height: 520px;
+        }
+        .cy-render-container {
+          width: 100%;
+          height: 520px;
+        }
+        @media (max-width: 860px) {
+          .cy-canvas-wrapper {
+            min-height: 380px;
+          }
+          .cy-render-container {
+            height: 380px;
+          }
+        }
+      `}} />
+
       <div className="topline">
         <div>
           <h1>{t.networkTitle}</h1>
@@ -594,7 +616,7 @@ export default function NetworkGraphClient({
         ))}
       </div>
 
-      <div className="two" style={{ gridTemplateColumns: "1fr 340px", gap: "16px" }}>
+      <div className="two" style={{ gap: "16px" }}>
         {/* Left Side: Canvas and Toolbar Controls */}
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
           
@@ -648,7 +670,7 @@ export default function NetworkGraphClient({
           </div>
 
           {/* Cytoscape Container Canvas */}
-          <div style={{ position: "relative", border: "1px solid var(--border)", borderRadius: "8px", background: "#f8faf9", minHeight: "520px" }}>
+          <div className="cy-canvas-wrapper">
             
             {/* Quick Canvas Action Controls */}
             <div style={{ position: "absolute", bottom: "12px", left: "12px", zIndex: 10, display: "flex", gap: "6px" }}>
@@ -660,7 +682,7 @@ export default function NetworkGraphClient({
 
             {/* Cytoscape element render */}
             {filteredElements.length > 0 ? (
-              <div ref={containerRef} style={{ width: "100%", height: "520px" }} />
+              <div ref={containerRef} className="cy-render-container" />
             ) : (
               <div className="empty" style={{ paddingTop: "150px" }}>
                 <h3>No relationships have been extracted yet.</h3>
@@ -693,7 +715,7 @@ data/seeds/relationships.yaml`}
           {/* Node Types checklists */}
           <div className="panel">
             <h2>Node Filters</h2>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px", fontSize: "12px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))", gap: "6px", fontSize: "12px" }}>
               {Object.keys(selectedNodeTypes).map((type) => (
                 <label key={type} style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer" }}>
                   <input 

@@ -108,7 +108,7 @@ export default async function OverviewPage() {
           padding-bottom: 24px;
         }
 
-        .topbar h2 {
+        .topbar h1 {
           font-size: 2.8rem;
           font-weight: 900;
           text-transform: uppercase;
@@ -118,7 +118,7 @@ export default async function OverviewPage() {
           color: var(--accent);
         }
 
-        .topbar h2 span {
+        .topbar h1 span {
           color: var(--warning);
           font-weight: 800;
           display: block;
@@ -385,17 +385,18 @@ export default async function OverviewPage() {
 
         /* Robot stage */
         .robot-stage {
-          background: #08130f;
-          border: 1px solid #11261f;
-          border-radius: 16px;
-          height: 480px;
+          background: transparent;
+          border: none;
+          border-radius: 0;
+          height: 700px;
           position: relative;
-          overflow: hidden;
+          overflow: visible;
           display: flex;
           flex-direction: column;
-          justify-content: space-between;
-          padding: 24px;
-          box-shadow: 0 10px 30px rgba(5, 13, 10, 0.4);
+          justify-content: center;
+          align-items: center;
+          padding: 0;
+          box-shadow: none;
         }
 
         .robot-glow {
@@ -403,8 +404,8 @@ export default async function OverviewPage() {
           top: 50%;
           left: 50%;
           transform: translate(-50%, -50%);
-          width: 300px;
-          height: 300px;
+          width: 600px;
+          height: 600px;
           background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
           pointer-events: none;
           z-index: 1;
@@ -414,64 +415,38 @@ export default async function OverviewPage() {
           position: absolute;
           border-radius: 50%;
           pointer-events: none;
-          top: 45%;
+          top: 50%;
           left: 50%;
           z-index: 1;
         }
 
         .orbit-one {
-          width: 280px;
-          height: 280px;
+          width: 520px;
+          height: 520px;
           border: 1.5px dashed rgba(234, 179, 8, 0.25);
-          margin-top: -140px;
-          margin-left: -140px;
+          margin-top: -260px;
+          margin-left: -260px;
           transform: rotateX(72deg) rotateY(15deg);
           animation: spinRing 20s linear infinite;
         }
 
         .orbit-two {
-          width: 340px;
-          height: 340px;
+          width: 640px;
+          height: 640px;
           border: 1px solid rgba(16, 185, 129, 0.15);
-          margin-top: -170px;
-          margin-left: -170px;
+          margin-top: -320px;
+          margin-left: -320px;
           transform: rotateX(75deg) rotateY(-15deg);
           animation: spinRingInverse 25s linear infinite;
         }
 
         .robot-model-wrapper {
           width: 100%;
-          height: 340px;
+          height: 100%;
           position: relative;
           z-index: 2;
         }
 
-        .robot-notes {
-          position: relative;
-          z-index: 3;
-          color: #a3c2b5;
-          font-size: 11.5px;
-          background: rgba(8, 19, 15, 0.7);
-          padding: 8px 12px;
-          border-radius: 8px;
-          border: 1px solid rgba(20, 53, 42, 0.5);
-        }
-
-        .robot-notes p {
-          margin: 0 0 6px 0;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-          color: var(--warning);
-        }
-
-        .robot-notes ul {
-          margin: 0;
-          padding-left: 16px;
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-        }
 
         /* Terminal panel empty state */
         .terminal-panel {
@@ -567,16 +542,74 @@ export default async function OverviewPage() {
           100% { transform: rotateX(75deg) rotateY(-15deg) rotate(0deg); }
         }
 
-        @media (max-width: 960px) {
+        @media (max-width: 860px) {
+          .topbar h1 {
+            font-size: 2.0rem;
+          }
+          .topbar h1 span {
+            font-size: 1.6rem;
+          }
           .hero-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+          }
+          .robot-stage {
+            height: 380px;
+            order: -1; /* Place interactive 3D robot model at the top on mobile */
+          }
+          .dashboard-stack {
+            order: 2;
+          }
+          .metrics-row {
             grid-template-columns: 1fr;
+            gap: 12px;
+          }
+          .status-row {
+            grid-template-columns: 1fr;
+            gap: 12px;
+          }
+          .platform-grid {
+            grid-template-columns: 1fr;
+            gap: 8px;
           }
           .command-grid {
             grid-template-columns: 1fr;
+            gap: 12px;
           }
           .topbar {
             flex-direction: column;
-            align-items: flex-start;
+            gap: 16px;
+            padding-bottom: 20px;
+          }
+          .topbar .actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            width: 100%;
+            gap: 8px;
+          }
+          .topbar .actions .button {
+            justify-content: center;
+            font-size: 12.5px;
+            padding: 8px;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .topbar h1 {
+            font-size: 1.8rem;
+          }
+          .topbar h1 span {
+            font-size: 1.4rem;
+          }
+          .robot-stage {
+            height: 320px;
+          }
+          .metric-card {
+            padding: 14px 16px;
+          }
+          .metric-card strong {
+            font-size: 24px;
           }
         }
       `}} />
@@ -585,10 +618,10 @@ export default async function OverviewPage() {
       <header className="topbar">
         <div>
           <p className="eyebrow">{lang === "th" ? "คอนโซลวิจัยระบบ" : "Research Console"}</p>
-          <h2>
+          <h1>
             {lang === "th" ? "ภาพรวม" : "Overview"}{" "}
             <span>& {lang === "th" ? "สรุปคลังข้อมูล" : "Corpus Summary"}</span>
-          </h2>
+          </h1>
           <p className="subtitle">{t.overviewDesc}</p>
         </div>
 
@@ -617,7 +650,7 @@ export default async function OverviewPage() {
           {/* Database Offline warning alert container */}
           {dbOffline && (
             <div className="alert">
-              <strong>Database Offline:</strong> Live PostgreSQL connection is unavailable. Displaying high-fidelity simulated research data.
+              <strong>Database Offline:</strong> Live PostgreSQL is unavailable. Showing sample atlas records for layout preview.
             </div>
           )}
 
@@ -733,15 +766,6 @@ export default async function OverviewPage() {
 
           <div className="robot-model-wrapper">
             <RobotViewer />
-          </div>
-
-          <div className="robot-notes">
-            <p>{lang === "th" ? "มุมมองสัญรูปหุ่นยนต์โต้ตอบได้" : "Interactive embodiment view"}</p>
-            <ul>
-              <li>{lang === "th" ? "ลากเพื่อหมุนมุมกล้อง" : "Drag to orbit"}</li>
-              <li>{lang === "th" ? "เลื่อนเมาส์หรือหยิกนิ้วเพื่อย่อขยาย" : "Scroll or pinch to zoom"}</li>
-              <li>{lang === "th" ? "การจำลองทางจลนศาสตร์ในโหมดวนซ้ำ" : "Kinematics animation on active loop"}</li>
-            </ul>
           </div>
         </section>
       </div>

@@ -13,6 +13,13 @@ The platform should collect, normalize, classify, and visualize four connected l
 
 The first version should not try to be a perfect national robot census. It should be a transparent research atlas with provenance, confidence scores, audit trails, and community submission.
 
+Current implementation status:
+
+- The active web app is the Next.js + Prisma stack in this repository.
+- Prisma Postgres is linked and seeded from `thailand_humanoid_atlas_seed_records.json`.
+- The JSON seed file auto-syncs into the database during local dev.
+- The legacy Python pipeline still exists under `src/humanoid_atlas/` and mirrors the same atlas ideas for reference.
+
 ---
 
 ## One-Sentence Positioning
@@ -119,6 +126,111 @@ Thailand-related humanoid and social robotics records from public sources, curat
 
 ---
 
+## Atlas Pipeline Order
+
+For the Research Atlas / OpenAtlas-style pipeline, use the layers in this order:
+
+```text
+dedupe -> relevance scoring -> NLP extraction -> graph model -> statistics/analytics -> caching
+```
+
+This is the operating sequence for both the legacy Python pipeline and the active web app data model.
+
+### 1. Deduplication
+
+Start here before any AI work, graph work, or enrichment.
+
+```text
+exact URL canonicalization -> unique index on url
+platform + external_id uniqueness when available
+TF-IDF + cosine similarity for near duplicates
+MinHash/LSH later when corpus size grows
+```
+
+Recommended thresholds:
+
+```text
+similarity >= 0.95  -> almost duplicate
+0.85-0.95           -> likely syndicated or copied
+< 0.85              -> probably unique
+```
+
+### 2. Relevance Scoring
+
+Use a weighted score that answers two questions:
+
+```text
+Is this about humanoid/social/service/education robotics?
+Is this about Thailand or a Thailand-connected entity?
+```
+
+Suggested score:
+
+```text
+score = 0.45 * topic_score
+      + 0.25 * scope_score
+      + 0.15 * source_quality_score
+      + 0.15 * evidence_density_score
+```
+
+Suggested review buckets:
+
+```text
+confidence >= 0.85        -> auto accept
+0.60 <= confidence < 0.85 -> accept but audit later
+confidence < 0.60         -> review or reject
+```
+
+### 3. NLP Extraction
+
+Use structured extraction for:
+
+- taxonomy labels
+- entities
+- evidence excerpts
+- triplets
+- perspective annotations
+
+Preferred progression:
+
+```text
+rule-based labels -> TF-IDF / linear models -> embedding similarity -> LLM JSON extraction
+```
+
+The extractor should always be able to abstain when evidence is thin.
+
+### 4. Graph Model
+
+Build the graph from triplets:
+
+```text
+subject -> relation -> object
+```
+
+Use a directed weighted graph and cache graph summaries for the UI.
+
+### 5. Statistics / Analytics
+
+Use log transforms and nonparametric summaries for skewed counts, engagement, and trend analysis.
+
+### 6. Caching
+
+Cache any expensive summary, graph metric, or dashboard output and invalidate when source, entity, triplet, or taxonomy data changes.
+
+---
+
+## What Has Already Been Done
+
+- Seed JSON import is wired into Prisma seed.
+- The seed file auto-syncs in local dev.
+- Prisma client output uses `generated/prisma`.
+- The web app reads from Prisma Postgres instead of local SQLite.
+- A live read verification script exists.
+- The app has source ingestion, robot registry, contribution, inventory, perspective, graph, analytics, database, and admin pages.
+- The main missing work is deeper algorithmic hardening, especially dedupe, scoring, and analytics upgrades.
+
+---
+
 ## Recommended Initial Data Sources
 
 ### Must-Have for V1
@@ -157,6 +269,100 @@ Thailand-related humanoid and social robotics records from public sources, curat
 
 8. **Data.go.th / Thai Government Open Data**
    - Optional for industry, education, health, aging society, innovation, and robotics-related datasets.
+
+---
+
+## Algorithms To Use
+
+For your **Research Atlas / OpenAtlas**, the math models and algorithms should be used in layers:
+
+```text
+dedupe -> relevance scoring -> NLP extraction -> graph model -> statistics/analytics -> caching
+```
+
+The pipeline should stay topic-neutral in structure and topic-specific only in configuration, labels, and adapters.
+
+### 1. Deduplication Model
+
+Use this first, before any AI or graph work.
+
+| Purpose | Algorithm / Model | How to implement |
+| --- | --- | --- |
+| Exact duplicate URL | URL canonicalization + `UNIQUE(url)` | Normalize URL, remove `utm_*`, `fbclid`, trailing slash, lowercase host |
+| Same API item | `(platform, external_id)` uniqueness | Add unique index if source has IDs |
+| Same/similar text | TF-IDF + cosine similarity | Convert text to TF-IDF vectors, compare similarity |
+| Large-scale near duplicates | MinHash / LSH | Use later when corpus becomes too big |
+
+Thresholds:
+
+```text
+similarity >= 0.95  -> almost duplicate
+0.85-0.95           -> likely syndicated / copied
+< 0.85              -> probably unique
+```
+
+### 2. Relevance Scoring Model
+
+Every record should answer:
+
+```text
+Is this about the topic?
+Is this inside the scope?
+```
+
+Suggested model:
+
+```text
+score = 0.45 * topic_score
+      + 0.25 * scope_score
+      + 0.15 * source_quality_score
+      + 0.15 * evidence_density_score
+```
+
+### 3. Classification Model
+
+Use taxonomy classification for each source.
+
+| Level | Method | Use case |
+| --- | --- | --- |
+| Baseline | Keyword + regex rules | Fast, cheap, transparent |
+| Better | TF-IDF + Logistic Regression / Linear SVM | When you have labeled examples |
+| Semantic | Embedding similarity | Good for fuzzy topic matching |
+| Advanced | LLM JSON classifier | Best for messy text, but expensive |
+
+### 4. Relationship Extraction Model
+
+Use subject-relation-object triplets.
+
+### 5. Graph Model
+
+Build a directed weighted graph from triplets and compute degree centrality, betweenness centrality, weakly connected components, and communities.
+
+### 6. Analytics and Statistics Model
+
+Use log transforms, geometric mean, bootstrap confidence intervals, and nonparametric tests for skewed data.
+
+### 7. Geographic Model
+
+Store only derived coordinates with confidence when place extraction is available. Do not treat inferred coordinates as exact.
+
+### 8. Cache Algorithm
+
+Cache graph metrics, node details, yearly taxonomy summaries, and dashboard summaries in a versioned cache table.
+
+---
+
+## Implementation Gaps To Close
+
+After reading the current codebase, the main missing pieces are:
+
+- Explicit URL canonicalization and duplicate detection before insert.
+- A shared dedupe service for both seed import and ingest paths.
+- A dedicated cache invalidation policy for graph and dashboard summaries.
+- Stronger stats helpers for bootstrap and nonparametric analytics.
+- More complete geographic extraction when the atlas starts mapping places.
+
+These are the next code tasks if you want the atlas to match the full architecture described here.
 
 ---
 
@@ -202,68 +408,16 @@ LLM_PROVIDER=none
 
 ```text
 thailand-humanoid-atlas/
-  README.md
-  pyproject.toml
-  .env.example
-  data/
-    seeds/
-      robot_models.seed.yml
-      owned_inventory.seed.yml
-      organizations.seed.yml
-      source_urls.seed.yml
-    processed/
-  docs/
-    thailand-humanoid-atlas-project.md
-    taxonomy.md
-    data-governance.md
-    source-policy.md
-  scripts/
-  src/
-    humanoid_atlas/
-      __init__.py
-      __main__.py
-      cli.py
-      config.py
-      models.py
-      adapters/
-        __init__.py
-        seed_yaml.py
-        rss.py
-        gdelt.py
-        youtube.py
-        openalex.py
-        github.py
-        manual_social.py
-      db/
-        __init__.py
-        schema.sql
-        migrations/
-        migrate.py
-        repos.py
-        session.py
-      pipeline/
-        ingest.py
-        relevance.py
-        nlp.py
-        perception.py
-        graph_metrics.py
-        taxonomy_stats.py
-        algo_registry.py
-      services/
-        dedup.py
-        llm.py
-        web_fetch.py
-        geocode.py
-        licensing.py
-      stats/
-        engagement_bootstrap.py
-        nonparametric.py
-      viewer/
-        server.py
-        templates/
-        static/
-  tests/
-    fixtures/
+  app/                    # Next.js routes, pages, and actions
+  lib/                    # Prisma client, ingest helpers, classifiers, seed importer
+  prisma/                 # Prisma schema, config, migrations, seed entrypoints
+  scripts/                # Dev sync, verification, ingest wrappers
+  src/humanoid_atlas/     # Legacy Python pipeline and reference implementation
+  tests/                  # Python smoke/unit tests
+  tests-node/             # Playwright browser tests
+  data/                   # Existing local data and legacy artifacts
+  thailand_humanoid_atlas_seed_records.json
+  thailand-humanoid-atlas-project.md
 ```
 
 ---
@@ -571,7 +725,21 @@ Add a visible correction request pathway. Every source detail page should includ
 
 ---
 
-## CLI Commands
+## Current Commands
+
+```bash
+pnpm dev
+pnpm db:generate
+pnpm db:push
+pnpm db:seed
+pnpm typecheck
+pnpm build
+tsx scripts/verify-prisma.ts
+```
+
+---
+
+## CLI Commands Legacy
 
 ```bash
 python -m humanoid_atlas db init
@@ -983,4 +1151,3 @@ Developer must do outside editor:
 - Tests cover schema, ingest idempotency, classifier output, graph empty state, and admin protection.
 - Method notes clearly explain limitations.
 - Source policy explains licensing, privacy, and platform terms.
-

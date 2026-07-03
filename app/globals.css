@@ -366,3 +366,29 @@ th {
   transform: scale(1.1);
 }
 
+/* Sidebar Brand Logo responsive styling */
+.brand-logo-container {
+  margin-bottom: 22px;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.brand-logo {
+  width: 100%;
+  max-width: 180px;
+  height: auto;
+  max-height: 280px;
+  object-fit: contain;
+}
+
+@media (max-width: 860px) {
+  .brand-logo-container {
+    margin-bottom: 12px;
+  }
+  .brand-logo {
+    max-width: 130px;
+    max-height: 50px;
+  }
+}
+

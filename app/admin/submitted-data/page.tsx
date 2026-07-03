@@ -101,7 +101,7 @@ export default async function AdminSubmittedDataPage({ searchParams }: { searchP
         </div>
       </div>
 
-      <div className="two" style={{ gridTemplateColumns: "1fr 400px", gap: "16px" }}>
+      <div className="two" style={{ gap: "16px" }}>
         
         {/* Left Panel: Submissions List */}
         <div className="table-wrap">
