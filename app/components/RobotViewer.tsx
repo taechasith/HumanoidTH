@@ -39,8 +39,8 @@ export default function RobotViewer() {
     scene.background = null;
 
     const camera = new PerspectiveCamera(26, 1, 0.01, 100);
-    camera.position.set(0, 0.35, 4.75);
-    camera.lookAt(0, 0.18, 0);
+    camera.position.set(0, 0.45, 4.75);
+    camera.lookAt(0, 0.32, 0);
 
     const renderer = new WebGLRenderer({ alpha: true, antialias: true });
     renderer.setClearColor(new Color(0xffffff), 0);
@@ -71,7 +71,7 @@ export default function RobotViewer() {
     scene.add(rimLight);
 
     const robotRoot = new Group();
-    robotRoot.position.y = -0.78;
+    robotRoot.position.y = -0.32;
     scene.add(robotRoot);
 
     const pointer = new Vector2(0, 0);
@@ -87,7 +87,7 @@ export default function RobotViewer() {
 
     let isWaving = false;
     let waveTime = 0;
-    let waveTriggerTime = 1.8; // wave 1.8s after loading
+    let waveTriggerTime = 3.2; // welcoming wave 3.2s after loading
     let lastTime = 0;
 
     let disposed = false;
@@ -171,15 +171,17 @@ export default function RobotViewer() {
 
     const updatePointerTarget = (event: PointerEvent) => {
       const rect = renderer.domElement.getBoundingClientRect();
-      const x = ((event.clientX - rect.left) / rect.width - 0.5) * 2;
-      const y = ((event.clientY - rect.top) / rect.height - 0.5) * 2;
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
 
-      pointer.set(
-        MathUtils.clamp(x, -1, 1),
-        MathUtils.clamp(y, -1, 1)
-      );
+      const dx = event.clientX - centerX;
+      const dy = event.clientY - centerY;
 
-      targetHead.set(pointer.x * 0.38, pointer.y * 0.26);
+      const x = MathUtils.clamp(dx / (window.innerWidth / 2), -1, 1);
+      const y = MathUtils.clamp(dy / (window.innerHeight / 2), -1, 1);
+
+      pointer.set(x, y);
+      targetHead.set(pointer.x * 0.45, pointer.y * 0.32);
     };
 
     const onPointerDown = (event: PointerEvent) => {
@@ -214,10 +216,10 @@ export default function RobotViewer() {
     };
 
     renderer.domElement.addEventListener("pointerdown", onPointerDown);
-    renderer.domElement.addEventListener("pointermove", onPointerMove);
-    renderer.domElement.addEventListener("pointerup", onPointerUp);
-    renderer.domElement.addEventListener("pointercancel", onPointerUp);
-    renderer.domElement.addEventListener("pointerleave", onPointerLeave);
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+    window.addEventListener("pointercancel", onPointerUp);
+    document.addEventListener("pointerleave", onPointerLeave);
 
     const clock = new Clock();
 
@@ -305,10 +307,10 @@ export default function RobotViewer() {
       window.cancelAnimationFrame(animationFrame);
       resizeObserver.disconnect();
       renderer.domElement.removeEventListener("pointerdown", onPointerDown);
-      renderer.domElement.removeEventListener("pointermove", onPointerMove);
-      renderer.domElement.removeEventListener("pointerup", onPointerUp);
-      renderer.domElement.removeEventListener("pointercancel", onPointerUp);
-      renderer.domElement.removeEventListener("pointerleave", onPointerLeave);
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerUp);
+      document.removeEventListener("pointerleave", onPointerLeave);
       renderer.dispose();
       frame.removeChild(renderer.domElement);
     };
