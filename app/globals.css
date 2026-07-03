@@ -287,6 +287,14 @@ button.primary {
   color: #ffffff;
 }
 
+button:disabled,
+button:disabled:hover {
+  cursor: progress;
+  opacity: 0.72;
+  transform: none;
+  box-shadow: none;
+}
+
 .button.primary:hover,
 button.primary:hover {
   background: var(--accent-strong);
@@ -472,6 +480,13 @@ th {
   padding-bottom: env(safe-area-inset-bottom, 0); /* Support notch iPhones */
 }
 
+.data-pull-fab {
+  bottom: 24px;
+  position: fixed !important;
+  right: 24px;
+  z-index: 1100;
+}
+
 .tab-item {
   display: flex;
   flex-direction: column;
@@ -544,6 +559,11 @@ th {
 
   .main {
     padding: 16px;
+  }
+
+  .data-pull-fab {
+    bottom: calc(84px + env(safe-area-inset-bottom, 0));
+    right: 16px;
   }
 
   .grid,

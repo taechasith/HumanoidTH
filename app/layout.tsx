@@ -5,6 +5,7 @@ import SidebarNav from "./components/SidebarNav";
 import LanguageSelector from "./components/LanguageSelector";
 import MobileHeader from "./components/MobileHeader";
 import MobileTabNav from "./components/MobileTabNav";
+import DataPullFab from "./components/DataPullFab";
 import { getTranslation } from "@/lib/translations";
 import "./globals.css";
 
@@ -55,11 +56,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </div>
           </aside>
           <main className="main">{children}</main>
+          <DataPullFab />
           <MobileTabNav />
         </div>
       </body>
     </html>
   );
 }
-
 

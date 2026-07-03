@@ -16,69 +16,6 @@ export type ContributionMapPoint = {
   detailsList: string[];
 };
 
-const fallbackClusters: ContributionMapPoint[] = [
-  {
-    id: "c1",
-    title: "Chulalongkorn University Robotics Lab",
-    organization: "Chulalongkorn University",
-    locationLabel: "Bangkok, Thailand",
-    latitude: 13.7367,
-    longitude: 100.5231,
-    summary: "Active research hub for social and humanoid robots, including the Dinsaw companion series and medical assistance units.",
-    contributorType: "University",
-    contributionCount: 3,
-    detailsList: ["Dinsaw Eldercare Robot", "Medical service robot research", "2 owned Pepper units in lab"]
-  },
-  {
-    id: "c2",
-    title: "KMUTT FIBO Lab",
-    organization: "King Mongkut's University of Technology Thonburi",
-    locationLabel: "Bangkok, Thailand",
-    latitude: 13.6525,
-    longitude: 100.4936,
-    summary: "Institute of Field Robotics (FIBO) developing walking gait controllers and research on open-source humanoid simulation.",
-    contributorType: "University",
-    contributionCount: 2,
-    detailsList: ["FIBO Humanoid Gait Controller", "Open-source humanoid simulation repository"]
-  },
-  {
-    id: "c3",
-    title: "VISTEC AI & Robotics Lab",
-    organization: "Vidyasirimedhi Institute of Science and Technology",
-    locationLabel: "Rayong, Thailand",
-    latitude: 13.0039,
-    longitude: 101.4429,
-    summary: "Conducted autonomous visual navigation for Unitree G1 humanoid robots using multi-modal AI systems.",
-    contributorType: "University",
-    contributionCount: 2,
-    detailsList: ["Unitree G1 Visual Navigation project", "Gemini-powered robotics SDK contribution"]
-  },
-  {
-    id: "c4",
-    title: "CT Asia Robotics Headquarters",
-    organization: "CT Asia Robotics",
-    locationLabel: "Bangkok, Thailand",
-    latitude: 13.7850,
-    longitude: 100.6015,
-    summary: "Pioneered commercial service robotics in Thailand, developing and manufacturing the Dinsaw companion robot.",
-    contributorType: "Enterprise",
-    contributionCount: 2,
-    detailsList: ["Dinsaw Mini commercial release", "Eldercare robot deployment services"]
-  },
-  {
-    id: "c5",
-    title: "Chiang Mai University Robotics Center",
-    organization: "Chiang Mai University",
-    locationLabel: "Chiang Mai, Thailand",
-    latitude: 18.8021,
-    longitude: 98.9515,
-    summary: "Researching human-robot collaboration paradigms in agricultural and public guide humanoid applications.",
-    contributorType: "University",
-    contributionCount: 1,
-    detailsList: ["Public guide robot evaluation study"]
-  }
-];
-
 export async function analyzeClustersWithGemini(): Promise<ContributionMapPoint[]> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
@@ -261,39 +198,19 @@ export async function fetchContributionClusters(): Promise<ContributionMapPoint[
     try {
       return await analyzeClustersWithGemini();
     } catch (e) {
-      console.error("Gemini cluster analysis failed, using fallback:", e);
+      console.error("Gemini cluster analysis failed:", e);
     }
   }
 
-  return fallbackClusters;
+  return [];
 }
 
 export async function reanalyzeClustersWithGemini() {
-  try {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (apiKey && apiKey !== "mock_key" && apiKey.trim() !== "") {
-      await analyzeClustersWithGemini();
-    } else {
-      throw new Error("No valid GEMINI_API_KEY environment variable set.");
-    }
-  } catch (error) {
-    console.error("Failed to run Gemini AI analysis, falling back to simulated clusters:", error);
-    try {
-      // If no key or call fails, gracefully upsert fallback clusters into cache
-      await prisma.statsCache.upsert({
-        where: { key: "map_contribution_clusters" },
-        update: {
-          valueJson: fallbackClusters as any,
-          updatedAt: new Date()
-        },
-        create: {
-          key: "map_contribution_clusters",
-          valueJson: fallbackClusters as any
-        }
-      });
-    } catch (dbError) {
-      console.error("Database cache write failed:", dbError);
-    }
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey || apiKey === "mock_key" || apiKey.trim() === "") {
+    throw new Error("A valid GEMINI_API_KEY environment variable is required.");
   }
+
+  await analyzeClustersWithGemini();
   revalidatePath("/map");
 }

@@ -7,9 +7,9 @@
   {% for item in items %}
   <tr><td><strong>{{ item.title }}</strong><br><span class="muted">{{ item.url or item.notes }}</span></td><td>{{ item.submission_type }}</td><td>{{ item.status }}</td><td>
     {% if admin_mode %}
-    <form method="post" action="/admin/submitted-data/{{ item.id }}/approve" style="display:inline"><button>Approve</button></form>
-    <form method="post" action="/admin/submitted-data/{{ item.id }}/reject" style="display:inline"><button>Reject</button></form>
-    <form method="post" action="/admin/submitted-data/{{ item.id }}/needs-info" style="display:inline"><button>Needs info</button></form>
+    <form method="post" action="/admin/{{ item.id }}/approve" style="display:inline"><button>Approve</button></form>
+    <form method="post" action="/admin/{{ item.id }}/reject" style="display:inline"><button>Reject</button></form>
+    <form method="post" action="/admin/{{ item.id }}/needs-info" style="display:inline"><button>Needs info</button></form>
     {% else %}<span class="muted">Hidden</span>{% endif %}
   </td></tr>
   {% else %}<tr><td colspan="4" class="empty">No pending submissions.</td></tr>{% endfor %}

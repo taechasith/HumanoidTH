@@ -81,6 +81,15 @@ export default function RobotViewer() {
     const activeHeadNodes: Object3D[] = [];
     const activeEyeNodes: Object3D[] = [];
 
+    let rightShoulder: Object3D | null = null;
+    let rightElbow: Object3D | null = null;
+    let rightForearm: Object3D | null = null;
+
+    let isWaving = false;
+    let waveTime = 0;
+    let waveTriggerTime = 1.8; // wave 1.8s after loading
+    let lastTime = 0;
+
     let disposed = false;
     let dragging = false;
     let lastClientX = 0;
@@ -144,6 +153,16 @@ export default function RobotViewer() {
         if (eyeNodeNames.includes(child.name)) {
           activeEyeNodes.push(child);
         }
+
+        if (child.name === "Arm.R_069") {
+          rightShoulder = child;
+        }
+        if (child.name === "Arm.R.001_070") {
+          rightElbow = child;
+        }
+        if (child.name === "Arm.R.002_071") {
+          rightForearm = child;
+        }
       });
 
       fitModelToStage(model);
@@ -204,10 +223,60 @@ export default function RobotViewer() {
 
     const animate = () => {
       const elapsed = clock.getElapsedTime();
+      const deltaTime = lastTime === 0 ? 0.016 : elapsed - lastTime;
+      lastTime = elapsed;
+
       currentRootYaw += (targetRootYaw - currentRootYaw) * 0.12;
       currentHead.lerp(targetHead, 0.13);
 
       robotRoot.rotation.y = currentRootYaw;
+
+      // Programmatic Waving Animation logic
+      if (rightShoulder && rightElbow && rightForearm) {
+        const baseShoulder = baseRotations.get(rightShoulder);
+        const baseElbow = baseRotations.get(rightElbow);
+        const baseForearm = baseRotations.get(rightForearm);
+
+        if (baseShoulder && baseElbow && baseForearm) {
+          if (!isWaving && elapsed > waveTriggerTime) {
+            isWaving = true;
+            waveTime = 0;
+          }
+
+          if (isWaving) {
+            waveTime += deltaTime;
+            let waveFactor = 0;
+
+            if (waveTime < 0.5) {
+              waveFactor = waveTime / 0.5; // Ease in / raise arm
+            } else if (waveTime >= 0.5 && waveTime < 2.5) {
+              waveFactor = 1.0; // Fully raised
+            } else if (waveTime >= 2.5 && waveTime < 3.0) {
+              waveFactor = (3.0 - waveTime) / 0.5; // Ease out / lower arm
+            } else {
+              waveFactor = 0;
+              isWaving = false;
+              waveTriggerTime = elapsed + 15 + Math.random() * 15; // Wave again in 15-30s
+            }
+
+            const waveOsc = Math.sin(waveTime * 14) * 0.32 * waveFactor;
+
+            // Raise shoulder up (Z-rotation negative, X-rotation slightly negative for forward tilt)
+            rightShoulder.rotation.z = baseShoulder.z - 1.25 * waveFactor;
+            rightShoulder.rotation.x = baseShoulder.x - 0.35 * waveFactor;
+            // Bend elbow forward (Y-rotation positive)
+            rightElbow.rotation.y = baseElbow.y + 0.7 * waveFactor;
+            // Wave forearm (Z-rotation oscillation)
+            rightForearm.rotation.z = baseForearm.z + waveOsc;
+          } else {
+            // Smoothly return to rest base position
+            rightShoulder.rotation.z += (baseShoulder.z - rightShoulder.rotation.z) * 0.1;
+            rightShoulder.rotation.x += (baseShoulder.x - rightShoulder.rotation.x) * 0.1;
+            rightElbow.rotation.y += (baseElbow.y - rightElbow.rotation.y) * 0.1;
+            rightForearm.rotation.z += (baseForearm.z - rightForearm.rotation.z) * 0.1;
+          }
+        }
+      }
 
       for (const node of activeHeadNodes) {
         const base = baseRotations.get(node);

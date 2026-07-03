@@ -24,7 +24,7 @@ interface SidebarNavProps {
 }
 
 export default function SidebarNav({ currentLang = "en" }: SidebarNavProps) {
-  const pathname = usePathname();
+  const pathname = usePathname() || "/";
   const t = getTranslation(currentLang);
 
   const navItems = [

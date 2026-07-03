@@ -18,7 +18,7 @@ def test_required_routes_render():
         "/database",
         "/submit-data",
         "/profile",
-        "/admin/submitted-data",
+        "/admin",
     ]:
         response = client.get(path)
         assert response.status_code == 200, path
@@ -27,5 +27,5 @@ def test_required_routes_render():
 def test_admin_actions_protected():
     init_db()
     client = TestClient(create_app())
-    response = client.post("/admin/submitted-data/1/approve")
+    response = client.post("/admin/1/approve")
     assert response.status_code == 403

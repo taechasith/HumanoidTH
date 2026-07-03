@@ -125,17 +125,19 @@ def create_app() -> FastAPI:
                 """,
                 (submission_type, title, url, notes, submitter_name, submitter_contact, "queued", now(), now()),
             )
-        return RedirectResponse("/admin/submitted-data", status_code=303)
+        return RedirectResponse("/admin", status_code=303)
 
     @app.get("/profile")
     def profile(request: Request):
         return render(request, "profile.html")
 
+    @app.get("/admin")
     @app.get("/admin/submitted-data")
     def admin_submitted(request: Request, admin: int = 0):
         data = rows("SELECT * FROM submitted_data ORDER BY id DESC")
         return render(request, "admin_submitted.html", items=data, admin_mode=bool(admin))
 
+    @app.post("/admin/{submission_id}/{action}")
     @app.post("/admin/submitted-data/{submission_id}/{action}")
     def admin_action(submission_id: int, action: str, admin: int = 0):
         if not admin:
@@ -143,6 +145,6 @@ def create_app() -> FastAPI:
         status = {"approve": "approved", "reject": "rejected", "needs-info": "needs review"}.get(action, "queued")
         with connect() as conn:
             conn.execute("UPDATE submitted_data SET status=?, updated_at=? WHERE id=?", (status, now(), submission_id))
-        return RedirectResponse("/admin/submitted-data", status_code=303)
+        return RedirectResponse("/admin", status_code=303)
 
     return app
