@@ -13,7 +13,9 @@ import {
   EyeOff, 
   Pin, 
   HelpCircle,
-  X
+  X,
+  Copy,
+  FolderOpen
 } from "lucide-react";
 
 // Dynamically load cytoscape to avoid SSR issues
@@ -26,6 +28,53 @@ interface NetworkGraphClientProps {
   contributions: any[];
   currentLang?: "en" | "th";
 }
+
+const getGraphFolderForNodeType = (type: string) => {
+  switch (type) {
+    case "robot":
+      return "robots";
+    case "owned_inventory":
+      return "inventory";
+    case "person":
+      return "people";
+    case "organization":
+    case "company":
+    case "university_lab":
+      return "organizations";
+    case "contribution":
+      return "contributions";
+    case "theme":
+      return "themes";
+    case "media_source":
+      return "sources";
+    case "paper":
+      return "papers";
+    case "event":
+      return "events";
+    case "place":
+      return "places";
+    default:
+      return "concepts";
+  }
+};
+
+const normalizeGraphPathBase = (basePath: string) => {
+  return basePath.trim().replace(/[\\/]+$/, "");
+};
+
+const createGraphFilePath = (node: any, basePath: string) => {
+  const label = String(node.label || node.id || "untitled");
+  const slug = label
+    .normalize("NFKD")
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}_\-\s]/gu, "")
+    .trim()
+    .replace(/\s+/g, "_");
+  const relativePath = `${getGraphFolderForNodeType(node.type || "concept")}/${slug || "untitled"}.md`;
+  const normalizedBase = normalizeGraphPathBase(basePath);
+
+  return normalizedBase ? `${normalizedBase}/${relativePath}` : relativePath;
+};
 
 export default function NetworkGraphClient({
   triplets,
@@ -81,6 +130,12 @@ export default function NetworkGraphClient({
   // Timeline year filter
   const [selectedYear, setSelectedYear] = useState<number>(2026);
   const [useYearFilter, setUseYearFilter] = useState(false);
+
+  // Copy local graph paths settings
+  const [copyBasePath, setCopyBasePath] = useState("");
+  const [copyOutputFormat, setCopyOutputFormat] = useState<"newline" | "semicolon">("newline");
+  const [copyExcluded, setCopyExcluded] = useState("");
+  const [copiedStatus, setCopiedStatus] = useState("");
 
   // Load cytoscape on mount
   useEffect(() => {
@@ -566,6 +621,65 @@ export default function NetworkGraphClient({
     setSelectedNodeTypes(prev => ({ ...prev, [type]: !prev[type] }));
   };
 
+  // Compute local graph paths for the selected node
+  const localGraphPaths = useMemo(() => {
+    if (!selectedElement || selectedElement.type !== "node") return [];
+
+    const excludedFolders = copyExcluded
+      .split(",")
+      .map((folder) => folder.trim().toLowerCase())
+      .filter(Boolean);
+    const nodeById = new Map(graphData.nodes.map((node) => [node.id, node]));
+    const linkedPaths = new Set<string>();
+
+    graphData.edges.forEach((edge) => {
+      const neighborId =
+        edge.source === selectedElement.id
+          ? edge.target
+          : edge.target === selectedElement.id
+            ? edge.source
+            : null;
+
+      if (!neighborId) return;
+
+      const neighborNode = nodeById.get(neighborId);
+      if (!neighborNode) return;
+
+      const fullPath = createGraphFilePath(neighborNode, copyBasePath);
+      const searchablePath = fullPath.toLowerCase();
+      const searchableType = String(neighborNode.type || "").toLowerCase();
+
+      if (
+        excludedFolders.some(
+          (folder) => searchablePath.includes(folder) || searchableType.includes(folder)
+        )
+      ) {
+        return;
+      }
+
+      linkedPaths.add(fullPath);
+    });
+
+    return Array.from(linkedPaths).sort((a, b) => a.localeCompare(b));
+  }, [selectedElement, copyBasePath, copyExcluded, graphData]);
+
+  const handleCopyPaths = async () => {
+    if (localGraphPaths.length === 0) return;
+
+    const separator = copyOutputFormat === "semicolon" ? ";" : "\n";
+    const pathsString = localGraphPaths.join(separator);
+
+    try {
+      await navigator.clipboard.writeText(pathsString);
+      setCopiedStatus(currentLang === "th" ? "คัดลอกแล้ว!" : "Copied!");
+      setTimeout(() => setCopiedStatus(""), 2000);
+    } catch (err) {
+      console.error("Failed to copy:", err);
+      setCopiedStatus(currentLang === "th" ? "ล้มเหลว!" : "Failed!");
+      setTimeout(() => setCopiedStatus(""), 2000);
+    }
+  };
+
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: `
@@ -830,6 +944,71 @@ data/seeds/relationships.yaml`}
                       <p className="muted">This entity is loaded as a relational node from public media or academic extraction logs.</p>
                     </div>
                   )}
+
+                  {/* Copy Local Graph Paths Implementation */}
+                  <div className="copy-paths-section" style={{ marginTop: "16px", paddingTop: "16px", borderTop: "1px solid var(--border)" }}>
+                    <div className="copy-paths-title" style={{ fontSize: "13.5px", fontWeight: 800, textTransform: "uppercase", color: "var(--accent)", marginBottom: "10px", display: "flex", alignItems: "center", gap: "6px" }}>
+                      <FolderOpen size={15} /> {t.copyLocalGraphPaths}
+                    </div>
+                    
+                    <div className="copy-paths-row" style={{ display: "flex", flexDirection: "column", gap: "4px", marginBottom: "8px" }}>
+                      <label style={{ fontSize: "11px", fontWeight: "bold", color: "var(--text-secondary)" }}>{t.basePathLabel}</label>
+                      <input 
+                        type="text"
+                        placeholder="e.g. https://github.com/creativelab/"
+                        value={copyBasePath}
+                        onChange={(e) => setCopyBasePath(e.target.value)}
+                        style={{ padding: "6px 8px", fontSize: "12px", border: "1px solid var(--border)", borderRadius: "4px", background: "#040a08", color: "#10B981" }}
+                      />
+                      <span className="muted" style={{ fontSize: "10px", color: "var(--text-secondary)", opacity: 0.8 }}>{t.basePathDesc}</span>
+                    </div>
+
+                    <div className="copy-paths-row" style={{ display: "flex", flexDirection: "column", gap: "4px", marginBottom: "8px" }}>
+                      <label style={{ fontSize: "11px", fontWeight: "bold", color: "var(--text-secondary)" }}>{t.outputFormatLabel}</label>
+                      <select 
+                        value={copyOutputFormat}
+                        onChange={(e) => setCopyOutputFormat(e.target.value as "newline" | "semicolon")}
+                        style={{ padding: "6px 8px", fontSize: "12px", border: "1px solid var(--border)", borderRadius: "4px", background: "#040a08", color: "#10B981" }}
+                      >
+                        <option value="newline">{t.newlineSeparated}</option>
+                        <option value="semicolon">{t.semicolonSeparated}</option>
+                      </select>
+                      <span className="muted" style={{ fontSize: "10px", color: "var(--text-secondary)", opacity: 0.8 }}>{t.outputFormatDesc}</span>
+                    </div>
+
+                    <div className="copy-paths-row" style={{ display: "flex", flexDirection: "column", gap: "4px", marginBottom: "8px" }}>
+                      <label style={{ fontSize: "11px", fontWeight: "bold", color: "var(--text-secondary)" }}>{t.excludedFoldersLabel}</label>
+                      <input 
+                        type="text"
+                        placeholder="e.g. concept, theme"
+                        value={copyExcluded}
+                        onChange={(e) => setCopyExcluded(e.target.value)}
+                        style={{ padding: "6px 8px", fontSize: "12px", border: "1px solid var(--border)", borderRadius: "4px", background: "#040a08", color: "#10B981" }}
+                      />
+                      <span className="muted" style={{ fontSize: "10px", color: "var(--text-secondary)", opacity: 0.8 }}>{t.excludedFoldersDesc}</span>
+                    </div>
+
+                    {localGraphPaths.length > 0 ? (
+                      <>
+                        <div style={{ fontSize: "11.5px", fontWeight: "bold", marginBottom: "4px", color: "var(--text)" }}>{t.pathPreviewLabel} ({localGraphPaths.length}):</div>
+                        <div className="copy-paths-preview" style={{ background: "#040a08", color: "#10B981", fontFamily: "monospace", fontSize: "11px", padding: "8px", borderRadius: "4px", maxHeight: "100px", overflowY: "auto", whiteSpace: "pre-wrap", wordBreak: "break-all", border: "1px solid var(--border)", marginBottom: "8px" }}>
+                          {localGraphPaths.join(copyOutputFormat === "semicolon" ? "; " : "\n")}
+                        </div>
+
+                        <button 
+                          onClick={handleCopyPaths}
+                          className="button primary" 
+                          style={{ width: "100%", padding: "8px", fontSize: "12px", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", cursor: "pointer" }}
+                        >
+                          <Copy size={14} /> {copiedStatus || t.copyButtonLabel}
+                        </button>
+                      </>
+                    ) : (
+                      <div className="muted" style={{ fontSize: "11px", fontStyle: "italic", textAlign: "center", padding: "8px", background: "var(--surface-muted)", borderRadius: "4px" }}>
+                        {t.noPathsWarning}
+                      </div>
+                    )}
+                  </div>
                 </>
               ) : (
                 <>

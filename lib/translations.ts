@@ -4,6 +4,7 @@ export const translations = {
     overview: "Overview",
     dashboard: "Dashboard",
     dataPulls: "Data Pulls",
+    map: "Map",
     perspectives: "Perspectives",
     robots: "Robots",
     inventory: "Inventory",
@@ -47,6 +48,8 @@ export const translations = {
     dashboardDesc: "Aggregate counts across robot models, sources, contributions, and perspective annotations.",
     dataPullsTitle: "API Data Ingestion",
     dataPullsDesc: "Run source ingestion jobs from OpenAlex, GitHub, GDELT, and YouTube.",
+    mapTitle: "Source IP Map",
+    mapDesc: "Google Maps view of web-pulled source hosts, resolved IP addresses, and approximate IP geolocation.",
     perspectivesTitle: "Public Perspectives",
     perspectivesDesc: "Reviewed annotations extracted from source records about robotics topics, stance, and evidence.",
     robotsTitle: "Robot Model Registry",
@@ -68,13 +71,28 @@ export const translations = {
     cmsTitle: "Admin CMS",
     cmsDesc: "Edit source records, robot models, and community content in one place.",
     profileTitle: "User Profile & Simulation",
-    profileDesc: "Manage your current session user email and role for simulation purposes."
+    profileDesc: "Manage your current session user email and role for simulation purposes.",
+    
+    // Copy Local Graph Paths
+    copyLocalGraphPaths: "Copy Local Graph Paths",
+    basePathLabel: "Base Path",
+    basePathDesc: "Prefix prepended to file paths (e.g. repo URL)",
+    outputFormatLabel: "Output Format",
+    outputFormatDesc: "Choose path separator",
+    newlineSeparated: "Newline-separated",
+    semicolonSeparated: "Semicolon-separated",
+    excludedFoldersLabel: "Excluded Node Types / Names",
+    excludedFoldersDesc: "Comma-separated words to exclude (e.g. concept, theme)",
+    copyButtonLabel: "Copy Local Graph Paths",
+    noPathsWarning: "No connected paths found.",
+    pathPreviewLabel: "Paths Preview"
   },
   th: {
     brand: "คลังข้อมูลหุ่นยนต์ฮิวแมนนอยด์ไทย",
     overview: "ภาพรวม",
     dashboard: "แดชบอร์ด",
     dataPulls: "ดึงข้อมูล API",
+    map: "Map",
     perspectives: "มุมมองสาธารณะ",
     robots: "คลังรุ่นหุ่นยนต์",
     inventory: "รายการอุปกรณ์ทีม",
@@ -118,6 +136,8 @@ export const translations = {
     dashboardDesc: "มุมมองของสาธารณชนและสื่อต่อหุ่นยนต์ฮิวแมนนอยด์และหุ่นยนต์โซเชียลในประเทศไทย",
     dataPullsTitle: "การดึงข้อมูลผ่าน API",
     dataPullsDesc: "เรียกใช้งานการดึงข้อมูลจาก API ภายนอกเข้าสู่ระบบ",
+    mapTitle: "Source IP Map",
+    mapDesc: "Google Maps view of web-pulled source hosts, resolved IP addresses, and approximate IP geolocation.",
     perspectivesTitle: "ความคิดเห็นสาธารณะ",
     perspectivesDesc: "บันทึกข้อมูลทัศนคติ ความคิดเห็น และระดับความเชื่อมั่นของสาธารณชนต่อเทคโนโลยีหุ่นยนต์",
     robotsTitle: "คลังรุ่นหุ่นยนต์",
@@ -139,7 +159,21 @@ export const translations = {
     cmsTitle: "CMS สำหรับผู้ดูแล",
     cmsDesc: "แก้ไขข้อมูลต้นทาง โมเดลหุ่นยนต์ และข้อมูลจากชุมชนได้ในที่เดียว",
     profileTitle: "โปรไฟล์และจำลองสิทธิ์ผู้ใช้งาน",
-    profileDesc: "กำหนดอีเมลและสิทธิ์ผู้ใช้งานปัจจุบันเพื่อจุดประสงค์ในการจำลองและทดสอบระบบ"
+    profileDesc: "กำหนดอีเมลและสิทธิ์ผู้ใช้งานปัจจุบันเพื่อจุดประสงค์ในการจำลองและทดสอบระบบ",
+    
+    // Copy Local Graph Paths
+    copyLocalGraphPaths: "คัดลอกเส้นทางกราฟเฉพาะที่ (Copy Local Graph Paths)",
+    basePathLabel: "เส้นทางหลัก (Base Path)",
+    basePathDesc: "คำขึ้นต้นที่จะใส่หน้าเส้นทางไฟล์ทั้งหมด (เช่น URL ของคลังโค้ด)",
+    outputFormatLabel: "รูปแบบผลลัพธ์",
+    outputFormatDesc: "เลือกตัวคั่นแบ่งเส้นทางข้อมูล",
+    newlineSeparated: "แบ่งด้วยบรรทัดใหม่",
+    semicolonSeparated: "แบ่งด้วยเครื่องหมายเซมิโคลอน (;)",
+    excludedFoldersLabel: "คีย์เวิร์ด/ประเภทที่ไม่รวม",
+    excludedFoldersDesc: "คีย์เวิร์ดหรือประเภทที่จะไม่คัดลอก คั่นด้วยจุลภาค (เช่น concept, theme)",
+    copyButtonLabel: "คัดลอกเส้นทางกราฟเฉพาะที่",
+    noPathsWarning: "ไม่พบเส้นทางที่เชื่อมต่อกัน",
+    pathPreviewLabel: "ตัวอย่างเส้นทางที่จะคัดลอก"
   }
 } as const;
 

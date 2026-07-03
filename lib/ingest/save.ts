@@ -3,12 +3,14 @@ import { prisma } from "@/lib/prisma";
 import { Prisma } from "../../generated/prisma";
 import { classifyRelevance, extractPerspective, classifyWithGemini } from "@/lib/classifiers";
 import { canonicalizeUrl } from "@/lib/url";
+import { enrichRawMetaWithNetworkGeo } from "@/lib/geo";
 
 export async function saveSources(records: NormalizedSource[]) {
   let saved = 0;
 
   for (const record of records) {
     const url = canonicalizeUrl(record.url);
+    const rawMeta = await enrichRawMetaWithNetworkGeo(url, record.rawMeta ?? {});
     let relevance: {
       relevanceStatus: "ACCEPTED" | "REJECTED" | "UNCERTAIN";
       relevanceReason: string;
@@ -70,7 +72,7 @@ export async function saveSources(records: NormalizedSource[]) {
         publishedAt: record.publishedAt,
         author: record.author,
         platform: record.platform,
-        rawMeta: (record.rawMeta ?? {}) as Prisma.InputJsonValue,
+        rawMeta: rawMeta as Prisma.InputJsonValue,
         ...relevance
       },
       update: {
@@ -79,7 +81,7 @@ export async function saveSources(records: NormalizedSource[]) {
         publishedAt: record.publishedAt,
         author: record.author,
         platform: record.platform,
-        rawMeta: (record.rawMeta ?? {}) as Prisma.InputJsonValue,
+        rawMeta: rawMeta as Prisma.InputJsonValue,
         ...relevance
       }
     });

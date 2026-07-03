@@ -1,3 +1,7 @@
+@import url("bpmn-js/dist/assets/diagram-js.css");
+@import url("bpmn-js/dist/assets/bpmn-js.css");
+@import url("bpmn-js/dist/assets/bpmn-font/css/bpmn.css");
+
 :root {
   --background: #f4f6f4;
   --surface: #ffffff;
@@ -38,6 +42,7 @@ input,
 select,
 textarea {
   font: inherit;
+  transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease, background-color 150ms ease;
 }
 
 .app-shell {
@@ -144,6 +149,64 @@ h2 {
   padding: 14px;
 }
 
+.motion-panel {
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, background-color 180ms ease;
+  will-change: transform;
+}
+
+.motion-panel:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(18, 28, 23, 0.06);
+  border-color: #aab8b0;
+}
+
+.motion-pop {
+  animation: motion-pop 220ms ease-out both;
+}
+
+.motion-fade {
+  animation: motion-fade 280ms ease-out both;
+}
+
+.motion-sweep {
+  position: relative;
+  overflow: hidden;
+}
+
+.motion-sweep::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.18) 50%, transparent 100%);
+  transform: translateX(-110%);
+  transition: transform 420ms ease;
+  pointer-events: none;
+}
+
+.motion-sweep:hover::after {
+  transform: translateX(110%);
+}
+
+@keyframes motion-pop {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes motion-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 .stat {
   font-size: 25px;
   font-weight: 780;
@@ -169,6 +232,24 @@ button {
   align-items: center;
   min-height: 36px;
   padding: 8px 10px;
+}
+
+.button:hover,
+button:hover {
+  transform: translateY(-1px);
+}
+
+.button:active,
+button:active {
+  transform: translateY(0);
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--warning);
+  outline-offset: 2px;
 }
 
 .button.primary,
@@ -269,6 +350,12 @@ th {
   grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
 }
 
+.map-layout {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) 320px;
+}
+
 .empty {
   color: var(--text-secondary);
   padding: 24px;
@@ -296,7 +383,8 @@ th {
   }
 
   .grid,
-  .two {
+  .two,
+  .map-layout {
     grid-template-columns: 1fr;
   }
 
@@ -391,4 +479,3 @@ th {
     max-height: 50px;
   }
 }
-
