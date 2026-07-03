@@ -11,7 +11,7 @@ export default function Loading() {
           justify-content: center;
           min-height: calc(100vh - 44px);
           background: #f4f6f4;
-          font-family: var(--font-inter), var(--font-noto-sans-thai), sans-serif;
+          font-family: var(--font-sans);
         }
 
         .loader-ring {

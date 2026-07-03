@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import { Literata, Inter, Noto_Sans_Thai } from "next/font/google";
+import { Literata, Inter } from "next/font/google";
 import SidebarNav from "./components/SidebarNav";
 import LanguageSelector from "./components/LanguageSelector";
 import MobileHeader from "./components/MobileHeader";
@@ -21,13 +21,6 @@ const inter = Inter({
   display: "swap",
 });
 
-const notoSansThai = Noto_Sans_Thai({
-  subsets: ["thai"],
-  variable: "--font-noto-sans-thai",
-  weight: ["300", "400", "500", "600", "700", "800"],
-  display: "swap",
-});
-
 export const metadata: Metadata = {
   title: "Thailand Humanoid Atlas",
   description: "Research database for Thailand humanoid and social robotics ecosystem"
@@ -39,7 +32,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const t = getTranslation(lang);
 
   return (
-    <html lang={lang} className={`${literata.variable} ${inter.variable} ${notoSansThai.variable}`}>
+    <html lang={lang} className={`${literata.variable} ${inter.variable}`}>
       <body>
         <div className="app-shell">
           <MobileHeader />

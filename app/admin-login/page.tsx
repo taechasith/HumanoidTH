@@ -51,7 +51,7 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: S
           top: 0;
           left: 0;
           z-index: 9999;
-          font-family: var(--font-inter), var(--font-noto-sans-thai), sans-serif;
+          font-family: var(--font-sans);
         }
 
         .login-card {
