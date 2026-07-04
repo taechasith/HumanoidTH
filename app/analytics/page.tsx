@@ -1,10 +1,17 @@
 import { prisma } from "@/lib/prisma";
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { getTranslation } from "@/lib/translations";
 import AnalyticsPlayground from "./AnalyticsPlayground";
 import AnalyticsBpmn from "./AnalyticsBpmn";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Robotics Analytics and Stance Insights",
+  description: "Analytics for Thailand humanoid robotics source relevance, confidence, public perspective themes, stance, and corpus coverage.",
+  alternates: { canonical: "/analytics" }
+};
 
 export default async function AnalyticsPage() {
   const cookieStore = await cookies();

@@ -1,8 +1,14 @@
 import { prisma } from "@/lib/prisma";
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { getTranslation } from "@/lib/translations";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "API Data Ingestion",
+  robots: { index: false, follow: false }
+};
 
 export default async function DataPullsPage() {
   const cookieStore = await cookies();
@@ -12,7 +18,7 @@ export default async function DataPullsPage() {
   const jobs = await prisma.sourcePullJob.findMany({ orderBy: { createdAt: "desc" }, take: 50 });
 
   return (
-    <>
+    <div className="data-pulls-page">
       <h1>{t.dataPullsTitle}</h1>
       <p className="muted">{t.dataPullsDesc}</p>
       <div className="notice" style={{ marginBottom: 14 }}>
@@ -37,6 +43,6 @@ export default async function DataPullsPage() {
           </tbody>
         </table>
       </div>
-    </>
+    </div>
   );
 }

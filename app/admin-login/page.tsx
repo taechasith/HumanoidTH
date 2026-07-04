@@ -1,8 +1,14 @@
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { getTranslation } from "@/lib/translations";
 import AdminLoginForm from "./AdminLoginForm";
 
 type SearchParams = Promise<{ error?: string; from?: string }>;
+
+export const metadata: Metadata = {
+  title: "Admin Login",
+  robots: { index: false, follow: false }
+};
 
 export default async function AdminLoginPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;

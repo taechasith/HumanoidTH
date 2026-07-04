@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import type { Metadata } from "next";
 import { Sparkles } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { getTranslation } from "@/lib/translations";
@@ -6,6 +7,12 @@ import GoogleMapClient from "./GoogleMapClient";
 import { fetchContributionClusters, reanalyzeClustersWithGemini } from "./actions";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Thailand Robotics Ecosystem Map",
+  description: "Interactive map of Thailand humanoid robotics development clusters, organizations, robot models, contributions, and inventory signals.",
+  alternates: { canonical: "/map" }
+};
 
 const localT = {
   en: {

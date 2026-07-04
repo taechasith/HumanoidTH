@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import RobotViewer from "./components/RobotViewer";
@@ -18,6 +19,12 @@ import {
   Users,
   Youtube
 } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Thailand Humanoid Robotics Research Database",
+  description: "Explore Thailand's humanoid, social, and service robotics ecosystem through robot models, source records, contributions, public perspectives, analytics, maps, and relationship graphs.",
+  alternates: { canonical: "/" }
+};
 
 
 export const dynamic = "force-dynamic";

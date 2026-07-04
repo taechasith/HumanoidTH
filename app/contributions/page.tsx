@@ -1,8 +1,15 @@
 import { prisma } from "@/lib/prisma";
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { getTranslation } from "@/lib/translations";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Robotics Contributions Directory",
+  description: "Directory of Thailand humanoid robotics papers, repositories, datasets, hardware designs, community records, and related robot models.",
+  alternates: { canonical: "/contributions" }
+};
 
 type SearchParams = Promise<{
   type?: string;

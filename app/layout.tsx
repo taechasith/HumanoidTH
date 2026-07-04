@@ -8,6 +8,7 @@ import MobileTabNav from "./components/MobileTabNav";
 import DataPullFab from "./components/DataPullFab";
 import FirstTimeLoader from "./components/FirstTimeLoader";
 import { getTranslation } from "@/lib/translations";
+import { defaultSeoDescription, getSiteUrl, siteName } from "@/lib/seo";
 import "./globals.css";
 
 const inter = Inter({
@@ -24,8 +25,67 @@ const ibmPlexSansThai = IBM_Plex_Sans_Thai({
 });
 
 export const metadata: Metadata = {
-  title: "Thailand Humanoid Atlas",
-  description: "Research database for Thailand humanoid and social robotics ecosystem",
+  metadataBase: new URL(getSiteUrl()),
+  applicationName: siteName,
+  title: {
+    default: siteName,
+    template: `%s | ${siteName}`
+  },
+  description: defaultSeoDescription,
+  keywords: [
+    "Thailand humanoid robots",
+    "humanoid robotics Thailand",
+    "social robots Thailand",
+    "service robots Thailand",
+    "robotics research database",
+    "robot model registry",
+    "robotics ecosystem map"
+  ],
+  authors: [{ name: siteName }],
+  creator: siteName,
+  publisher: siteName,
+  alternates: {
+    canonical: "/"
+  },
+  openGraph: {
+    type: "website",
+    url: "/",
+    siteName,
+    title: siteName,
+    description: defaultSeoDescription,
+    locale: "en_US",
+    alternateLocale: ["th_TH"],
+    images: [
+      {
+        url: "/logo.png",
+        width: 1200,
+        height: 1200,
+        alt: `${siteName} logo`
+      }
+    ]
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteName,
+    description: defaultSeoDescription,
+    images: ["/logo.png"]
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1
+    }
+  },
+  formatDetection: {
+    telephone: false,
+    email: false,
+    address: false
+  },
   icons: {
     icon: [
       { url: "/logo.png", type: "image/png" }
@@ -39,10 +99,42 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const cookieStore = await cookies();
   const lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
   const t = getTranslation(lang);
+  const siteUrl = getSiteUrl();
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: siteName,
+    url: siteUrl,
+    description: defaultSeoDescription,
+    inLanguage: ["en", "th"],
+    publisher: {
+      "@type": "Organization",
+      name: siteName,
+      logo: `${siteUrl}/logo.png`
+    },
+    mainEntity: {
+      "@type": "Dataset",
+      name: `${siteName} robotics corpus`,
+      description: defaultSeoDescription,
+      url: siteUrl,
+      keywords: [
+        "humanoid robotics",
+        "Thailand robotics",
+        "social robots",
+        "service robots",
+        "robotics research"
+      ],
+      inLanguage: ["en", "th"]
+    }
+  };
 
   return (
     <html lang={lang} className={`${inter.variable} ${ibmPlexSansThai.variable}`}>
       <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
         <FirstTimeLoader />
         <div className="app-shell">
           <MobileHeader />

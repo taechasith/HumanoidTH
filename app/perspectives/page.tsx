@@ -1,8 +1,15 @@
 import { prisma } from "@/lib/prisma";
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { getTranslation } from "@/lib/translations";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Public Perspectives on Robotics",
+  description: "Reviewed public perspective annotations about humanoid and social robotics topics, stance, sentiment, confidence, and evidence sources.",
+  alternates: { canonical: "/perspectives" }
+};
 
 export default async function PerspectivesPage() {
   const cookieStore = await cookies();

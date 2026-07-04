@@ -1,9 +1,16 @@
 import { cookies } from "next/headers";
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { createSubmission } from "@/app/actions";
 import { getTranslation } from "@/lib/translations";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Submit Robotics Data",
+  description: "Submit source links, robot model details, contribution claims, corrections, and inventory updates for Thailand Humanoid Atlas review.",
+  alternates: { canonical: "/submit-data" }
+};
 
 export default async function SubmitDataPage() {
   const cookieStore = await cookies();

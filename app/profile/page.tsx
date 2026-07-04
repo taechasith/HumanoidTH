@@ -1,9 +1,15 @@
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { loginAsUser, logoutUser, registerAndLoginUser } from "@/app/actions";
 import { getTranslation } from "@/lib/translations";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "User Profile",
+  robots: { index: false, follow: false }
+};
 
 export default async function ProfilePage() {
   const cookieStore = await cookies();
@@ -118,4 +124,3 @@ export default async function ProfilePage() {
     </>
   );
 }
-

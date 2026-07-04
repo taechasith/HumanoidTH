@@ -1,9 +1,16 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { getTranslation } from "@/lib/translations";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Robot Inventory",
+  description: "Inventory view for humanoid and service robot units managed, operated, or tested by the Thailand Humanoid Atlas project.",
+  alternates: { canonical: "/inventory" }
+};
 
 type SearchParams = Promise<{ mode?: string }>;
 

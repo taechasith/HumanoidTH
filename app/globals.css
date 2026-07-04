@@ -1025,3 +1025,10 @@ tbody tr:hover {
   from { transform: translateY(12px) scale(0.97); opacity: 0; }
   to { transform: translateY(0) scale(1); opacity: 1; }
 }
+
+/* Hide logo on data pull pages */
+body:has(.data-pulls-page) .brand-logo-container,
+body:has(.data-pulls-page) .mobile-logo-img {
+  display: none !important;
+}
+

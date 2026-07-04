@@ -1,8 +1,15 @@
 import { prisma } from "@/lib/prisma";
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { getTranslation } from "@/lib/translations";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Robot Model Registry",
+  description: "Catalog of humanoid, social, service, education, and research robot models connected to Thailand.",
+  alternates: { canonical: "/robots" }
+};
 
 type SourceLike = {
   title: string;

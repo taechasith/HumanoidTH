@@ -1,8 +1,15 @@
 import { prisma } from "@/lib/prisma";
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { getTranslation } from "@/lib/translations";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Robotics Ecosystem Dashboard",
+  description: "Aggregate dashboard for Thailand humanoid robotics records, robot types, sources, contributions, perspective themes, and confidence levels.",
+  alternates: { canonical: "/dashboard" }
+};
 
 export default async function DashboardPage() {
   const cookieStore = await cookies();

@@ -1,9 +1,15 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 import { getTranslation } from "@/lib/translations";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Raw Database Browser",
+  robots: { index: false, follow: false }
+};
 
 type SearchParams = Promise<{ table?: string; q?: string }>;
 
