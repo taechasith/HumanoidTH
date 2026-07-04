@@ -582,7 +582,7 @@ export default async function OverviewPage() {
           padding: 8px 10px;
           border-radius: 4px;
           color: #10B981;
-          font-family: monospace;
+          font-family: var(--font-sans);
           font-size: 11px;
           word-break: break-all;
           white-space: pre-wrap;

@@ -55,7 +55,7 @@ export default function Loading() {
         .loading-subtext {
           margin-top: 6px;
           font-size: 11px;
-          font-family: monospace;
+          font-family: var(--font-sans);
           color: #56645c;
           letter-spacing: 1px;
         }

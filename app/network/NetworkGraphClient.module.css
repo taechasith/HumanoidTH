@@ -4,9 +4,22 @@
   border-radius: 10px;
   color: #e9fff5;
   display: grid;
-  grid-template-columns: 260px minmax(0, 1fr) 310px;
-  min-height: calc(100vh - 144px);
+  grid-template-columns: 240px minmax(560px, 1fr) 280px;
+  min-height: calc(100vh - 128px);
   overflow: hidden;
+}
+
+.networkShell.filtersCollapsed {
+  grid-template-columns: minmax(720px, 1fr) 290px;
+}
+
+.networkShell.detailsCollapsed {
+  grid-template-columns: 250px minmax(720px, 1fr);
+}
+
+.networkShell.filtersCollapsed.detailsCollapsed,
+.networkShell.focusMode {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .toolbar {
@@ -36,6 +49,20 @@
 .filters button.active {
   background: #4a7c59;
   color: #ffffff;
+}
+
+.inlineControl {
+  align-items: center;
+  color: #9fc7aa;
+  display: inline-flex;
+  font-size: 11px;
+  font-weight: 800;
+  gap: 6px;
+  text-transform: uppercase;
+}
+
+.inlineControl select {
+  text-transform: none;
 }
 
 .sourceStatus {
@@ -113,7 +140,7 @@
 
 .graphCanvas {
   height: 100%;
-  min-height: 620px;
+  min-height: 720px;
   width: 100%;
 }
 
@@ -184,6 +211,10 @@
   z-index: 5000;
 }
 
+.tooltip a {
+  color: #99f6d4;
+}
+
 .detailTitle {
   color: #ffffff;
   font-size: 18px;
@@ -233,6 +264,14 @@
 @media (max-width: 980px) {
   .networkShell {
     grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .networkShell.filtersCollapsed,
+  .networkShell.detailsCollapsed,
+  .networkShell.filtersCollapsed.detailsCollapsed,
+  .networkShell.focusMode {
+    grid-template-columns: 1fr;
   }
 
   .filters,
@@ -242,7 +281,7 @@
   }
 
   .graphCanvas {
-    min-height: 540px;
+    min-height: 620px;
   }
 }
 
@@ -253,11 +292,17 @@
   }
 
   .toolbar button,
-  .toolbar select {
+  .toolbar select,
+  .inlineControl {
     width: 100%;
   }
 
+  .inlineControl {
+    align-items: stretch;
+    display: grid;
+  }
+
   .graphCanvas {
-    min-height: 460px;
+    min-height: 560px;
   }
 }

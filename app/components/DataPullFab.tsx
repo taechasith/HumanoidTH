@@ -3,37 +3,23 @@
 import { useState } from "react";
 import { useFormStatus } from "react-dom";
 import { useRouter } from "next/navigation";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import CircularProgress from "@mui/material/CircularProgress";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogTitle from "@mui/material/DialogTitle";
-import Fab from "@mui/material/Fab";
-import FormControl from "@mui/material/FormControl";
-import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
-import Select from "@mui/material/Select";
-import TextField from "@mui/material/TextField";
-import Tooltip from "@mui/material/Tooltip";
-import { DatabaseZap } from "lucide-react";
+import { DatabaseZap, Loader2 } from "lucide-react";
 import { runDataPull } from "@/app/actions";
 
 function PullDialogSubmitButton() {
   const { pending } = useFormStatus();
 
   return (
-    <Button type="submit" variant="contained" disabled={pending} aria-busy={pending}>
+    <button type="submit" disabled={pending} aria-busy={pending} style={{ display: "flex", alignItems: "center", gap: 6, minHeight: 38 }}>
       {pending ? (
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <CircularProgress aria-label="Loading..." color="inherit" size={18} />
+        <>
+          <Loader2 className="animate-spin" size={16} />
           <span>Pulling...</span>
-        </Box>
+        </>
       ) : (
         "Run pull"
       )}
-    </Button>
+    </button>
   );
 }
 
@@ -49,59 +35,66 @@ export default function DataPullFab() {
 
   return (
     <>
-      <Tooltip title="Run data pull" placement="left">
-        <Fab
-          className="data-pull-fab"
-          color="primary"
-          aria-label="Run data pull"
-          onClick={() => setOpen(true)}
-        >
-          <DatabaseZap size={22} aria-hidden="true" />
-        </Fab>
-      </Tooltip>
+      <button
+        className="data-pull-fab pointer"
+        aria-label="Run data pull"
+        onClick={() => setOpen(true)}
+        title="Run data pull"
+      >
+        <DatabaseZap size={22} aria-hidden="true" />
+      </button>
 
-      <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="xs">
-        <form action={handlePull}>
-          <DialogTitle>Run data pull</DialogTitle>
-          <DialogContent sx={{ display: "grid", gap: 2, pt: 1 }}>
-            <FormControl fullWidth margin="dense">
-              <InputLabel id="data-pull-adapter-label">Adapter</InputLabel>
-              <Select
-                labelId="data-pull-adapter-label"
-                name="adapter"
-                label="Adapter"
-                defaultValue="OPENALEX"
-              >
-                <MenuItem value="OPENALEX">OpenAlex</MenuItem>
-                <MenuItem value="GITHUB">GitHub</MenuItem>
-                <MenuItem value="GDELT">GDELT</MenuItem>
-                <MenuItem value="YOUTUBE">YouTube</MenuItem>
-              </Select>
-            </FormControl>
-            <TextField
-              name="query"
-              label="Query"
-              defaultValue="humanoid robot Thailand"
-              required
-              fullWidth
-            />
-            <TextField
-              name="limit"
-              label="Limit"
-              type="number"
-              defaultValue="10"
-              fullWidth
-              slotProps={{ htmlInput: { min: 1, max: 50 } }}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button type="button" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-            <PullDialogSubmitButton />
-          </DialogActions>
-        </form>
-      </Dialog>
+      {open && (
+        <div className="modal-backdrop" onClick={() => setOpen(false)}>
+          <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+            <h2>
+              <DatabaseZap size={20} style={{ color: "var(--warning)" }} />
+              Run data pull
+            </h2>
+            
+            <form action={handlePull} className="form">
+              <label>
+                Adapter
+                <select name="adapter" defaultValue="OPENALEX" required>
+                  <option value="OPENALEX">OpenAlex</option>
+                  <option value="GITHUB">GitHub</option>
+                  <option value="GDELT">GDELT</option>
+                  <option value="YOUTUBE">YouTube</option>
+                </select>
+              </label>
+
+              <label>
+                Query
+                <input
+                  name="query"
+                  type="text"
+                  defaultValue="humanoid robot Thailand"
+                  required
+                />
+              </label>
+
+              <label>
+                Limit
+                <input
+                  name="limit"
+                  type="number"
+                  defaultValue="10"
+                  min="1"
+                  max="50"
+                  required
+                />
+              </label>
+
+              <div className="modal-actions">
+                <button type="button" onClick={() => setOpen(false)}>
+                  Cancel
+                </button>
+                <PullDialogSubmitButton />
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </>
   );
 }

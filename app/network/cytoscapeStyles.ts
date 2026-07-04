@@ -14,7 +14,7 @@ const clusterColors: Record<string, string> = {
   unknown: "#64748b"
 };
 
-export function networkStyles(showArrows: boolean, showLabels: boolean): StylesheetJson {
+export function networkStyles(showArrows: boolean, showLabels: boolean, animationsEnabled = true): StylesheetJson {
   return [
     {
       selector: "node",
@@ -27,18 +27,34 @@ export function networkStyles(showArrows: boolean, showLabels: boolean): Stylesh
         "font-family": "Inter, system-ui, sans-serif",
         "font-size": 10,
         "height": (ele: SingularElementArgument) => Math.max(12, Math.min(48, 12 + Number(ele.data("degree") ?? 0) * 2 + Number(ele.data("source_count") ?? 0))),
-        "label": "data(label)",
+        "label": "",
         "min-zoomed-font-size": 8,
         "opacity": 0.92,
         "overlay-opacity": 0,
+        "overlay-padding": 4,
         "text-background-color": "#08130f",
-        "text-background-opacity": 0.74,
+        "text-background-opacity": 0,
         "text-background-padding": "2px",
         "text-margin-y": -10,
         "text-outline-color": "#08130f",
+        "text-outline-opacity": 0,
         "text-outline-width": 1,
+        "text-opacity": 0,
         "text-valign": "top",
+        "transition-duration": animationsEnabled ? 220 : 0,
+        "transition-property": "width height border-width border-color opacity overlay-opacity text-opacity text-background-opacity text-outline-opacity",
+        "transition-timing-function": "ease-out",
         "width": (ele: SingularElementArgument) => Math.max(12, Math.min(48, 12 + Number(ele.data("degree") ?? 0) * 2 + Number(ele.data("source_count") ?? 0)))
+      }
+    },
+    {
+      selector: "node.show-label",
+      style: {
+        "font-size": (ele: SingularElementArgument) => Number(ele.data("important")) ? 11 : 9,
+        "label": "data(displayLabel)",
+        "text-background-opacity": 0.82,
+        "text-opacity": 1,
+        "text-outline-opacity": 1
       }
     },
     {
@@ -63,7 +79,32 @@ export function networkStyles(showArrows: boolean, showLabels: boolean): Stylesh
       selector: "node:selected",
       style: {
         "border-color": "#ffffff",
-        "border-width": 4
+        "border-width": 4,
+        "height": (ele: SingularElementArgument) => Math.max(17, Math.min(58, 17 + Number(ele.data("degree") ?? 0) * 2 + Number(ele.data("source_count") ?? 0))),
+        "overlay-color": "#d9fff0",
+        "overlay-opacity": 0.12,
+        "width": (ele: SingularElementArgument) => Math.max(17, Math.min(58, 17 + Number(ele.data("degree") ?? 0) * 2 + Number(ele.data("source_count") ?? 0)))
+      }
+    },
+    {
+      selector: "node.is-dragging",
+      style: {
+        "border-color": "#ffffff",
+        "border-width": 5,
+        "height": (ele: SingularElementArgument) => Math.max(20, Math.min(62, 20 + Number(ele.data("degree") ?? 0) * 2 + Number(ele.data("source_count") ?? 0))),
+        "overlay-color": "#99f6d4",
+        "overlay-opacity": 0.18,
+        "z-index": 1200,
+        "width": (ele: SingularElementArgument) => Math.max(20, Math.min(62, 20 + Number(ele.data("degree") ?? 0) * 2 + Number(ele.data("source_count") ?? 0)))
+      }
+    },
+    {
+      selector: "node.just-dropped, node.pulse",
+      style: {
+        "border-color": "#f5d26c",
+        "border-width": 5,
+        "overlay-color": "#f5d26c",
+        "overlay-opacity": 0.16
       }
     },
     {
@@ -83,6 +124,10 @@ export function networkStyles(showArrows: boolean, showLabels: boolean): Stylesh
         "text-background-padding": "2px",
         "text-outline-color": "#08130f",
         "text-outline-width": 1,
+        "text-opacity": showLabels ? 1 : 0,
+        "transition-duration": animationsEnabled ? 200 : 0,
+        "transition-property": "line-color target-arrow-color width opacity line-opacity text-opacity",
+        "transition-timing-function": "ease-out",
         "width": (ele: SingularElementArgument) => Math.max(1, Math.min(7, Number(ele.data("weight") ?? 1) * 1.25))
       }
     },
@@ -111,8 +156,10 @@ export function networkStyles(showArrows: boolean, showLabels: boolean): Stylesh
     {
       selector: "edge.highlighted",
       style: {
+        "label": "data(label)",
         "line-color": "#ffffff",
         "target-arrow-color": "#ffffff",
+        "text-opacity": 1,
         "width": 4
       }
     },

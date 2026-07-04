@@ -72,16 +72,42 @@ type Detail =
   | null;
 
 const allOption = "all";
+type LabelMode = "off" | "hover" | "selected" | "important" | "all";
+type DensityMode = "compact" | "balanced" | "spacious";
+
+const labelModeOptions: Array<{ value: LabelMode; label: string }> = [
+  { value: "off", label: "Off" },
+  { value: "hover", label: "Hover" },
+  { value: "selected", label: "Selected" },
+  { value: "important", label: "Important only" },
+  { value: "all", label: "All" }
+];
+
+const densitySettings: Record<DensityMode, { label: string; idealEdgeLength: number; nodeRepulsion: number; gravity: number; edgeElasticity: number; componentSpacing: number; spacingFactor: number; padding: number; zoom: number }> = {
+  compact: { label: "Compact", idealEdgeLength: 120, nodeRepulsion: 9000, gravity: 0.28, edgeElasticity: 100, componentSpacing: 110, spacingFactor: 1.35, padding: 80, zoom: 1.05 },
+  balanced: { label: "Balanced", idealEdgeLength: 170, nodeRepulsion: 15000, gravity: 0.2, edgeElasticity: 72, componentSpacing: 160, spacingFactor: 1.75, padding: 108, zoom: 0.9 },
+  spacious: { label: "Spacious", idealEdgeLength: 220, nodeRepulsion: 22000, gravity: 0.14, edgeElasticity: 54, componentSpacing: 220, spacingFactor: 2.15, padding: 128, zoom: 0.78 }
+};
 
 function unique(values: Array<string | null | undefined>) {
   return [...new Set(values.filter(Boolean) as string[])].sort((a, b) => a.localeCompare(b));
 }
 
+function isImportantNode(node: NetworkNode) {
+  return node.degree >= 5
+    || node.source_count >= 3
+    || (node.confidence >= 0.9 && ["robot_model", "organization", "institution", "contribution"].includes(node.type));
+}
+
+function truncateLabel(label: string) {
+  return label.length > 34 ? `${label.slice(0, 31)}...` : label;
+}
+
 function toElements(graph: NetworkGraph): ElementDefinition[] {
   return [
     ...graph.nodes.map((node) => ({
-      data: node,
-      classes: `${node.type} ${node.cluster} ${node.is_private ? "private" : ""} ${node.is_low_confidence ? "low-confidence" : ""}`
+      data: { ...node, displayLabel: truncateLabel(node.label), important: isImportantNode(node) },
+      classes: `${node.type} ${node.cluster} ${isImportantNode(node) ? "important" : ""} ${node.is_private ? "private" : ""} ${node.is_low_confidence ? "low-confidence" : ""}`
     })),
     ...graph.edges.map((edge) => ({
       data: edge,
@@ -163,9 +189,28 @@ function localGraph(graph: NetworkGraph, selectedId: string | null, depth: numbe
   };
 }
 
+function updateLabelClasses(cy: Core, labelMode: LabelMode, selectedNodeId: string | null) {
+  cy.nodes().removeClass("show-label");
+  if (labelMode === "off") return;
+  if (labelMode === "all") {
+    cy.nodes().addClass("show-label");
+    return;
+  }
+  if (labelMode === "important") {
+    cy.nodes(".important").addClass("show-label");
+    return;
+  }
+  if (labelMode === "selected" && selectedNodeId) {
+    const selected = cy.getElementById(selectedNodeId);
+    if (selected.length) selected.closedNeighborhood("node").addClass("show-label");
+  }
+}
+
 export default function NetworkGraphClient() {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const cyRef = useRef<Core | null>(null);
+  const labelModeRef = useRef<LabelMode>("important");
+  const selectedNodeIdRef = useRef<string | null>(null);
   const [graph, setGraph] = useState<NetworkGraph | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -176,6 +221,13 @@ export default function NetworkGraphClient() {
   const [sourceMode, setSourceMode] = useState<"auto" | "file" | "database" | "hybrid">("auto");
   const [showArrows, setShowArrows] = useState(true);
   const [showLabels, setShowLabels] = useState(false);
+  const [labelMode, setLabelMode] = useState<LabelMode>("important");
+  const [animationsEnabled, setAnimationsEnabled] = useState(true);
+  const [reducedMotion, setReducedMotion] = useState(false);
+  const [densityMode, setDensityMode] = useState<DensityMode>("balanced");
+  const [filtersCollapsed, setFiltersCollapsed] = useState(false);
+  const [detailsCollapsed, setDetailsCollapsed] = useState(false);
+  const [focusMode, setFocusMode] = useState(false);
   const [showLowConfidence, setShowLowConfidence] = useState(true);
   const [onlyReviewed, setOnlyReviewed] = useState(false);
   const [showOwned, setShowOwned] = useState(true);
@@ -197,6 +249,40 @@ export default function NetworkGraphClient() {
     visibility: allOption
   });
 
+  useEffect(() => {
+    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const syncMotion = () => setReducedMotion(motionQuery.matches);
+    syncMotion();
+    motionQuery.addEventListener("change", syncMotion);
+    try {
+      const savedLabelMode = localStorage.getItem("network.labelMode") as LabelMode | null;
+      const savedDensity = localStorage.getItem("network.densityMode") as DensityMode | null;
+      const savedAnimations = localStorage.getItem("network.animationsEnabled");
+      const savedFiltersCollapsed = localStorage.getItem("network.filtersCollapsed");
+      const savedDetailsCollapsed = localStorage.getItem("network.detailsCollapsed");
+      if (savedLabelMode && labelModeOptions.some((option) => option.value === savedLabelMode)) setLabelMode(savedLabelMode);
+      if (savedDensity && savedDensity in densitySettings) setDensityMode(savedDensity);
+      if (savedAnimations !== null) setAnimationsEnabled(savedAnimations === "true");
+      if (savedFiltersCollapsed !== null) setFiltersCollapsed(savedFiltersCollapsed === "true");
+      if (savedDetailsCollapsed !== null) setDetailsCollapsed(savedDetailsCollapsed === "true");
+    } catch {
+      // Ignore blocked storage; graph preferences are optional.
+    }
+    return () => motionQuery.removeEventListener("change", syncMotion);
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("network.labelMode", labelMode);
+      localStorage.setItem("network.animationsEnabled", String(animationsEnabled));
+      localStorage.setItem("network.densityMode", densityMode);
+      localStorage.setItem("network.filtersCollapsed", String(filtersCollapsed));
+      localStorage.setItem("network.detailsCollapsed", String(detailsCollapsed));
+    } catch {
+      // Ignore blocked storage.
+    }
+  }, [animationsEnabled, densityMode, detailsCollapsed, filtersCollapsed, labelMode]);
+
   const fetchGraph = useCallback(async (limit = maxNodes, source = sourceMode) => {
     setLoading(true);
     setError(null);
@@ -216,6 +302,13 @@ export default function NetworkGraphClient() {
   useEffect(() => {
     fetchGraph(300, sourceMode);
   }, []);
+
+  useEffect(() => {
+    labelModeRef.current = labelMode;
+    selectedNodeIdRef.current = selectedNodeId;
+    const cy = cyRef.current;
+    if (cy) updateLabelClasses(cy, labelMode, selectedNodeId);
+  }, [labelMode, selectedNodeId]);
 
   useEffect(() => {
     fetchGraph(maxNodes, sourceMode);
@@ -256,37 +349,79 @@ export default function NetworkGraphClient() {
     setSelectedNodeId(node.id);
   }, []);
 
+  const motionEnabled = animationsEnabled && !reducedMotion;
+  const density = densitySettings[densityMode];
+
+  const pulseNode = useCallback((node: NodeSingular) => {
+    if (!motionEnabled) return;
+    node.addClass("pulse");
+    window.setTimeout(() => node.removeClass("pulse"), 360);
+  }, [motionEnabled]);
+
   const runLayout = useCallback((name: "cose" | "circle" = "cose") => {
     const cy = cyRef.current;
     if (!cy) return;
     cy.layout({
       name,
-      animate: true,
-      animationDuration: 450,
+      animate: motionEnabled,
+      animationDuration: motionEnabled ? 900 : 0,
       fit: true,
-      padding: 42,
+      padding: density.padding,
       ...(name === "cose" ? {
-        idealEdgeLength: 100,
-        nodeRepulsion: 8500,
-        gravity: 0.18,
-        numIter: 900
+        componentSpacing: density.componentSpacing,
+        coolingFactor: 0.95,
+        edgeElasticity: density.edgeElasticity,
+        idealEdgeLength: density.idealEdgeLength,
+        initialTemp: 200,
+        minTemp: 1,
+        nestingFactor: 1.2,
+        nodeRepulsion: density.nodeRepulsion,
+        numIter: 2200,
+        gravity: density.gravity
       } : {})
     } as any).run();
-  }, []);
+  }, [density, motionEnabled]);
 
   useEffect(() => {
     if (!containerRef.current || !visibleGraph) return;
     const cy = cytoscape({
       container: containerRef.current,
       elements: toElements(visibleGraph),
-      layout: { name: "cose", animate: false, fit: true, padding: 42 } as any,
+      layout: {
+        name: "cose",
+        animate: motionEnabled,
+        animationDuration: motionEnabled ? 900 : 0,
+        componentSpacing: density.componentSpacing,
+        coolingFactor: 0.95,
+        edgeElasticity: density.edgeElasticity,
+        fit: true,
+        gravity: density.gravity,
+        idealEdgeLength: density.idealEdgeLength,
+        initialTemp: 200,
+        minTemp: 1,
+        nestingFactor: 1.2,
+        nodeRepulsion: density.nodeRepulsion,
+        numIter: 2200,
+        padding: density.padding,
+        randomize: false
+      } as any,
       maxZoom: 3,
       minZoom: 0.08,
-      style: networkStyles(showArrows, showLabels),
+      style: networkStyles(showArrows, showLabels, motionEnabled),
       wheelSensitivity: 0.18
     });
 
     cyRef.current = cy;
+    updateLabelClasses(cy, labelModeRef.current, selectedNodeIdRef.current);
+    cy.ready(() => {
+      cy.fit(undefined, density.padding);
+      cy.zoom(Math.max(cy.minZoom(), cy.zoom() * density.zoom));
+      if (motionEnabled) {
+        cy.nodes(".important").slice(0, 18).forEach((node, index) => {
+          window.setTimeout(() => pulseNode(node as NodeSingular), index * 28);
+        });
+      }
+    });
     if (process.env.NODE_ENV !== "production") {
       (window as any).__networkCy = cy;
     }
@@ -296,10 +431,16 @@ export default function NetworkGraphClient() {
       const neighborhood = node.closedNeighborhood();
       cy.elements().addClass("faded");
       neighborhood.removeClass("faded").addClass("highlighted");
+      if (labelModeRef.current === "hover") {
+        cy.nodes().removeClass("show-label");
+        neighborhood.nodes().addClass("show-label");
+      }
+      pulseNode(node);
     });
 
     cy.on("mouseout", "node", () => {
       cy.elements().removeClass("faded highlighted");
+      updateLabelClasses(cy, labelModeRef.current, selectedNodeIdRef.current);
     });
 
     cy.on("mouseover", "edge", (event) => {
@@ -325,7 +466,10 @@ export default function NetworkGraphClient() {
     });
 
     cy.on("tap", "node", (event) => {
-      setNodeDetail((event.target as NodeSingular).data() as NetworkNode, visibleGraph);
+      const node = event.target as NodeSingular;
+      setNodeDetail(node.data() as NetworkNode, visibleGraph);
+      if (labelModeRef.current === "selected") node.closedNeighborhood("node").addClass("show-label");
+      pulseNode(node);
     });
 
     cy.on("tap", "edge", (event) => {
@@ -338,6 +482,30 @@ export default function NetworkGraphClient() {
       });
     });
 
+    cy.on("grab", "node", (event) => {
+      const node = event.target as NodeSingular;
+      node.addClass("is-dragging show-label");
+      node.connectedEdges().addClass("highlighted");
+      node.closedNeighborhood().removeClass("faded").addClass("highlighted");
+    });
+
+    cy.on("drag", "node", (event) => {
+      const node = event.target as NodeSingular;
+      cy.elements().addClass("faded");
+      node.closedNeighborhood().removeClass("faded").addClass("highlighted");
+    });
+
+    cy.on("free", "node", (event) => {
+      const node = event.target as NodeSingular;
+      node.removeClass("is-dragging");
+      node.addClass("just-dropped");
+      node.position(node.position());
+      cy.elements().removeClass("faded highlighted");
+      selectedNodeIdRef.current = node.id();
+      updateLabelClasses(cy, labelModeRef.current, node.id());
+      window.setTimeout(() => node.removeClass("just-dropped"), motionEnabled ? 420 : 0);
+    });
+
     return () => {
       cy.destroy();
       if ((window as any).__networkCy === cy) {
@@ -345,7 +513,7 @@ export default function NetworkGraphClient() {
       }
       if (cyRef.current === cy) cyRef.current = null;
     };
-  }, [setNodeDetail, showArrows, showLabels, visibleGraph]);
+  }, [density, motionEnabled, pulseNode, setNodeDetail, showArrows, showLabels, visibleGraph]);
 
   const focusSearch = () => {
     const cy = cyRef.current;
@@ -356,7 +524,12 @@ export default function NetworkGraphClient() {
     const node = cy.getElementById(found.id);
     cy.elements().unselect();
     node.select();
-    cy.animate({ center: { eles: node }, zoom: 1.35 }, { duration: 350 });
+    node.addClass("show-label pulse");
+    cy.animate({ center: { eles: node }, zoom: Math.min(1.35, cy.maxZoom()) }, { duration: motionEnabled ? 380 : 0, easing: "ease-out" });
+    window.setTimeout(() => {
+      node.removeClass("pulse");
+      updateLabelClasses(cy, labelModeRef.current, found.id);
+    }, motionEnabled ? 520 : 0);
     setNodeDetail(found, visibleGraph);
   };
 
@@ -406,8 +579,24 @@ export default function NetworkGraphClient() {
           <option value="hybrid">Hybrid</option>
         </select>
         <button type="button" onClick={focusSearch}>Focus</button>
-        <button type="button" onClick={() => cyRef.current?.fit(undefined, 42)}>Fit view</button>
+        <button type="button" onClick={() => cyRef.current?.fit(undefined, density.padding)}>Fit view</button>
         <button type="button" onClick={() => runLayout("cose")}>Reset layout</button>
+        <label className={styles.inlineControl}>
+          Label display
+          <select value={labelMode} onChange={(event) => setLabelMode(event.target.value as LabelMode)} aria-label="Label display">
+            {labelModeOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+          </select>
+        </label>
+        <label className={styles.inlineControl}>
+          Density
+          <select value={densityMode} onChange={(event) => setDensityMode(event.target.value as DensityMode)} aria-label="Graph density">
+            {(Object.keys(densitySettings) as DensityMode[]).map((key) => <option key={key} value={key}>{densitySettings[key].label}</option>)}
+          </select>
+        </label>
+        <button type="button" className={animationsEnabled ? styles.active : ""} onClick={() => setAnimationsEnabled((value) => !value)}>Animation</button>
+        <button type="button" className={focusMode ? styles.active : ""} onClick={() => setFocusMode((value) => !value)}>Focus mode</button>
+        <button type="button" className={filtersCollapsed ? styles.active : ""} onClick={() => setFiltersCollapsed((value) => !value)}>Collapse filters</button>
+        <button type="button" className={detailsCollapsed ? styles.active : ""} onClick={() => setDetailsCollapsed((value) => !value)}>Collapse details</button>
         <button type="button" className={showArrows ? styles.active : ""} onClick={() => setShowArrows((value) => !value)}>Arrows</button>
         <button type="button" className={showLabels ? styles.active : ""} onClick={() => setShowLabels((value) => !value)}>Relation labels</button>
         <button type="button" className={showLowConfidence ? styles.active : ""} onClick={() => setShowLowConfidence((value) => !value)}>Low confidence</button>
@@ -437,8 +626,8 @@ export default function NetworkGraphClient() {
         </div>
       )}
 
-      <div className={styles.networkShell}>
-        <aside className={styles.filters} aria-label="Network filters">
+      <div className={`${styles.networkShell} ${filtersCollapsed || focusMode ? styles.filtersCollapsed : ""} ${detailsCollapsed || focusMode ? styles.detailsCollapsed : ""} ${focusMode ? styles.focusMode : ""}`}>
+        {!(filtersCollapsed || focusMode) && <aside className={styles.filters} aria-label="Network filters">
           <h2>Filters</h2>
           {[
             ["nodeType", "Node type", options.nodeTypes],
@@ -475,7 +664,7 @@ export default function NetworkGraphClient() {
             <span className={styles.pill}>{visibleGraph?.nodes.length ?? 0} nodes</span>
             <span className={styles.pill}>{visibleGraph?.edges.length ?? 0} edges</span>
           </div>
-        </aside>
+        </aside>}
 
         <section className={styles.canvasPanel}>
           <div ref={containerRef} className={styles.graphCanvas} aria-label="Interactive network graph" />
@@ -494,7 +683,7 @@ export default function NetworkGraphClient() {
           )}
         </section>
 
-        <aside className={styles.details} aria-label="Network detail panel">
+        {!(detailsCollapsed || focusMode) && <aside className={styles.details} aria-label="Network detail panel">
           <h2>Details</h2>
           {!detail && <p className={styles.detailBlock}>Click a node or relationship to inspect connected records, evidence, and source URLs.</p>}
           {detail?.kind === "node" && (
@@ -535,7 +724,7 @@ export default function NetworkGraphClient() {
               <div className={styles.detailBlock}><strong>Source URL</strong>{detail.edge.url ? <a href={detail.edge.url} target="_blank" rel="noreferrer">{detail.edge.url}</a> : "Generated internally."}</div>
             </>
           )}
-        </aside>
+        </aside>}
       </div>
 
       {tooltip && (
@@ -543,6 +732,7 @@ export default function NetworkGraphClient() {
           <strong>{tooltip.subject} {"->"} {tooltip.object}</strong>
           <div>{tooltip.edge.relation} · confidence {tooltip.edge.confidence.toFixed(2)}</div>
           <div>{tooltip.edge.evidence_excerpt?.slice(0, 160) || tooltip.edge.description}</div>
+          {tooltip.edge.url && <div><a href={tooltip.edge.url} target="_blank" rel="noreferrer">Source URL</a></div>}
         </div>
       )}
     </>

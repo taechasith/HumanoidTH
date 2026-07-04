@@ -21,11 +21,11 @@
 
 ---
 
-✨ **Thailand Humanoid Atlas** is a labor of love. We believe that the future of humanoid and social robotics belongs to the community. We designed this research database platform to help map, understand, and accelerate Thailand’s robotics ecosystem. 🇹🇭🤖
+✨ **Thailand Humanoid Atlas** is a labor of love. I believe that the future of humanoid and social robotics belongs to the community. I designed this research database platform to help map, understand, and accelerate Thailand’s robotics ecosystem. 🇹🇭🤖
 
-Whether it is cataloging companion robots caring for our grandparents, mapping academic publications by local researchers, or open-sourcing data structures, we want to create a transparent, reliable, and collaborative atlas for all. 📚💖
+Whether it is cataloging companion robots caring for older adults, mapping academic publications by local researchers, or open-sourcing data structures, I want to create a transparent, reliable, and collaborative atlas for all. 📚💖
 
-We open-source this project from the heart, and we invite you to hack, contribute, and build the future of embodied AI in Thailand together! 🤝🚀❤️
+I open-source this project from the heart, and I invite you to hack, contribute, and build the future of embodied AI in Thailand together! 🤝🚀❤️
 
 ---
 
@@ -44,7 +44,7 @@ The platform collects, normalizes, classifies, and visualizes four connected lay
 
 ## ⚡ Tech Stack & Architecture
 
-We built this platform using a modern, scalable, and developer-friendly stack:
+I built this platform using a modern, scalable, and developer-friendly stack:
 
 - 💻 **Frontend & Routing:** [Next.js 15 (App Router)](https://nextjs.org/) for highly responsive Server Components and dynamic layouts.
 - 🗄️ **Database & Modeling:** [Prisma ORM](https://www.prisma.io/) with [PostgreSQL](https://www.postgresql.org/) for transparent, typed data structures.
@@ -289,13 +289,13 @@ Prisma commands are mapped to convenient `pnpm` scripts:
 
 ## 🤝 Join the Robotics Movement!
 
-We believe that building a database for the Thailand robotics community should be a collective effort. Here is how you can help:
+I believe that building a database for the Thailand robotics community should be a collective effort. Here is how you can help:
 1. 🤖 **Add Robot Models:** Spatially document models, prototypes, or service robots you've encountered or built in Thailand.
 2. 🔌 **Develop Adapters:** Help build connectors for localized Thai news portals, government research sites, or forums.
-3. 🧠 **Refine Stance Models:** Help improve sentiment/stance classification rules so we better map public trust.
+3. 🧠 **Refine Stance Models:** Help improve sentiment/stance classification rules so I can better map public trust.
 4. 🛠️ **Fix Bugs & Improve UX:** Feel free to open issues or file PRs!
 
-We look forward to seeing your pull requests! Keep building, keep sharing! 🤖💛💚
+I look forward to seeing your pull requests! Keep building, keep sharing! 🤖💛💚
 
 ---
 

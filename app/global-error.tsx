@@ -122,7 +122,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
           }
 
           .digest-tag {
-            font-family: monospace;
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
             background: #dce3dc;
             padding: 2px 6px;
             border-radius: 4px;

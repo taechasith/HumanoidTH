@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import { Literata, Inter, Noto_Sans_Thai } from "next/font/google";
+import { IBM_Plex_Sans_Thai, Inter } from "next/font/google";
 import SidebarNav from "./components/SidebarNav";
 import LanguageSelector from "./components/LanguageSelector";
 import MobileHeader from "./components/MobileHeader";
@@ -10,23 +10,16 @@ import FirstTimeLoader from "./components/FirstTimeLoader";
 import { getTranslation } from "@/lib/translations";
 import "./globals.css";
 
-const literata = Literata({
-  subsets: ["latin"],
-  variable: "--font-literata",
-  display: "swap",
-  weight: ["300", "400", "500", "600", "700", "800", "900"],
-});
-
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
   display: "swap",
 });
 
-const notoSansThai = Noto_Sans_Thai({
-  subsets: ["thai"],
-  variable: "--font-noto-sans-thai",
-  weight: ["300", "400", "500", "600", "700", "800"],
+const ibmPlexSansThai = IBM_Plex_Sans_Thai({
+  subsets: ["thai", "latin"],
+  variable: "--font-ibm-plex-sans-thai",
+  weight: ["100", "200", "300", "400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -41,7 +34,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const t = getTranslation(lang);
 
   return (
-    <html lang={lang} className={`${literata.variable} ${inter.variable} ${notoSansThai.variable}`}>
+    <html lang={lang} className={`${inter.variable} ${ibmPlexSansThai.variable}`}>
       <body>
         <FirstTimeLoader />
         <div className="app-shell">

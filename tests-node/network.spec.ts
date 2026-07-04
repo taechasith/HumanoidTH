@@ -63,6 +63,11 @@ test("network page renders graph UI and core controls", async ({ page }) => {
   await expect(page.getByPlaceholder("Search node label...")).toBeVisible();
   await expect(page.getByRole("button", { name: "Fit view" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Reset layout" })).toBeVisible();
+  await expect(page.getByLabel("Label display")).toBeVisible();
+  await expect(page.getByLabel("Graph density")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Focus mode" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Collapse filters" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Collapse details" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Arrows" })).toBeVisible();
   await expect(page.getByLabel("Network data source")).toBeVisible();
   await expect(page.getByLabel("Interactive network graph")).toBeVisible({ timeout: 20000 });
@@ -80,6 +85,52 @@ test("network page renders graph UI and core controls", async ({ page }) => {
     const box = await canvas.boundingBox();
     expect(box?.width ?? 0).toBeGreaterThan(200);
     expect(box?.height ?? 0).toBeGreaterThan(200);
+
+    await page.getByLabel("Label display").selectOption("off");
+    const offLabelState = await page.evaluate(() => {
+      const cy = (window as any).__networkCy;
+      return {
+        labels: cy.nodes(".show-label").length,
+        firstLabel: cy.nodes()[0]?.style("label")
+      };
+    });
+    expect(offLabelState.labels).toBe(0);
+    expect(offLabelState.firstLabel).toBe("");
+
+    await page.getByLabel("Label display").selectOption("all");
+    const allLabelState = await page.evaluate(() => {
+      const cy = (window as any).__networkCy;
+      return {
+        labels: cy.nodes(".show-label").length,
+        nodeCount: cy.nodes().length,
+        firstLabel: cy.nodes()[0]?.style("label"),
+        arrowShape: cy.edges()[0]?.style("target-arrow-shape")
+      };
+    });
+    expect(allLabelState.labels).toBe(allLabelState.nodeCount);
+    expect(allLabelState.firstLabel).toBeTruthy();
+    if (graph.edges.length > 0) expect(allLabelState.arrowShape).toBe("triangle");
+
+    await page.getByLabel("Label display").selectOption("hover");
+    const dragState = await page.evaluate(() => {
+      const cy = (window as any).__networkCy;
+      const node = cy.nodes()[0];
+      node.emit("grab");
+      node.position({ x: node.position("x") + 20, y: node.position("y") + 12 });
+      node.emit("drag");
+      node.emit("free");
+      return {
+        hasDraggingClass: node.hasClass("is-dragging"),
+        dropped: node.hasClass("just-dropped"),
+        nodeCount: cy.nodes().length
+      };
+    });
+    expect(dragState.hasDraggingClass).toBe(false);
+    expect(dragState.nodeCount).toBeGreaterThan(0);
+
+    await page.getByRole("button", { name: "Focus mode" }).click();
+    await expect(page.getByLabel("Interactive network graph")).toBeVisible();
+    await page.getByRole("button", { name: "Focus mode" }).click();
 
     await page.getByPlaceholder("Search node label...").fill(graph.nodes[0].label);
     await page.getByRole("button", { name: "Focus" }).click();
@@ -99,4 +150,15 @@ test("network page mobile layout does not overflow horizontally", async ({ page 
 
   const hasHorizontalOverflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
   expect(hasHorizontalOverflow).toBe(false);
+});
+
+test("network page respects reduced motion preference", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/network");
+  await page.locator("canvas").first().waitFor({ timeout: 20000 });
+  const transitionDuration = await page.evaluate(() => {
+    const cy = (window as any).__networkCy;
+    return cy.nodes()[0]?.style("transition-duration");
+  });
+  expect([0, "0", "0ms", "0s"]).toContain(transitionDuration);
 });

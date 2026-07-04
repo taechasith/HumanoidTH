@@ -153,7 +153,7 @@ export default function Error({ error, reset }: ErrorProps) {
 
         .error-details-content {
           margin-top: 10px;
-          font-family: monospace;
+          font-family: var(--font-sans);
           color: var(--text-secondary);
           word-break: break-all;
           white-space: pre-wrap;
@@ -167,7 +167,7 @@ export default function Error({ error, reset }: ErrorProps) {
           color: #3b6b9c;
           padding: 2px 6px;
           border-radius: 4px;
-          font-family: monospace;
+          font-family: var(--font-sans);
           font-size: 11px;
           margin-top: 4px;
         }
