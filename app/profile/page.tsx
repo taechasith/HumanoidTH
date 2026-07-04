@@ -19,8 +19,19 @@ export default async function ProfilePage() {
   const t = getTranslation(lang);
 
   let users: any[] = [];
+  let currentUser: any = null;
+  let userSubmissions: any[] = [];
   try {
-    users = await prisma.user.findMany({ orderBy: { createdAt: "desc" }, take: 20 });
+    [users, currentUser] = await Promise.all([
+      prisma.user.findMany({ orderBy: { createdAt: "desc" }, take: 20 }),
+      currentEmail
+        ? prisma.user.findUnique({
+            where: { email: currentEmail },
+            include: { submissions: { orderBy: { createdAt: "desc" }, take: 50 } }
+          })
+        : Promise.resolve(null)
+    ]);
+    userSubmissions = currentUser?.submissions ?? [];
   } catch (error) {
     console.error("Failed to query users in profile page:", error);
   }
@@ -48,17 +59,17 @@ export default async function ProfilePage() {
         <section className="panel" style={{ border: "1px solid var(--warning)", marginBottom: "20px" }}>
           <h2>Authentication & Registration</h2>
           <p className="muted" style={{ marginBottom: 14 }}>
-            Register a new account or log in with an existing email. This session will be saved in the PostgreSQL database.
+            Register a new account or log in with an existing email to track submissions and show your contribution history.
           </p>
 
           <form action={registerAndLoginUser} className="form" style={{ maxWidth: "400px", gap: "12px" }}>
             <label>
               Email Address
-              <input name="email" type="email" required placeholder="name@domain.com" />
+              <input name="email" type="email" required placeholder="ichiro.kato@waseda.jp" />
             </label>
             <label>
               Full Name (Optional)
-              <input name="name" placeholder="John Doe" />
+              <input name="name" placeholder="Ichiro Kato" />
             </label>
             <label>
               Role
@@ -83,10 +94,78 @@ export default async function ProfilePage() {
               </form>
               <form action={loginAsUser.bind(null, "researcher@example.com", "RESEARCHER")}>
                 <button type="submit" className="button" style={{ fontSize: "11px", minHeight: "28px" }}>
-                  🔬 Quick Researcher
+                  Login as Researcher
                 </button>
               </form>
             </div>
+          </div>
+        </section>
+      )}
+
+      {currentUser && (
+        <section className="panel" style={{ marginBottom: "20px" }}>
+          <h2>Community Contribution Profile</h2>
+          <p className="muted" style={{ marginBottom: 12 }}>
+            Submissions linked to this account appear here so you can track review progress and show what you have contributed to the atlas.
+          </p>
+          <div className="stat-grid" style={{ marginBottom: 14 }}>
+            <div className="metric-card">
+              <span>Total submitted</span>
+              <strong>{userSubmissions.length}</strong>
+            </div>
+            <div className="metric-card">
+              <span>Approved</span>
+              <strong>{userSubmissions.filter((item) => item.status === "APPROVED").length}</strong>
+            </div>
+            <div className="metric-card">
+              <span>In review</span>
+              <strong>{userSubmissions.filter((item) => ["QUEUED", "NEEDS_REVIEW", "ANALYZED", "FETCHING"].includes(item.status)).length}</strong>
+            </div>
+          </div>
+
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Submission</th>
+                  <th>Type</th>
+                  <th>Status</th>
+                  <th>Reviewer Notes</th>
+                  <th>Submitted</th>
+                </tr>
+              </thead>
+              <tbody>
+                {userSubmissions.map((item) => (
+                  <tr key={item.id}>
+                    <td>
+                      <strong>{item.title}</strong>
+                      {item.url && (
+                        <div style={{ marginTop: 4 }}>
+                          <a href={item.url} target="_blank" rel="noreferrer" style={{ fontSize: 12, wordBreak: "break-all" }}>
+                            {item.url}
+                          </a>
+                        </div>
+                      )}
+                    </td>
+                    <td><span className="badge">{item.submissionType.replace(/_/g, " ")}</span></td>
+                    <td>
+                      <span className={`badge ${item.status === "APPROVED" ? "ok" : item.status === "REJECTED" || item.status === "FAILED" ? "danger" : "warn"}`}>
+                        {item.status.toLowerCase()}
+                      </span>
+                    </td>
+                    <td style={{ fontSize: 12, color: "var(--text-secondary)", maxWidth: 280 }}>
+                      {item.reviewNotes || item.notes || "Manual review pending."}
+                    </td>
+                    <td style={{ fontSize: 12 }}>{item.createdAt.toLocaleDateString()}</td>
+                  </tr>
+                ))}
+                {!userSubmissions.length && (
+                  <tr>
+                    <td className="empty" colSpan={5}>No submissions linked to this profile yet.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </section>
       )}

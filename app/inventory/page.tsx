@@ -7,8 +7,8 @@ import { getTranslation } from "@/lib/translations";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Robot Inventory",
-  description: "Inventory view for humanoid and service robot units managed, operated, or tested by the Thailand Humanoid Atlas project.",
+  title: "Robot Inventory & Asset Custody | Thailand Humanoid Atlas",
+  description: "Registry of physical humanoid and social robot units managed, operated, or tested under the Thailand Humanoid Atlas project.",
   alternates: { canonical: "/inventory" }
 };
 

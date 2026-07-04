@@ -6,8 +6,8 @@ import { getTranslation } from "@/lib/translations";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Robot Model Registry",
-  description: "Catalog of humanoid, social, service, education, and research robot models connected to Thailand.",
+  title: "Robot Model Registry | Thailand Humanoid Atlas",
+  description: "Comprehensive catalog of humanoid, social, and service robot models deployed, researched, or active in Thailand. Track specifications, developers, and source links.",
   alternates: { canonical: "/robots" }
 };
 

@@ -1,15 +1,24 @@
-import type { MetadataRoute } from "next";
-import { getSiteUrl, publicSeoRoutes } from "@/lib/seo";
+import { MetadataRoute } from "next";
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = getSiteUrl();
-  const lastModified = new Date();
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://humanoid.or.th";
 
-  return publicSeoRoutes.map((route) => ({
-    url: `${baseUrl}${route.path}`,
-    lastModified,
-    changeFrequency: route.changeFrequency,
-    priority: route.priority
+  const routes = [
+    "",
+    "/robots",
+    "/perspectives",
+    "/contributions",
+    "/map",
+    "/network",
+    "/analytics",
+    "/inventory",
+    "/submit-data"
+  ];
+
+  return routes.map((route) => ({
+    url: `${baseUrl}${route}`,
+    lastModified: new Date(),
+    changeFrequency: "daily",
+    priority: route === "" ? 1.0 : 0.8
   }));
 }
-

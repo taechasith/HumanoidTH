@@ -6,8 +6,8 @@ import NetworkGraphClient from "./NetworkGraphClient";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Humanoid Robotics Relationship Network",
-  description: "Interactive relationship graph connecting Thailand humanoid robots, organizations, inventory, papers, sources, public perspectives, and contributions.",
+  title: "Ecosystem Relationship Graph | Thailand Humanoid Atlas",
+  description: "Interactive connection graph mapping relationships between Thai research labs, robot models, developers, and public media records.",
   alternates: { canonical: "/network" }
 };
 
@@ -18,11 +18,16 @@ export default async function NetworkPage() {
 
   return (
     <>
-      <div className="topline">
+      <div className="topline" style={{ display: "block", marginBottom: "16px" }}>
         <div>
           <h1>{t.networkTitle}</h1>
           <p className="muted">{t.networkDesc}</p>
         </div>
+        <p className="muted" style={{ fontSize: "13px", marginTop: "8px", maxWidth: "800px", lineHeight: "1.5" }}>
+          {lang === "th" 
+            ? "กราฟโครงข่ายความสัมพันธ์ระบบนิเวศหุ่นยนต์แสดงการเชื่อมโยงระหว่างหน่วยงานวิจัย (เช่น สถาบันวิทยาการหุ่นยนต์ภาคสนาม FIBO KMUTT, LIRA Lab จุฬาลงกรณ์มหาวิทยาลัย, VISTEC), บริษัทภาคเอกชน, รุ่นหุ่นยนต์ (เช่น NAO, Pepper, Dinsaw) และแหล่งข้อมูลอ้างอิง โหนดในแผนภาพแสดงถึงผู้พัฒนา สถาบัน และรุ่นหุ่นยนต์ โดยมีเส้นเชื่อมระบุประเภทผลงานวิจัย คลังอุปกรณ์ หรือการครอบครองจริงในไทย"
+            : "This interactive network graph maps relations between humanoid robotics research labs (e.g., KMUTT FIBO, Chulalongkorn LIRA, VISTEC), commercial enterprises, robot models (e.g., NAO, Pepper, Dinsaw), and academic publications. Nodes represent developer entities, institutions, and robot specifications, while edges visualize contributions, ownership, and media discussion links."}
+        </p>
       </div>
       <NetworkGraphClient lang={lang} />
     </>

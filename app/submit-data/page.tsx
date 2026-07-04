@@ -1,206 +1,218 @@
 import { cookies } from "next/headers";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
-import { createSubmission } from "@/app/actions";
+import { createSubmission, registerAndLoginUser } from "@/app/actions";
 import { getTranslation } from "@/lib/translations";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Submit Robotics Data",
-  description: "Submit source links, robot model details, contribution claims, corrections, and inventory updates for Thailand Humanoid Atlas review.",
+  title: "Contribute Data & Sightings | Thailand Humanoid Atlas",
+  description: "Help keep the Thailand Humanoid Atlas accurate. Submit new robot deployments, academic papers, source links, or physical inventory updates.",
   alternates: { canonical: "/submit-data" }
 };
 
+const copy = {
+  en: {
+    accountTitle: "Create an account to submit data",
+    accountText: "Submissions are connected to your profile so you can track review status and show your contribution history to the community.",
+    accountEmail: "Email Address",
+    accountName: "Display Name",
+    accountButton: "Create Account / Continue",
+    accountHint: "Already have an account? Use the same email to continue.",
+    type: "Submission Type",
+    title: "Title / Identifier",
+    refUrl: "Reference URL",
+    desc: "Description / Core Source Notes",
+    submitBtn: "Submit for Verification Review",
+    signedInAs: "Submitting as",
+    locked: "Create an account first to unlock the submission form.",
+    policyTitle: "Submission Policy",
+    policyText: "All submissions enter a review queue before they become public records.",
+    policyOne: "Your submitted URLs and notes are kept with your profile.",
+    policyTwo: "Administrators approve, reject, or request more information before indexing submissions.",
+    policyThree: "Approved submissions can be credited as community contributions.",
+    queue: "Your Submission Queue",
+    queueHelp: "These records also appear on your profile so you can track review progress and show your community contributions.",
+    titleCol: "Title / Reference",
+    typeCol: "Type",
+    statusCol: "Status",
+    notesCol: "Notes & Sources",
+    dateCol: "Date",
+    empty: "No submissions queued yet."
+  },
+  th: {
+    accountTitle: "สร้างบัญชีก่อนส่งข้อมูล",
+    accountText: "รายการที่คุณส่งจะเชื่อมกับโปรไฟล์ เพื่อให้ติดตามสถานะการตรวจสอบและแสดงผลงานที่ช่วยชุมชนได้",
+    accountEmail: "อีเมล",
+    accountName: "ชื่อที่แสดง",
+    accountButton: "สร้างบัญชี / ดำเนินการต่อ",
+    accountHint: "มีบัญชีแล้ว? ใช้อีเมลเดิมเพื่อดำเนินการต่อ",
+    type: "ประเภทข้อมูล",
+    title: "ชื่อเรื่อง / ตัวระบุข้อมูล",
+    refUrl: "ลิงก์อ้างอิง",
+    desc: "คำอธิบาย / หมายเหตุแหล่งข้อมูล",
+    submitBtn: "ส่งเพื่อตรวจสอบ",
+    signedInAs: "กำลังส่งในนาม",
+    locked: "กรุณาสร้างบัญชีก่อนส่งข้อมูล",
+    policyTitle: "นโยบายการส่งข้อมูล",
+    policyText: "ข้อมูลที่ส่งจะเข้าสู่คิวตรวจสอบก่อนเผยแพร่เป็นข้อมูลสาธารณะ",
+    policyOne: "ลิงก์และหมายเหตุที่คุณส่งจะถูกเก็บไว้กับโปรไฟล์ของคุณ",
+    policyTwo: "ผู้ดูแลระบบจะอนุมัติ ปฏิเสธ หรือขอข้อมูลเพิ่มเติมก่อนจัดทำดัชนี",
+    policyThree: "รายการที่อนุมัติแล้วสามารถแสดงเป็นผลงานร่วมของชุมชนได้",
+    queue: "คิวข้อมูลที่คุณส่ง",
+    queueHelp: "รายการเหล่านี้จะแสดงในโปรไฟล์ของคุณ เพื่อใช้ติดตามสถานะและแสดงผลงานที่ช่วยชุมชน",
+    titleCol: "ชื่อเรื่อง / อ้างอิง",
+    typeCol: "ประเภท",
+    statusCol: "สถานะ",
+    notesCol: "หมายเหตุและแหล่งข้อมูล",
+    dateCol: "วันที่ส่ง",
+    empty: "ยังไม่มีรายการที่ส่ง"
+  }
+} as const;
+
 export default async function SubmitDataPage() {
   const cookieStore = await cookies();
+  const currentEmail = cookieStore.get("user_email")?.value;
   const lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
   const t = getTranslation(lang);
+  const localT = copy[lang];
 
-  const recentSubmissions = await prisma.submittedData.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 15
-  });
+  const currentUser = currentEmail
+    ? await prisma.user.findUnique({ where: { email: currentEmail } })
+    : null;
 
-  const localT = {
-    en: {
-      type: "Submission Type",
-      title: "Title / Identifier",
-      refUrl: "Reference URL",
-      desc: "Description / Core Source Notes",
-      name: "Your Name",
-      contact: "Contact Email / Phone",
-      submitBtn: "Submit for Verification Review",
-      recent: "Recent Submissions Queue",
-      itemCol: "Item",
-      typeCol: "Type",
-      statusCol: "Status",
-      empty: "No submissions queued yet."
-    },
-    th: {
-      type: "ประเภทการส่งข้อมูล",
-      title: "หัวข้อ / ตัวระบุข้อมูล",
-      refUrl: "ลิงก์อ้างอิง",
-      desc: "คำอธิบาย / รายละเอียดแหล่งข้อมูลอ้างอิง",
-      name: "ชื่อของคุณ",
-      contact: "ข้อมูลติดต่อ (อีเมล / โทรศัพท์)",
-      submitBtn: "ส่งข้อมูลเพื่อรอการตรวจสอบ",
-      recent: "คิวรายการที่ส่งล่าสุด",
-      itemCol: "รายการ",
-      typeCol: "ประเภท",
-      statusCol: "สถานะ",
-      empty: "ยังไม่มีรายการข้อมูลที่ส่งในคิว"
-    }
-  }[lang];
+  const submissions = currentUser
+    ? await prisma.submittedData.findMany({
+        where: { submittedById: currentUser.id },
+        orderBy: { createdAt: "desc" },
+        take: 20
+      })
+    : [];
 
   return (
     <>
       <div className="topline">
         <div>
           <h1>{t.submitTitle}</h1>
-          <p className="muted">
-            {t.submitDesc}
-          </p>
+          <p className="muted">{t.submitDesc}</p>
         </div>
       </div>
 
-      <div className="two" style={{ gap: "16px" }}>
-        
-        {/* Left Side: Submission Form */}
-        <form className="form panel" action={createSubmission}>
+      {!currentUser && (
+        <section className="panel" style={{ border: "1px solid var(--warning)", marginBottom: 16 }}>
+          <h2>{localT.accountTitle}</h2>
+          <p className="muted" style={{ marginBottom: 14 }}>{localT.accountText}</p>
+          <form action={registerAndLoginUser} className="form" style={{ maxWidth: 520, gap: 12 }}>
+            <input type="hidden" name="redirectTo" value="/submit-data" />
+            <input type="hidden" name="role" value="USER" />
+            <label>
+              {localT.accountEmail}
+              <input name="email" type="email" required placeholder="ichiro.kato@waseda.jp" />
+            </label>
+            <label>
+              {localT.accountName}
+              <input name="name" placeholder="Ichiro Kato" />
+            </label>
+            <button type="submit" className="primary">{localT.accountButton}</button>
+          </form>
+          <p className="muted" style={{ fontSize: 12, marginTop: 12 }}>{localT.accountHint}</p>
+        </section>
+      )}
+
+      <div className="two" style={{ gap: 16 }}>
+        <form className="form panel" action={createSubmission} aria-disabled={!currentUser}>
+          {currentUser && (
+            <div className="notice">
+              {localT.signedInAs}: <strong>{currentUser.name || currentUser.email}</strong>
+            </div>
+          )}
+
           <label>
             {localT.type}
-            <select name="submissionType" required>
-              <option value="source_url">{lang === "th" ? "ลิงก์แหล่งที่มา (ข่าว, บทความ)" : "Source URL (News, Article, Blog)"}</option>
-              <option value="robot_model">{lang === "th" ? "ข้อมูลจำเพาะรุ่นหุ่นยนต์" : "Robot Model Spec"}</option>
-              <option value="owned_inventory_update">{lang === "th" ? "อัปเดตรายการหุ่นยนต์ของทีม" : "Owned Inventory Unit Update"}</option>
-              <option value="contribution_claim">{lang === "th" ? "ผลงานวิจัย / คลังโค้ด / ชุดข้อมูล" : "Contribution Claim (Paper, Repo)"}</option>
-              <option value="event_demo_record">{lang === "th" ? "บันทึกการจัดงาน / สาธิตสาธารณะ" : "Event or Public Demo Record"}</option>
-              <option value="correction_request">{lang === "th" ? "คำขอแก้ไขฐานข้อมูล" : "Database Correction Request"}</option>
+            <select name="submissionType" required disabled={!currentUser}>
+              <option value="source_url">Source URL (News, Article, Blog)</option>
+              <option value="robot_model">Robot Model Spec</option>
+              <option value="owned_inventory_update">Owned Inventory Unit Update</option>
+              <option value="contribution_claim">Contribution Claim (Paper, Repo)</option>
+              <option value="event_demo_record">Event or Public Demo Record</option>
+              <option value="correction_request">Database Correction Request</option>
             </select>
           </label>
-          
+
           <label>
             {localT.title}
-            <input name="title" required placeholder="e.g. NAO Robot deployment at KMUTT, Dinsaw Mini review" />
+            <input name="title" required disabled={!currentUser} placeholder="e.g. NAO Robot deployment at KMUTT, Dinsaw Mini review" />
           </label>
-          
+
           <label>
             {localT.refUrl}
-            <input name="url" type="url" placeholder="https://example.com/source-link" />
+            <input name="url" type="url" disabled={!currentUser} placeholder="https://example.com/source-link" />
           </label>
-          
+
           <label>
             {localT.desc}
-            <textarea name="notes" rows={5} placeholder="Provide source excerpts, model details, correction notes, or inventory context." />
+            <textarea name="notes" rows={5} disabled={!currentUser} placeholder="Provide source excerpts, model details, correction notes, or inventory context." />
           </label>
-          
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "10px" }}>
-            <label>
-              {localT.name}
-              <input name="submitterName" placeholder="Ajahn Somchai" />
-            </label>
-            <label>
-              {localT.contact}
-              <input name="submitterContact" placeholder="somchai@university.ac.th" />
-            </label>
-          </div>
 
-          <button className="primary" type="submit" style={{ marginTop: "10px" }}>
+          <button className="primary" type="submit" disabled={!currentUser} style={{ marginTop: 10 }}>
             {localT.submitBtn}
           </button>
+          {!currentUser && <p className="muted" style={{ fontSize: 12, margin: 0 }}>{localT.locked}</p>}
         </form>
 
-        {/* Right Side: Ingestion Policy */}
-        <aside className="panel" style={{ fontSize: "13px" }}>
-          <h2>{lang === "th" ? "นโยบายการส่งข้อมูล" : "Submission Policy"}</h2>
-          <p className="muted" style={{ marginBottom: "10px" }}>
-            {lang === "th" ? "ขอบคุณที่เป็นส่วนหนึ่งในการส่งข้อมูลให้ระบบบันทึก ทุกข้อมูลที่ส่งเข้ามาจะเข้าสู่คิวการตรวจสอบของทีมงานก่อนการนำไปเผยแพร่ต่อสาธารณะ" : "Thank you for contributing to the Thailand Humanoid Atlas. All submissions are stored in the review queue before they become public records."}
-          </p>
-          <ul style={{ paddingLeft: "18px", margin: "6px 0", color: "var(--text-secondary)", display: "flex", flexDirection: "column", gap: "6px" }}>
-            <li>{lang === "th" ? "ข้อมูลและบันทึกข้อความถูกใช้เป็นแหล่งข้อมูลสำหรับผู้ดูแลระบบ" : "Submitted URLs and notes are sources for reviewer decisions."}</li>
-            <li>{lang === "th" ? "การเรียกใช้งานการดึงข้อมูลจะวิเคราะห์แหล่งข้อมูลภายนอกแยกส่วนกัน" : "Data pull jobs can classify external source records separately."}</li>
-            <li>{lang === "th" ? "ผู้ดูแลระบบจะอนุมัติ ปฏิเสธ หรือขอข้อมูลเพิ่มเติมก่อนการจัดทำดัชนี" : "Administrators approve, reject, or request more information before indexing submissions."}</li>
+        <aside className="panel" style={{ fontSize: 13 }}>
+          <h2>{localT.policyTitle}</h2>
+          <p className="muted" style={{ marginBottom: 10 }}>{localT.policyText}</p>
+          <ul style={{ paddingLeft: 18, margin: "6px 0", color: "var(--text-secondary)", display: "flex", flexDirection: "column", gap: 6 }}>
+            <li>{localT.policyOne}</li>
+            <li>{localT.policyTwo}</li>
+            <li>{localT.policyThree}</li>
           </ul>
         </aside>
       </div>
 
-      {/* Submission Tracking Section */}
-      <h2 style={{ marginTop: "24px" }}>{lang === "th" ? "สถานะการประมวลผลและการอนุมัติข้อมูล" : "Signal Tracking & Statuses"}</h2>
+      <h2 style={{ marginTop: 24 }}>{localT.queue}</h2>
+      {currentUser && <p className="muted" style={{ marginTop: -8 }}>{localT.queueHelp}</p>}
       <div className="table-wrap">
         <table>
           <thead>
             <tr>
-              <th>{lang === "th" ? "หัวข้อ / อ้างอิง" : "Title / Reference"}</th>
+              <th>{localT.titleCol}</th>
               <th>{localT.typeCol}</th>
-              <th>{lang === "th" ? "ผู้ส่งข้อมูล" : "Submitter"}</th>
               <th>{localT.statusCol}</th>
-              <th>{lang === "th" ? "หมายเหตุและแหล่งข้อมูล" : "Notes & Sources"}</th>
-              <th>{lang === "th" ? "วันที่ส่ง" : "Date"}</th>
+              <th>{localT.notesCol}</th>
+              <th>{localT.dateCol}</th>
             </tr>
           </thead>
           <tbody>
-            {recentSubmissions.map((sub) => {
-              // Extract relevance/AI meta if available
-              let metaStr = "Manual review pending";
-              let confidenceStr = "";
-
-              if (sub.payloadJson && typeof sub.payloadJson === "object") {
-                const payload = sub.payloadJson as Record<string, any>;
-                if (payload.confidence) {
-                  confidenceStr = ` (Confidence: ${Number(payload.confidence).toFixed(2)})`;
-                }
-                if (payload.reason) {
-                  metaStr = `AI Reason: ${payload.reason}`;
-                }
-              }
-
-              return (
-                <tr key={sub.id}>
-                  <td>
-                    <strong>{sub.title}</strong>
-                    {sub.url && (
-                      <div style={{ marginTop: "4px" }}>
-                        <a href={sub.url} target="_blank" rel="noreferrer" style={{ fontSize: "12px", wordBreak: "break-all" }}>
-                          {sub.url}
-                        </a>
-                      </div>
-                    )}
-                  </td>
-                  <td>
-                    <span className="badge" style={{ textTransform: "capitalize", fontSize: "11px" }}>
-                      {sub.submissionType.replace(/_/g, " ")}
-                    </span>
-                  </td>
-                  <td>{sub.submitterName || "Anonymous"}</td>
-                  <td>
-                    <span className={`badge ${
-                      sub.status === "APPROVED" 
-                        ? "ok" 
-                        : sub.status === "REJECTED" || sub.status === "FAILED"
-                        ? "danger" 
-                        : "warn"
-                    }`}>
-                      {sub.status.toLowerCase()}
-                    </span>
-                  </td>
-                  <td style={{ fontSize: "12px", color: "var(--text-secondary)", maxWidth: "250px", wordBreak: "break-word" }}>
-                    <div>{sub.notes || "No notes."}</div>
-                    {confidenceStr && (
-                      <div style={{ marginTop: "4px", fontWeight: "bold" }}>
-                        {metaStr}{confidenceStr}
-                      </div>
-                    )}
-                  </td>
-                  <td style={{ fontSize: "12px" }}>
-                    {sub.createdAt.toLocaleDateString()}
-                  </td>
-                </tr>
-              );
-            })}
-            {!recentSubmissions.length && (
+            {submissions.map((sub) => (
+              <tr key={sub.id}>
+                <td>
+                  <strong>{sub.title}</strong>
+                  {sub.url && (
+                    <div style={{ marginTop: 4 }}>
+                      <a href={sub.url} target="_blank" rel="noreferrer" style={{ fontSize: 12, wordBreak: "break-all" }}>
+                        {sub.url}
+                      </a>
+                    </div>
+                  )}
+                </td>
+                <td><span className="badge">{sub.submissionType.replace(/_/g, " ")}</span></td>
+                <td>
+                  <span className={`badge ${sub.status === "APPROVED" ? "ok" : sub.status === "REJECTED" || sub.status === "FAILED" ? "danger" : "warn"}`}>
+                    {sub.status.toLowerCase()}
+                  </span>
+                </td>
+                <td style={{ fontSize: 12, color: "var(--text-secondary)", maxWidth: 280, wordBreak: "break-word" }}>
+                  {sub.notes || sub.reviewNotes || "Manual review pending."}
+                </td>
+                <td style={{ fontSize: 12 }}>{sub.createdAt.toLocaleDateString()}</td>
+              </tr>
+            ))}
+            {!submissions.length && (
               <tr>
-                <td className="empty" colSpan={6}>No recent submissions logged.</td>
+                <td className="empty" colSpan={5}>{localT.empty}</td>
               </tr>
             )}
           </tbody>
@@ -209,3 +221,4 @@ export default async function SubmitDataPage() {
     </>
   );
 }
+

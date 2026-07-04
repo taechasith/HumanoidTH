@@ -8,8 +8,8 @@ import AnalyticsBpmn from "./AnalyticsBpmn";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Robotics Analytics and Stance Insights",
-  description: "Analytics for Thailand humanoid robotics source relevance, confidence, public perspective themes, stance, and corpus coverage.",
+  title: "Analytics & Stance Insights | Thailand Humanoid Atlas",
+  description: "Statistical breakdown and charts tracking public sentiment, attention, and stance on embodied AI and robotics across Thailand.",
   alternates: { canonical: "/analytics" }
 };
 

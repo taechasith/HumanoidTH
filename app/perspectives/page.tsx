@@ -6,8 +6,8 @@ import { getTranslation } from "@/lib/translations";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Public Perspectives on Robotics",
-  description: "Reviewed public perspective annotations about humanoid and social robotics topics, stance, sentiment, confidence, and evidence sources.",
+  title: "Public & Media Perspectives | Thailand Humanoid Atlas",
+  description: "Analyze public opinion and media stance on humanoid robots in Thailand. Explore stance and sentiment analysis on safety, healthcare trust, and employment impact.",
   alternates: { canonical: "/perspectives" }
 };
 

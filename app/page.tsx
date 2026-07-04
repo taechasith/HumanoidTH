@@ -21,9 +21,31 @@ import {
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Thailand Humanoid Robotics Research Database",
-  description: "Explore Thailand's humanoid, social, and service robotics ecosystem through robot models, source records, contributions, public perspectives, analytics, maps, and relationship graphs.",
-  alternates: { canonical: "/" }
+  title: "Thailand Humanoid Atlas | Embodied AI & Robotics Database",
+  description: "Explore Thailand's humanoid, social, and service robotics ecosystem. Trace robot models, research contributions, public perspectives, physical inventories, and AI-powered ecosystem maps.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: "Thailand Humanoid Atlas | Embodied AI & Robotics Database",
+    description: "Explore Thailand's humanoid, social, and service robotics ecosystem. Trace robot models, research contributions, public perspectives, physical inventories, and AI-powered ecosystem maps.",
+    url: "/",
+    siteName: "Thailand Humanoid Atlas",
+    images: [
+      {
+        url: "/logo.png",
+        width: 512,
+        height: 512,
+        alt: "Thailand Humanoid Atlas Logo"
+      }
+    ],
+    locale: "en_US",
+    type: "website"
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Thailand Humanoid Atlas | Embodied AI & Robotics Database",
+    description: "Explore Thailand's humanoid, social, and service robotics ecosystem. Trace robot models, research contributions, public perspectives, physical inventories, and AI-powered ecosystem maps.",
+    images: ["/logo.png"]
+  }
 };
 
 
@@ -874,6 +896,18 @@ export default async function OverviewPage() {
             })}
           </div>
         </div>
+
+        {/* About the Atlas Summary Section */}
+        <article className="panel" style={{ marginTop: "14px", display: "flex", flexDirection: "column", gap: "10px" }}>
+          <h2 style={{ fontSize: "16px", fontWeight: "800", margin: "0 0 4px 0", color: "var(--text-primary)" }}>
+            {lang === "th" ? "เกี่ยวกับระบบคลังข้อมูลหุ่นยนต์ไทย" : "About the Thailand Humanoid Robotics Ecosystem"}
+          </h2>
+          <p style={{ margin: 0, fontSize: "13.5px", lineHeight: "1.55", color: "var(--text-secondary)" }}>
+            {lang === "th"
+              ? "ระบบคลังข้อมูล Thailand Humanoid Atlas เป็นฐานข้อมูลวิจัยเสรีเพื่อรวบรวม วิเคราะห์ และแสดงความเกี่ยวข้องด้านเทคโนโลยีหุ่นยนต์ฮิวแมนนอยด์ (Humanoid Robotics) และการพัฒนาระบบปัญญาประดิษฐ์ในไทย (Embodied AI) โดยเชื่อมโยงระหว่างผลงานวิจัยเชิงวิชาการ คลังโค้ดซอฟต์แวร์ต้นฉบับ ทะเบียนรุ่นหุ่นยนต์ และการวิเคราะห์ความคิดเห็นสาธารณะในประเด็นด้านจริยธรรม ความปลอดภัย และการทดแทนแรงงานมนุษย์ เพื่อเป้าหมายในการสนับสนุนการแลกเปลี่ยนเรียนรู้และพัฒนาต่อยอดองค์ความรู้ร่วมกันของนักพัฒนาในประเทศอย่างยั่งยืน"
+              : "The Thailand Humanoid Atlas is an open-access research portal cataloging key parameters of the humanoid robotics and embodied AI landscape in Thailand. By tracing connections between academic papers, open-source repositories, commercial/research robot model registries, and public opinion themes (ethics, safety, employment shifts), this registry aims to provide researchers, policy makers, and developers with clear, audit-ready data points."}
+          </p>
+        </article>
       </section>
 
       {/* Database Empty State Guide */}
@@ -903,6 +937,43 @@ export default async function OverviewPage() {
           </div>
         </div>
       </section>
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@graph": [
+              {
+                "@type": "WebSite",
+                "@id": "https://humanoid.or.th/#website",
+                "url": "https://humanoid.or.th/",
+                "name": "Thailand Humanoid Atlas",
+                "description": "Research database, registry, and analysis platform tracking the humanoid, social, and service robotics ecosystem in Thailand.",
+                "publisher": {
+                  "@id": "https://humanoid.or.th/#organization"
+                }
+              },
+              {
+                "@type": "Organization",
+                "@id": "https://humanoid.or.th/#organization",
+                "name": "Thailand Humanoid Atlas Project",
+                "url": "https://humanoid.or.th/",
+                "logo": "https://humanoid.or.th/logo.png"
+              },
+              {
+                "@type": "WebApplication",
+                "@id": "https://humanoid.or.th/#webapplication",
+                "name": "Thailand Humanoid Atlas Platform",
+                "url": "https://humanoid.or.th/",
+                "applicationCategory": "ResearchApplication",
+                "operatingSystem": "All",
+                "description": "An interactive, open-source database cataloging humanoid robot models, academic contributions, public media sentiment, and physical inventory assets in Thailand."
+              }
+            ]
+          })
+        }}
+      />
     </main>
 
   );

@@ -58,20 +58,33 @@ function revalidateAtlasCms() {
 }
 
 export async function createSubmission(formData: FormData) {
+  const cookieStore = await cookies();
+  const currentEmail = cookieStore.get("user_email")?.value;
+  if (!currentEmail) {
+    redirect("/profile?from=/submit-data");
+  }
+
+  const user = await prisma.user.findUnique({ where: { email: currentEmail } });
+  if (!user) {
+    redirect("/profile?from=/submit-data");
+  }
+
   await prisma.submittedData.create({
     data: {
       submissionType: String(formData.get("submissionType") ?? "source_url"),
       title: String(formData.get("title") ?? ""),
       url: canonicalizeUrl(String(formData.get("url") ?? "")) || null,
       notes: String(formData.get("notes") ?? "") || null,
-      submitterName: String(formData.get("submitterName") ?? "") || null,
-      submitterContact: String(formData.get("submitterContact") ?? "") || null,
+      submitterName: user.name || null,
+      submitterContact: user.email,
+      submittedById: user.id,
       status: "QUEUED"
     }
   });
 
   revalidateAtlasCms();
-  redirect("/admin?collection=submitted-data");
+  revalidatePath("/profile");
+  redirect("/profile");
 }
 
 export async function updateSubmissionStatus(id: string, status: "APPROVED" | "REJECTED" | "NEEDS_REVIEW") {
@@ -147,6 +160,7 @@ export async function registerAndLoginUser(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim();
   const name = String(formData.get("name") ?? "").trim();
   const role = String(formData.get("role") ?? "USER") as any;
+  const redirectTo = String(formData.get("redirectTo") ?? "/profile");
 
   if (!email) {
     throw new Error("Email is required");
@@ -175,7 +189,7 @@ export async function registerAndLoginUser(formData: FormData) {
   }
   revalidatePath("/profile");
   revalidateAtlasCms();
-  redirect("/profile");
+  redirect(redirectTo.startsWith("/") ? redirectTo : "/profile");
 }
 
 export async function logoutUser() {

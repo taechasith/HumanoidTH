@@ -9,8 +9,8 @@ import { fetchContributionClusters, reanalyzeClustersWithGemini } from "./action
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Thailand Robotics Ecosystem Map",
-  description: "Interactive map of Thailand humanoid robotics development clusters, organizations, robot models, contributions, and inventory signals.",
+  title: "Ecosystem Contribution Map | Thailand Humanoid Atlas",
+  description: "Geospatial visualization and AI-clustered mapping of humanoid robotics research, development, and inventories across Thailand's universities and institutes.",
   alternates: { canonical: "/map" }
 };
 
