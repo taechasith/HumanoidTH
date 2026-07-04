@@ -106,6 +106,16 @@ export default async function ContributionsPage({ searchParams }: { searchParams
           .filter-form {
             grid-template-columns: 1fr;
           }
+        .type-badge {
+          border-radius: 4px !important;
+          font-size: 11px;
+          font-weight: 700;
+          padding: 3px 7px;
+          background: rgba(74, 124, 89, 0.12) !important;
+          color: var(--accent) !important;
+          border: 1px solid rgba(74, 124, 89, 0.3) !important;
+          text-transform: capitalize;
+          display: inline-block;
         }
       `}} />
 
@@ -183,7 +193,7 @@ export default async function ContributionsPage({ searchParams }: { searchParams
                   <span className="muted" style={{ fontSize: "12px" }}>By {item.contributorName}</span>
                 </td>
                 <td>
-                  <span className="badge" style={{ textTransform: "capitalize" }}>
+                  <span className="badge type-badge">
                     {item.contributionType.replace(/_/g, " ")}
                   </span>
                 </td>

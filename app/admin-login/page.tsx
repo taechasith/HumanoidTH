@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { getTranslation } from "@/lib/translations";
-import { adminLoginAction } from "@/app/actions";
+import AdminLoginForm from "./AdminLoginForm";
 
 type SearchParams = Promise<{ error?: string; from?: string }>;
 
@@ -11,7 +11,7 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: S
 
   const cookieStore = await cookies();
   const lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
-  const t = getTranslation(lang);
+  getTranslation(lang);
 
   const localT = {
     en: {
@@ -20,17 +20,15 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: S
       email: "Email Address",
       password: "Security Password",
       btn: "Authorize Session",
-      errorMsg: "Invalid credentials. Please verify your admin email and password.",
-      banner: "Thailand Humanoid Atlas Console"
+      errorMsg: "Invalid credentials. Please verify your admin email and password."
     },
     th: {
       title: "การยืนยันตัวตนผู้ดูแลระบบ",
-      desc: "กรุณาระบุข้อมูลเพื่อเข้าสู่การจัดการระบบหลักและการเรียกใช้เครื่องมือดึงข้อมูลผ่าน API",
+      desc: "กรุณาระบุข้อมูลเพื่อเข้าสู่การจัดการระบบหลักและเครื่องมือดึงข้อมูลผ่าน API",
       email: "อีเมลผู้ดูแลระบบ",
       password: "รหัสผ่านความปลอดภัย",
       btn: "ยืนยันสิทธิ์การเข้าใช้งาน",
-      errorMsg: "ข้อมูลการเข้าสู่ระบบไม่ถูกต้อง กรุณาตรวจสอบอีเมลและรหัสผ่านอีกครั้ง",
-      banner: "คอนโซลผู้ดูแลระบบคลังข้อมูลหุ่นยนต์ไทย"
+      errorMsg: "ข้อมูลการเข้าสู่ระบบไม่ถูกต้อง กรุณาตรวจสอบอีเมลและรหัสผ่านอีกครั้ง"
     }
   }[lang];
 
@@ -143,6 +141,56 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: S
           box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
         }
 
+        .password-input-wrap {
+          display: grid;
+          position: relative;
+        }
+
+        .password-input {
+          padding-right: 48px;
+          width: 100%;
+        }
+
+        .password-toggle {
+          align-items: center;
+          background: transparent;
+          border: 0;
+          border-radius: 6px;
+          color: #a3c2b5;
+          cursor: pointer;
+          display: inline-flex;
+          height: 34px;
+          justify-content: center;
+          min-height: 34px;
+          overflow: visible;
+          padding: 0;
+          position: absolute;
+          right: 7px;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 34px;
+        }
+
+        .password-toggle::after {
+          display: none;
+        }
+
+        .password-toggle:hover {
+          background: rgba(16, 185, 129, 0.12);
+          box-shadow: none;
+          color: #ffffff;
+          transform: translateY(-50%);
+        }
+
+        .password-toggle:active {
+          transform: translateY(-50%) scale(0.96);
+        }
+
+        .password-toggle:focus-visible {
+          outline: 2px solid #10B981;
+          outline-offset: 2px;
+        }
+
         .login-btn {
           background: #10B981;
           color: #050e0a;
@@ -186,35 +234,7 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: S
           </div>
         )}
 
-        <form className="login-form" action={adminLoginAction}>
-          <input type="hidden" name="from" value={from} />
-          
-          <label className="login-label">
-            {localT.email}
-            <input 
-              name="email" 
-              type="email" 
-              className="login-input" 
-              required 
-              placeholder="e.g. creativelab.co.th@gmail.com" 
-            />
-          </label>
-
-          <label className="login-label">
-            {localT.password}
-            <input 
-              name="password" 
-              type="password" 
-              className="login-input" 
-              required 
-              placeholder="••••••••••••" 
-            />
-          </label>
-
-          <button type="submit" className="login-btn">
-            {localT.btn}
-          </button>
-        </form>
+        <AdminLoginForm from={from} emailLabel={localT.email} passwordLabel={localT.password} buttonLabel={localT.btn} />
       </div>
     </div>
   );

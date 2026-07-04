@@ -16,8 +16,8 @@ export default function Loading() {
 
         .loader-logo-wrap {
           position: relative;
-          width: 120px;
-          min-height: 150px;
+          width: 150px;
+          min-height: 180px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -27,19 +27,31 @@ export default function Loading() {
         .loader-logo-wrap::before {
           content: "";
           position: absolute;
-          inset: 10px;
+          inset: -28px -34px -20px;
           border-radius: 50%;
-          background: radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, transparent 68%);
-          filter: blur(2px);
+          background:
+            radial-gradient(circle at center, rgba(7, 31, 22, 0.96) 0%, rgba(12, 78, 50, 0.74) 38%, rgba(16, 185, 129, 0.22) 62%, transparent 78%);
+          filter: blur(8px);
+          transform: scale(1.08);
+        }
+
+        .loader-logo-wrap::after {
+          content: "";
+          position: absolute;
+          inset: 16px 4px 2px;
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(2, 14, 10, 0.82) 0%, rgba(9, 48, 33, 0.58) 52%, transparent 76%);
+          filter: blur(3px);
         }
 
         .loader-logo {
           position: relative;
+          z-index: 1;
           width: 100%;
           height: auto;
           max-height: 150px;
           object-fit: contain;
-          filter: drop-shadow(0 8px 18px rgba(20, 53, 42, 0.18));
+          filter: drop-shadow(0 10px 18px rgba(2, 14, 10, 0.54)) drop-shadow(0 0 22px rgba(12, 78, 50, 0.42));
         }
 
         .loading-text {

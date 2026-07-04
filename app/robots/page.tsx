@@ -4,36 +4,97 @@ import { getTranslation } from "@/lib/translations";
 
 export const dynamic = "force-dynamic";
 
-function getRobotBannerUrl(name: string, url: string | null): string {
-  const n = name.toLowerCase();
-  
-  if (n.includes("nao")) {
-    return "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=600&q=80";
+type SourceLike = {
+  title: string;
+  url: string;
+  platform: string | null;
+  rawMeta: unknown;
+};
+
+type RobotLike = {
+  canonicalName: string;
+  officialUrl: string | null;
+  sourceMeta: unknown;
+};
+
+const imageMetaKeys = [
+  "thumbnail",
+  "thumbnailUrl",
+  "thumbnail_url",
+  "image",
+  "imageUrl",
+  "image_url",
+  "banner",
+  "bannerUrl",
+  "banner_url",
+  "ogImage",
+  "og:image",
+  "coverImage",
+  "cover_image"
+];
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : null;
+}
+
+function getStringField(meta: unknown, keys: string[]) {
+  const record = asRecord(meta);
+  if (!record) return null;
+  for (const key of keys) {
+    const value = record[key];
+    if (typeof value === "string" && value.trim()) return value.trim();
   }
-  if (n.includes("pepper")) {
-    return "https://images.unsplash.com/photo-1531747118685-ca8fa6e08806?auto=format&fit=crop&w=600&q=80";
+  return null;
+}
+
+function extractYoutubeVideoId(url: string | null) {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname.includes("youtu.be")) return parsed.pathname.replace("/", "") || null;
+    if (parsed.hostname.includes("youtube.com")) return parsed.searchParams.get("v") || parsed.pathname.split("/").filter(Boolean).pop() || null;
+  } catch {
+    return null;
   }
-  if (n.includes("dinsaw")) {
-    return "https://images.unsplash.com/photo-1546776310-eef45dd6d63c?auto=format&fit=crop&w=600&q=80";
-  }
-  if (n.includes("unitree") || n.includes("h1") || n.includes("g1") || n.includes("atlas")) {
-    return "https://images.unsplash.com/photo-1589254065878-42c9da997008?auto=format&fit=crop&w=600&q=80";
-  }
-  
-  if (url) {
-    const u = url.toLowerCase();
-    if (u.includes("youtube.com") || u.includes("youtu.be")) {
-      return "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&w=600&q=80";
-    }
-    if (u.includes("github.com")) {
-      return "https://images.unsplash.com/photo-1618401471353-b98aedd07871?auto=format&fit=crop&w=600&q=80";
-    }
-    if (u.includes("openalex.org") || u.includes("arxiv.org") || u.includes("doi.org")) {
-      return "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=600&q=80";
-    }
-  }
-  
-  return "https://images.unsplash.com/photo-1507668077129-56e32842fceb?auto=format&fit=crop&w=600&q=80";
+  return null;
+}
+
+function getSourceImageUrl(url: string | null, meta: unknown) {
+  const explicitImage = getStringField(meta, imageMetaKeys);
+  if (explicitImage) return explicitImage;
+
+  const videoId = getStringField(meta, ["videoId", "video_id"]) ?? extractYoutubeVideoId(url);
+  if (videoId) return `https://i.ytimg.com/vi/${encodeURIComponent(videoId)}/hqdefault.jpg`;
+
+  return null;
+}
+
+function findRobotSource(robot: RobotLike, sources: SourceLike[]) {
+  const robotName = robot.canonicalName.toLowerCase();
+  const officialUrl = robot.officialUrl?.toLowerCase() ?? null;
+  const metaTitle = getStringField(robot.sourceMeta, ["title"])?.toLowerCase() ?? null;
+
+  return sources.find((source) => {
+    const raw = asRecord(source.rawMeta);
+    const canonicalName = typeof raw?.canonicalName === "string" ? raw.canonicalName.toLowerCase() : null;
+    const sourceUrl = source.url.toLowerCase();
+    const sourceTitle = source.title.toLowerCase();
+
+    return (
+      (officialUrl && sourceUrl === officialUrl) ||
+      (canonicalName && canonicalName === robotName) ||
+      (metaTitle && sourceTitle === metaTitle) ||
+      sourceTitle.includes(robotName)
+    );
+  }) ?? null;
+}
+
+function getRobotSourceImage(robot: RobotLike, sources: SourceLike[]) {
+  const robotMetaImage = getSourceImageUrl(robot.officialUrl, robot.sourceMeta);
+  if (robotMetaImage) return robotMetaImage;
+
+  const source = findRobotSource(robot, sources);
+  return getSourceImageUrl(source?.url ?? robot.officialUrl, source?.rawMeta ?? null);
 }
 
 export default async function RobotsPage() {
@@ -51,15 +112,25 @@ export default async function RobotsPage() {
     developerOrg: string | null;
     primaryUseCase: string | null;
     officialUrl: string | null;
+    sourceMeta: unknown;
   }> = [];
+  let sources: SourceLike[] = [];
   let dbOffline = false;
 
   try {
-    robots = await prisma.robotModel.findMany({ orderBy: { canonicalName: "asc" }, take: 200 });
+    [robots, sources] = await Promise.all([
+      prisma.robotModel.findMany({ orderBy: { canonicalName: "asc" }, take: 200 }),
+      prisma.sourceRecord.findMany({
+        orderBy: [{ relevanceConfidence: "desc" }, { updatedAt: "desc" }],
+        select: { title: true, url: true, platform: true, rawMeta: true },
+        take: 1000
+      })
+    ]);
   } catch (error) {
     console.error("Database query failed in robots page:", error);
     dbOffline = true;
     robots = [];
+    sources = [];
   }
 
   return (
@@ -73,11 +144,15 @@ export default async function RobotsPage() {
       )}
       <div className="cards">
         {robots.map((robot) => {
-          const bannerUrl = getRobotBannerUrl(robot.canonicalName, robot.officialUrl);
+          const bannerUrl = getRobotSourceImage(robot, sources);
           return (
             <article className="card" key={robot.id}>
               <div className="card-banner">
-                <img src={bannerUrl} alt={robot.canonicalName} loading="lazy" />
+                {bannerUrl ? (
+                  <img src={bannerUrl} alt={robot.canonicalName} loading="lazy" />
+                ) : (
+                  <div className="source-thumbnail-empty">No source thumbnail</div>
+                )}
               </div>
               <h2>{robot.canonicalName}</h2>
               <p className="muted">{robot.description ?? "No description yet."}</p>

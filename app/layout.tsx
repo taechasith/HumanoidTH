@@ -25,7 +25,14 @@ const ibmPlexSansThai = IBM_Plex_Sans_Thai({
 
 export const metadata: Metadata = {
   title: "Thailand Humanoid Atlas",
-  description: "Research database for Thailand humanoid and social robotics ecosystem"
+  description: "Research database for Thailand humanoid and social robotics ecosystem",
+  icons: {
+    icon: [
+      { url: "/logo.png", type: "image/png" }
+    ],
+    shortcut: "/logo.png",
+    apple: "/logo.png"
+  }
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
