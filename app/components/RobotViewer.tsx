@@ -71,7 +71,8 @@ export default function RobotViewer() {
     scene.add(rimLight);
 
     const robotRoot = new Group();
-    robotRoot.position.y = -0.52;
+    const baseRootY = -0.52;
+    robotRoot.position.y = baseRootY;
     scene.add(robotRoot);
 
     const pointer = new Vector2(0, 0);
@@ -92,6 +93,7 @@ export default function RobotViewer() {
 
     let disposed = false;
     let dragging = false;
+    let interactionEnergy = 0;
     let lastClientX = 0;
     let targetRootYaw = 0;
     let currentRootYaw = 0;
@@ -182,10 +184,12 @@ export default function RobotViewer() {
 
       pointer.set(x, y);
       targetHead.set(pointer.x * 0.45, pointer.y * 0.32);
+      interactionEnergy = Math.max(interactionEnergy, 0.65);
     };
 
     const onPointerDown = (event: PointerEvent) => {
       dragging = true;
+      interactionEnergy = 1;
       lastClientX = event.clientX;
       renderer.domElement.style.cursor = "grabbing";
       renderer.domElement.setPointerCapture(event.pointerId);
@@ -199,6 +203,7 @@ export default function RobotViewer() {
       const deltaX = event.clientX - lastClientX;
       lastClientX = event.clientX;
       targetRootYaw += deltaX * 0.008;
+      interactionEnergy = 1;
     };
 
     const onPointerUp = (event: PointerEvent) => {
@@ -212,6 +217,7 @@ export default function RobotViewer() {
     const onPointerLeave = () => {
       targetHead.set(0, 0);
       dragging = false;
+      interactionEnergy = 0;
       renderer.domElement.style.cursor = "grab";
     };
 
@@ -228,10 +234,28 @@ export default function RobotViewer() {
       const deltaTime = lastTime === 0 ? 0.016 : elapsed - lastTime;
       lastTime = elapsed;
 
+      interactionEnergy = MathUtils.lerp(interactionEnergy, dragging ? 1 : 0, dragging ? 0.08 : 0.018);
+      const idleEnergy = 1 - interactionEnergy;
+      const idleScan = new Vector2(
+        Math.sin(elapsed * 0.34) * 0.16 + Math.sin(elapsed * 0.13) * 0.08,
+        Math.sin(elapsed * 0.27 + 1.2) * 0.07
+      );
+      const aliveTargetHead = new Vector2(
+        targetHead.x * (0.9 + interactionEnergy * 0.35) + idleScan.x * idleEnergy,
+        targetHead.y * (0.9 + interactionEnergy * 0.28) + idleScan.y * idleEnergy
+      );
+      const breath = Math.sin(elapsed * 1.55) * 0.018;
+      const attentiveLean = MathUtils.clamp(currentHead.x, -0.35, 0.35);
+
       currentRootYaw += (targetRootYaw - currentRootYaw) * 0.12;
-      currentHead.lerp(targetHead, 0.13);
+      currentHead.lerp(aliveTargetHead, 0.13 + interactionEnergy * 0.05);
 
       robotRoot.rotation.y = currentRootYaw;
+      robotRoot.rotation.x = Math.sin(elapsed * 0.42) * 0.012 * idleEnergy - Math.abs(currentHead.y) * 0.035 * interactionEnergy;
+      robotRoot.rotation.z = Math.sin(elapsed * 0.5 + 0.8) * 0.012 * idleEnergy - attentiveLean * 0.045 * interactionEnergy;
+      robotRoot.position.y = baseRootY + breath + Math.sin(elapsed * 0.72) * 0.012 * idleEnergy;
+      const breathScale = 1 + Math.sin(elapsed * 1.55 + 0.4) * 0.004;
+      robotRoot.scale.setScalar(breathScale + interactionEnergy * 0.006);
 
       // Programmatic Waving Animation logic
       if (rightShoulder && rightElbow && rightForearm) {
@@ -283,16 +307,19 @@ export default function RobotViewer() {
       for (const node of activeHeadNodes) {
         const base = baseRotations.get(node);
         if (!base) continue;
-        node.rotation.x = base.x + currentHead.y;
+        const curiousTilt = Math.sin(elapsed * 0.9) * 0.015 * idleEnergy;
+        node.rotation.x = base.x + currentHead.y + curiousTilt;
         node.rotation.y = base.y + currentHead.x;
-        node.rotation.z = base.z + Math.sin(elapsed * 1.2) * 0.01;
+        node.rotation.z = base.z + Math.sin(elapsed * 1.2) * 0.012 + currentHead.x * 0.08;
       }
 
       for (const node of activeEyeNodes) {
         const base = baseRotations.get(node);
         if (!base) continue;
-        node.rotation.x = base.x + currentHead.y * 0.45;
-        node.rotation.y = base.y + currentHead.x * 0.55;
+        const microSaccadeX = Math.sin(elapsed * 5.1) * 0.018 * idleEnergy;
+        const microSaccadeY = Math.sin(elapsed * 4.4 + 0.6) * 0.012 * idleEnergy;
+        node.rotation.x = base.x + currentHead.y * 0.45 + microSaccadeY;
+        node.rotation.y = base.y + currentHead.x * 0.62 + microSaccadeX;
         node.rotation.z = base.z;
       }
 
