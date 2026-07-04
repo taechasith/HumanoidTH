@@ -902,17 +902,7 @@ export default async function OverviewPage() {
           </div>
         </div>
 
-        {/* About the Atlas Summary Section */}
-        <article className="panel" style={{ marginTop: "14px", display: "flex", flexDirection: "column", gap: "10px" }}>
-          <h2 style={{ fontSize: "16px", fontWeight: "800", margin: "0 0 4px 0", color: "var(--text-primary)" }}>
-            {lang === "th" ? "เกี่ยวกับระบบคลังข้อมูลหุ่นยนต์ไทย" : "About the Thailand Humanoid Robotics Ecosystem"}
-          </h2>
-          <p style={{ margin: 0, fontSize: "13.5px", lineHeight: "1.55", color: "var(--text-secondary)" }}>
-            {lang === "th"
-              ? "ระบบคลังข้อมูล Thailand Humanoid Atlas เป็นฐานข้อมูลวิจัยเสรีเพื่อรวบรวม วิเคราะห์ และแสดงความเกี่ยวข้องด้านเทคโนโลยีหุ่นยนต์ฮิวแมนนอยด์ (Humanoid Robotics) และการพัฒนาระบบปัญญาประดิษฐ์ในไทย (Embodied AI) โดยเชื่อมโยงระหว่างผลงานวิจัยเชิงวิชาการ คลังโค้ดซอฟต์แวร์ต้นฉบับ ทะเบียนรุ่นหุ่นยนต์ และการวิเคราะห์ความคิดเห็นสาธารณะในประเด็นด้านจริยธรรม ความปลอดภัย และการทดแทนแรงงานมนุษย์ เพื่อเป้าหมายในการสนับสนุนการแลกเปลี่ยนเรียนรู้และพัฒนาต่อยอดองค์ความรู้ร่วมกันของนักพัฒนาในประเทศอย่างยั่งยืน"
-              : "The Thailand Humanoid Atlas is an open-access research portal cataloging key parameters of the humanoid robotics and embodied AI landscape in Thailand. By tracing connections between academic papers, open-source repositories, commercial/research robot model registries, and public opinion themes (ethics, safety, employment shifts), this registry aims to provide researchers, policy makers, and developers with clear, audit-ready data points."}
-          </p>
-        </article>
+
       </section>
 
       {/* Database Empty State Guide */}
