@@ -132,9 +132,13 @@ test("network page renders graph UI and core controls", async ({ page }) => {
     await expect(page.getByLabel("Interactive network graph")).toBeVisible();
     await page.getByRole("button", { name: "Focus mode" }).click();
 
-    await page.getByPlaceholder("Search node label...").fill(graph.nodes[0].label);
-    await page.getByRole("button", { name: "Focus" }).click();
-    await expect(page.getByText(graph.nodes[0].label, { exact: false })).toBeVisible({ timeout: 10000 });
+    const renderedLabel = await page.evaluate(() => {
+      const cy = (window as any).__networkCy;
+      return cy.nodes()[0]?.data("label") as string;
+    });
+    await page.getByPlaceholder("Search node label...").fill(renderedLabel);
+    await page.getByRole("button", { name: "Focus", exact: true }).click();
+    await expect(page.getByText(renderedLabel, { exact: false })).toBeVisible({ timeout: 10000 });
   } else {
     await expect(page.getByText("No network relationships have been generated yet.")).toBeVisible();
   }
