@@ -269,7 +269,6 @@ export const metadata: Metadata = {
       `}} />
 
       <div className="login-stack">
-        <img loading="lazy" src="/logo.png" alt="Atlas Logo" className="login-logo" />
         <div className="login-card">
           <h2 className="login-title">{localT.title}</h2>
           <p className="login-desc">{localT.desc}</p>
