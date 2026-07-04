@@ -7,6 +7,41 @@ import { fetchContributionClusters, reanalyzeClustersWithGemini } from "./action
 
 export const dynamic = "force-dynamic";
 
+const localT = {
+  en: {
+    clustersStat: "Ecosystem Clusters",
+    analyzedStat: "Database Items Analyzed",
+    geolocatedStat: "Geolocated Entities",
+    engineStat: "Analysis Engine",
+    noticeText: "This page uses Gemini AI to analyze all humanoid robotics development, contributions, and inventories in the database to cluster them by organization and geolocate them within Thailand.",
+    buttonText: "Trigger Gemini AI Ecosystem Analysis",
+    buttonMuted: "Reads all contributions, robot models, and inventories to find new clusters on the map.",
+    thHeaderCluster: "Cluster / Institution",
+    thHeaderLocation: "Location",
+    thHeaderType: "Type",
+    thHeaderRecords: "Records",
+    thHeaderSummary: "Ecosystem Summary",
+    itemsPrefix: "Items:",
+    emptyState: "No ecosystem clusters analyzed yet. Click the button above to run AI analysis."
+  },
+  th: {
+    clustersStat: "คลัสเตอร์ระบบนิเวศ",
+    analyzedStat: "วิเคราะห์ข้อมูลดิบรวม",
+    geolocatedStat: "พิกัดหน่วยงานทั้งหมด",
+    engineStat: "เครื่องมือวิเคราะห์ AI",
+    noticeText: "หน้านี้ใช้เทคโนโลยี Gemini AI เพื่อประมวลผลความสัมพันธ์ของผลงานวิจัย โครงการพัฒนา และข้อมูลคลังหุ่นยนต์ทั้งหมดในระบบ เพื่อจัดคลัสเตอร์แยกตามหน่วยงานสถาบันต่างๆ ในประเทศไทย",
+    buttonText: "เริ่มต้นการวิเคราะห์ระบบนิเวศด้วย Gemini AI",
+    buttonMuted: "วิเคราะห์ผลงานวิจัย คลัง และผลงานทั้งหมดเพื่อค้นหาคลัสเตอร์ใหม่บนแผนที่",
+    thHeaderCluster: "คลัสเตอร์ / สถาบัน",
+    thHeaderLocation: "สถานที่ตั้ง",
+    thHeaderType: "ประเภท",
+    thHeaderRecords: "จำนวนรายการ",
+    thHeaderSummary: "สรุปภาพรวมระบบนิเวศ",
+    itemsPrefix: "รายการย่อย:",
+    emptyState: "ยังไม่มีข้อมูลคลัสเตอร์ที่ถูกวิเคราะห์ เริ่มทำงานวิเคราะห์ AI ได้โดยคลิกปุ่มด้านบน"
+  }
+};
+
 export default async function MapPage() {
   const cookieStore = await cookies();
   const lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
@@ -40,46 +75,46 @@ export default async function MapPage() {
 
       <div className="grid" style={{ marginBottom: 12 }}>
         <div className="panel motion-panel">
-          <p className="muted" style={{ margin: 0 }}>Ecosystem Clusters</p>
+          <p className="muted" style={{ margin: 0 }}>{localT[lang].clustersStat}</p>
           <div className="stat">{clusters.length}</div>
         </div>
         <div className="panel motion-panel">
-          <p className="muted" style={{ margin: 0 }}>Database Items Analyzed</p>
+          <p className="muted" style={{ margin: 0 }}>{localT[lang].analyzedStat}</p>
           <div className="stat">{totalAnalyzed}</div>
         </div>
         <div className="panel motion-panel">
-          <p className="muted" style={{ margin: 0 }}>Geolocated Entities</p>
+          <p className="muted" style={{ margin: 0 }}>{localT[lang].geolocatedStat}</p>
           <div className="stat">{uniqueOrgs.size}</div>
         </div>
         <div className="panel motion-panel">
-          <p className="muted" style={{ margin: 0 }}>Analysis Engine</p>
+          <p className="muted" style={{ margin: 0 }}>{localT[lang].engineStat}</p>
           <div className="stat" style={{ fontSize: 15, marginTop: 10 }}>Gemini 1.5 Flash</div>
         </div>
       </div>
 
       <div className="notice" style={{ marginBottom: 12 }}>
-        This page uses Gemini AI to analyze all humanoid robotics development, contributions, and inventories in the database to cluster them by organization and geolocate them within Thailand.
+        {localT[lang].noticeText}
       </div>
 
       <form action={reanalyzeClustersWithGemini} className="toolbar" style={{ marginTop: 0 }}>
         <button className="primary" type="submit">
           <Sparkles size={16} aria-hidden="true" />
-          Trigger Gemini AI Ecosystem Analysis
+          {localT[lang].buttonText}
         </button>
-        <span className="muted">Reads all contributions, robot models, and inventories to find new clusters.</span>
+        <span className="muted">{localT[lang].buttonMuted}</span>
       </form>
 
-      <GoogleMapClient apiKey={apiKey} points={clusters} />
+      <GoogleMapClient apiKey={apiKey} points={clusters} lang={lang} />
 
       <div className="table-wrap" style={{ marginTop: 14 }}>
         <table>
           <thead>
             <tr>
-              <th>Cluster / Institution</th>
-              <th>Location</th>
-              <th>Type</th>
-              <th style={{ textAlign: "center" }}>Records</th>
-              <th>Ecosystem Summary</th>
+              <th>{localT[lang].thHeaderCluster}</th>
+              <th>{localT[lang].thHeaderLocation}</th>
+              <th>{localT[lang].thHeaderType}</th>
+              <th style={{ textAlign: "center" }}>{localT[lang].thHeaderRecords}</th>
+              <th>{localT[lang].thHeaderSummary}</th>
             </tr>
           </thead>
           <tbody>
@@ -94,7 +129,7 @@ export default async function MapPage() {
                 <td style={{ fontSize: "13px", lineHeight: "1.45" }}>
                   {cluster.summary}
                   <div className="muted" style={{ fontSize: "11px", marginTop: 6 }}>
-                    <strong>Items:</strong> {cluster.detailsList.join(", ")}
+                    <strong>{localT[lang].itemsPrefix}</strong> {cluster.detailsList.join(", ")}
                   </div>
                 </td>
               </tr>
@@ -102,7 +137,7 @@ export default async function MapPage() {
             {!clusters.length ? (
               <tr>
                 <td colSpan={5} className="empty">
-                  No ecosystem clusters analyzed yet. Click the button above to run AI analysis.
+                  {localT[lang].emptyState}
                 </td>
               </tr>
             ) : null}

@@ -14,6 +14,26 @@ declare global {
 type Props = {
   apiKey: string;
   points: ContributionMapPoint[];
+  lang?: "en" | "th";
+};
+
+const localT = {
+  en: {
+    apiKeyRequired: "Google Maps API key required",
+    apiKeyMuted: "Add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to the environment to render the live Google Map. AI-mapped contribution clusters are still listed below.",
+    selectedCluster: "Selected Cluster",
+    ecosystemSummary: "Ecosystem Summary",
+    connectedProjects: "Connected Projects",
+    emptyState: "No location cluster selected. Click a map marker to explore humanoid contributions."
+  },
+  th: {
+    apiKeyRequired: "จำเป็นต้องระบุคีย์ Google Maps API",
+    apiKeyMuted: "โปรดเพิ่ม NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ในการตั้งค่า Environment เพื่อแสดงผลแผนที่แบบสด โดยรายละเอียดคลัสเตอร์ที่วิเคราะห์โดย AI จะยังแสดงอยู่ด้านล่าง",
+    selectedCluster: "คลัสเตอร์ที่เลือก",
+    ecosystemSummary: "สรุปภาพรวมระบบนิเวศ",
+    connectedProjects: "โครงการและผลงานที่เชื่อมโยง",
+    emptyState: "ยังไม่ได้เลือกคลัสเตอร์ คลิกที่หมุดบนแผนที่เพื่อดูข้อมูลผลงานพัฒนาและคลังหุ่นยนต์"
+  }
 };
 
 function centerFor(points: ContributionMapPoint[]) {
@@ -24,7 +44,7 @@ function centerFor(points: ContributionMapPoint[]) {
   };
 }
 
-export default function GoogleMapClient({ apiKey, points }: Props) {
+export default function GoogleMapClient({ apiKey, points, lang = "en" }: Props) {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const [scriptReady, setScriptReady] = useState(false);
   const [activePoint, setActivePoint] = useState<ContributionMapPoint | null>(points[0] ?? null);
@@ -78,10 +98,9 @@ export default function GoogleMapClient({ apiKey, points }: Props) {
       <div className="panel" style={{ minHeight: 520, display: "grid", placeItems: "center", textAlign: "center" }}>
         <div>
           <MapPin size={34} aria-hidden="true" style={{ color: "var(--accent)" }} />
-          <h2 style={{ marginTop: 10 }}>Google Maps API key required</h2>
+          <h2 style={{ marginTop: 10 }}>{localT[lang].apiKeyRequired}</h2>
           <p className="muted" style={{ maxWidth: 520, margin: "8px auto" }}>
-            Add <code>NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</code> to the environment to render the live Google Map.
-            AI-mapped contribution clusters are still listed below.
+            {localT[lang].apiKeyMuted}
           </p>
         </div>
       </div>
@@ -98,7 +117,7 @@ export default function GoogleMapClient({ apiKey, points }: Props) {
       <div className="map-layout">
         <div ref={mapRef} className="panel" style={{ minHeight: 520, padding: 0, overflow: "hidden" }} />
         <aside className="panel" style={{ minHeight: 520, display: "flex", flexDirection: "column", gap: 12 }}>
-          <h2>Selected Cluster</h2>
+          <h2>{localT[lang].selectedCluster}</h2>
           {activePoint ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <div>
@@ -110,12 +129,12 @@ export default function GoogleMapClient({ apiKey, points }: Props) {
               </div>
               
               <div style={{ borderTop: "1px solid var(--border)", paddingTop: 12, marginTop: 4 }}>
-                <strong style={{ fontSize: 11, textTransform: "uppercase", color: "var(--text-secondary)", letterSpacing: 0.5 }}>Ecosystem Summary</strong>
+                <strong style={{ fontSize: 11, textTransform: "uppercase", color: "var(--text-secondary)", letterSpacing: 0.5 }}>{localT[lang].ecosystemSummary}</strong>
                 <p style={{ margin: "6px 0 0 0", fontSize: 13.5, lineHeight: 1.5, color: "var(--text-primary)" }}>{activePoint.summary}</p>
               </div>
 
               <div style={{ borderTop: "1px solid var(--border)", paddingTop: 12, marginTop: 4 }}>
-                <strong style={{ fontSize: 11, textTransform: "uppercase", color: "var(--text-secondary)", letterSpacing: 0.5 }}>Connected Projects ({activePoint.contributionCount})</strong>
+                <strong style={{ fontSize: 11, textTransform: "uppercase", color: "var(--text-secondary)", letterSpacing: 0.5 }}>{localT[lang].connectedProjects} ({activePoint.contributionCount})</strong>
                 <ul style={{ margin: "8px 0 0 0", paddingLeft: 16, fontSize: 13, display: "grid", gap: 6 }}>
                   {activePoint.detailsList.map((item, idx) => (
                     <li key={idx} style={{ lineHeight: 1.4 }}>{item}</li>
@@ -124,7 +143,7 @@ export default function GoogleMapClient({ apiKey, points }: Props) {
               </div>
             </div>
           ) : (
-            <div className="empty">No location cluster selected. Click a map marker to explore humanoid contributions.</div>
+            <div className="empty">{localT[lang].emptyState}</div>
           )}
         </aside>
       </div>

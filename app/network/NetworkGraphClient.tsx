@@ -93,6 +93,113 @@ function unique(values: Array<string | null | undefined>) {
   return [...new Set(values.filter(Boolean) as string[])].sort((a, b) => a.localeCompare(b));
 }
 
+const localT = {
+  en: {
+    searchPlaceholder: "Search node label...",
+    focus: "Focus",
+    fitView: "Fit view",
+    resetLayout: "Reset layout",
+    labelDisplay: "Label display",
+    density: "Density",
+    animation: "Animation",
+    focusMode: "Focus mode",
+    collapseFilters: "Collapse filters",
+    collapseDetails: "Collapse details",
+    arrows: "Arrows",
+    relationLabels: "Relation labels",
+    lowConfidence: "Low confidence",
+    onlyReviewed: "Only reviewed",
+    ownedLayer: "Owned layer",
+    mediaLayer: "Media layer",
+    researchLayer: "Research layer",
+    localGraph: "Local graph",
+    backToGlobal: "Back to global",
+    pinSelected: "Pin selected",
+    exportJson: "Export JSON",
+    loadMore: "Load more",
+    dataSource: "Data source:",
+    filtersHeader: "Filters",
+    detailsHeader: "Details",
+    defaultDetailText: "Click a node or relationship to inspect connected records, source text, and URLs.",
+    descLabel: "Description",
+    orgLabel: "Organization",
+    countryTypeLabel: "Country / robot type",
+    sourceConnectedLabel: "Source count / connected nodes",
+    incomingLabel: "Incoming relationships",
+    outgoingLabel: "Outgoing relationships",
+    evidenceUrlLabel: "Source URL",
+    sourceIdsLabel: "Source IDs",
+    openRecordBtn: "Open database record",
+    subjectLabel: "Subject",
+    relationLabel: "Relation",
+    objectLabel: "Object",
+    directionLabel: "Direction",
+    excerptLabel: "Source excerpt",
+    sourcePlatformDate: "Source platform / date",
+    reviewStatusLabel: "Review status",
+    noPublicUrl: "No public URL.",
+    generatedInternally: "Generated internally.",
+    none: "None",
+    fetchingGraph: "Fetching network relationships...",
+    graphFailedLoad: "Network graph failed to load.",
+    noRelationships: "No network relationships have been generated yet.",
+    depth: "Depth",
+    sourceWarning: "Using local JSON cache fallback"
+  },
+  th: {
+    searchPlaceholder: "ค้นหาโหนด...",
+    focus: "โฟกัส",
+    fitView: "จัดพอดีจอ",
+    resetLayout: "จัดตำแหน่งใหม่",
+    labelDisplay: "แสดงป้ายชื่อ",
+    density: "ความหนาแน่น",
+    animation: "แอนิเมชัน",
+    focusMode: "โหมดโฟกัส",
+    collapseFilters: "ย่อตัวกรอง",
+    collapseDetails: "ย่อรายละเอียด",
+    arrows: "ลูกศรทิศทาง",
+    relationLabels: "ป้ายความสัมพันธ์",
+    lowConfidence: "ความน่าเชื่อถือต่ำ",
+    onlyReviewed: "เฉพาะที่ตรวจสอบแล้ว",
+    ownedLayer: "เลเยอร์คลังอุปกรณ์",
+    mediaLayer: "เลเยอร์สื่อประชาสัมพันธ์",
+    researchLayer: "เลเยอร์งานวิจัย",
+    localGraph: "กราฟเฉพาะส่วน",
+    backToGlobal: "กลับหน้าหลัก",
+    pinSelected: "ปักหมุดโหนด",
+    exportJson: "ส่งออก JSON",
+    loadMore: "โหลดเพิ่ม",
+    dataSource: "แหล่งข้อมูล:",
+    filtersHeader: "ตัวกรองข้อมูล",
+    detailsHeader: "รายละเอียด",
+    defaultDetailText: "คลิกที่โหนดหรือความสัมพันธ์เพื่อตรวจสอบบันทึกการเชื่อมต่อ แหล่งอ้างอิง และลิงก์ต้นทาง",
+    descLabel: "คำอธิบาย",
+    orgLabel: "หน่วยงาน / สังกัด",
+    countryTypeLabel: "ประเทศ / ประเภทหุ่นยนต์",
+    sourceConnectedLabel: "จำนวนแหล่งข้อมูล / โหนดที่เชื่อมต่อ",
+    incomingLabel: "ความสัมพันธ์ขาเข้า",
+    outgoingLabel: "ความสัมพันธ์ขาออก",
+    evidenceUrlLabel: "ลิงก์แหล่งที่มา",
+    sourceIdsLabel: "ไอดีแหล่งข้อมูล",
+    openRecordBtn: "เปิดประวัติตารางดิบ",
+    subjectLabel: "ประธาน (Subject)",
+    relationLabel: "ความสัมพันธ์ (Relation)",
+    objectLabel: "กรรม (Object)",
+    directionLabel: "ทิศทาง",
+    excerptLabel: "ข้อความอ้างอิงต้นฉบับ",
+    sourcePlatformDate: "แพลตฟอร์มแหล่งที่มา / วันที่เผยแพร่",
+    reviewStatusLabel: "สถานะการตรวจสอบ",
+    noPublicUrl: "ไม่มีลิงก์สาธารณะ",
+    generatedInternally: "สร้างโดยระบบภายใน",
+    none: "ไม่มีข้อมูล",
+    fetchingGraph: "กำลังดึงข้อมูลความสัมพันธ์...",
+    graphFailedLoad: "ไม่สามารถโหลดกราฟความสัมพันธ์ได้",
+    noRelationships: "ยังไม่มีการสร้างความสัมพันธ์ในระบบ",
+    depth: "ความลึกระดับ",
+    sourceWarning: "กำลังใช้งานไฟล์แคชสำรองในเครื่อง"
+  }
+};
+
 function isImportantNode(node: NetworkNode) {
   return node.degree >= 5
     || node.source_count >= 3
@@ -206,7 +313,7 @@ function updateLabelClasses(cy: Core, labelMode: LabelMode, selectedNodeId: stri
   }
 }
 
-export default function NetworkGraphClient() {
+export default function NetworkGraphClient({ lang = "en" }: { lang?: "en" | "th" }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const cyRef = useRef<Core | null>(null);
   const labelModeRef = useRef<LabelMode>("important");
@@ -570,56 +677,72 @@ export default function NetworkGraphClient() {
     <>
       <div className={styles.toolbar}>
         <div className={styles.searchWrap}>
-          <input value={search} onChange={(event) => setSearch(event.target.value)} onKeyDown={(event) => event.key === "Enter" && focusSearch()} placeholder="Search node label..." />
+          <input value={search} onChange={(event) => setSearch(event.target.value)} onKeyDown={(event) => event.key === "Enter" && focusSearch()} placeholder={localT[lang].searchPlaceholder} />
         </div>
         <select value={sourceMode} onChange={(event) => setSourceMode(event.target.value as typeof sourceMode)} aria-label="Network data source">
-          <option value="auto">Auto</option>
-          <option value="database">Database</option>
-          <option value="file">Import file</option>
-          <option value="hybrid">Hybrid</option>
+          <option value="auto">{lang === "th" ? "อัตโนมัติ" : "Auto"}</option>
+          <option value="database">{lang === "th" ? "ฐานข้อมูล" : "Database"}</option>
+          <option value="file">{lang === "th" ? "ไฟล์นำเข้า" : "Import file"}</option>
+          <option value="hybrid">{lang === "th" ? "ไฮบริด" : "Hybrid"}</option>
         </select>
-        <button type="button" onClick={focusSearch}>Focus</button>
-        <button type="button" onClick={() => cyRef.current?.fit(undefined, density.padding)}>Fit view</button>
-        <button type="button" onClick={() => runLayout("cose")}>Reset layout</button>
+        <button type="button" onClick={focusSearch}>{localT[lang].focus}</button>
+        <button type="button" onClick={() => cyRef.current?.fit(undefined, density.padding)}>{localT[lang].fitView}</button>
+        <button type="button" onClick={() => runLayout("cose")}>{localT[lang].resetLayout}</button>
         <label className={styles.inlineControl}>
-          Label display
+          {localT[lang].labelDisplay}
           <select value={labelMode} onChange={(event) => setLabelMode(event.target.value as LabelMode)} aria-label="Label display">
-            {labelModeOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+            {labelModeOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {lang === "th" ? (
+                  option.value === "off" ? "ปิด" :
+                  option.value === "hover" ? "เมื่อชี้เมาส์" :
+                  option.value === "selected" ? "เมื่อเลือก" :
+                  option.value === "important" ? "เฉพาะที่สำคัญ" : "ทั้งหมด"
+                ) : option.label}
+              </option>
+            ))}
           </select>
         </label>
         <label className={styles.inlineControl}>
-          Density
+          {localT[lang].density}
           <select value={densityMode} onChange={(event) => setDensityMode(event.target.value as DensityMode)} aria-label="Graph density">
-            {(Object.keys(densitySettings) as DensityMode[]).map((key) => <option key={key} value={key}>{densitySettings[key].label}</option>)}
+            {(Object.keys(densitySettings) as DensityMode[]).map((key) => (
+              <option key={key} value={key}>
+                {lang === "th" ? (
+                  key === "compact" ? "หนาแน่นสูง" :
+                  key === "balanced" ? "สมดุล" : "กว้างขวาง"
+                ) : densitySettings[key].label}
+              </option>
+            ))}
           </select>
         </label>
-        <button type="button" className={animationsEnabled ? styles.active : ""} onClick={() => setAnimationsEnabled((value) => !value)}>Animation</button>
-        <button type="button" className={focusMode ? styles.active : ""} onClick={() => setFocusMode((value) => !value)}>Focus mode</button>
-        <button type="button" className={filtersCollapsed ? styles.active : ""} onClick={() => setFiltersCollapsed((value) => !value)}>Collapse filters</button>
-        <button type="button" className={detailsCollapsed ? styles.active : ""} onClick={() => setDetailsCollapsed((value) => !value)}>Collapse details</button>
-        <button type="button" className={showArrows ? styles.active : ""} onClick={() => setShowArrows((value) => !value)}>Arrows</button>
-        <button type="button" className={showLabels ? styles.active : ""} onClick={() => setShowLabels((value) => !value)}>Relation labels</button>
-        <button type="button" className={showLowConfidence ? styles.active : ""} onClick={() => setShowLowConfidence((value) => !value)}>Low confidence</button>
-        <button type="button" className={onlyReviewed ? styles.active : ""} onClick={() => setOnlyReviewed((value) => !value)}>Only reviewed</button>
-        <button type="button" className={showOwned ? styles.active : ""} onClick={() => setShowOwned((value) => !value)}>Owned layer</button>
-        <button type="button" className={showMedia ? styles.active : ""} onClick={() => setShowMedia((value) => !value)}>Media layer</button>
-        <button type="button" className={showAcademic ? styles.active : ""} onClick={() => setShowAcademic((value) => !value)}>Research layer</button>
-        <button type="button" className={localMode ? styles.active : ""} onClick={() => setLocalMode((value) => !value)}>Local graph</button>
+        <button type="button" className={animationsEnabled ? styles.active : ""} onClick={() => setAnimationsEnabled((value) => !value)}>{localT[lang].animation}</button>
+        <button type="button" className={focusMode ? styles.active : ""} onClick={() => setFocusMode((value) => !value)}>{localT[lang].focusMode}</button>
+        <button type="button" className={filtersCollapsed ? styles.active : ""} onClick={() => setFiltersCollapsed((value) => !value)}>{localT[lang].collapseFilters}</button>
+        <button type="button" className={detailsCollapsed ? styles.active : ""} onClick={() => setDetailsCollapsed((value) => !value)}>{localT[lang].collapseDetails}</button>
+        <button type="button" className={showArrows ? styles.active : ""} onClick={() => setShowArrows((value) => !value)}>{localT[lang].arrows}</button>
+        <button type="button" className={showLabels ? styles.active : ""} onClick={() => setShowLabels((value) => !value)}>{localT[lang].relationLabels}</button>
+        <button type="button" className={showLowConfidence ? styles.active : ""} onClick={() => setShowLowConfidence((value) => !value)}>{localT[lang].lowConfidence}</button>
+        <button type="button" className={onlyReviewed ? styles.active : ""} onClick={() => setOnlyReviewed((value) => !value)}>{localT[lang].onlyReviewed}</button>
+        <button type="button" className={showOwned ? styles.active : ""} onClick={() => setShowOwned((value) => !value)}>{localT[lang].ownedLayer}</button>
+        <button type="button" className={showMedia ? styles.active : ""} onClick={() => setShowMedia((value) => !value)}>{localT[lang].mediaLayer}</button>
+        <button type="button" className={showAcademic ? styles.active : ""} onClick={() => setShowAcademic((value) => !value)}>{localT[lang].researchLayer}</button>
+        <button type="button" className={localMode ? styles.active : ""} onClick={() => setLocalMode((value) => !value)}>{localT[lang].localGraph}</button>
         <select value={localDepth} onChange={(event) => setLocalDepth(Number(event.target.value))} aria-label="Local graph depth">
-          <option value={1}>Depth 1</option>
-          <option value={2}>Depth 2</option>
-          <option value={3}>Depth 3</option>
+          <option value={1}>{localT[lang].depth} 1</option>
+          <option value={2}>{localT[lang].depth} 2</option>
+          <option value={3}>{localT[lang].depth} 3</option>
         </select>
-        <button type="button" onClick={() => setLocalMode(false)}>Back to global</button>
-        <button type="button" onClick={pinSelected}>Pin selected</button>
-        <button type="button" onClick={exportJson}>Export JSON</button>
-        {graph?.meta.truncated && <button type="button" onClick={loadMore}>Load more</button>}
+        <button type="button" onClick={() => setLocalMode(false)}>{localT[lang].backToGlobal}</button>
+        <button type="button" onClick={pinSelected}>{localT[lang].pinSelected}</button>
+        <button type="button" onClick={exportJson}>{localT[lang].exportJson}</button>
+        {graph?.meta.truncated && <button type="button" onClick={loadMore}>{localT[lang].loadMore}</button>}
       </div>
 
       {graph && (
         <div className={`${styles.sourceStatus} ${graph.meta.resolved_source === "fallback_file" ? styles.sourceWarning : ""}`}>
-          <span>Data source: {sourceLabel}</span>
-          <span>{graph.meta.node_count} nodes / {graph.meta.edge_count} edges</span>
+          <span>{localT[lang].dataSource} {graph.meta.resolved_source === "fallback_file" ? localT[lang].sourceWarning : sourceLabel}</span>
+          <span>{graph.meta.node_count} {lang === "th" ? "โหนด" : "nodes"} / {graph.meta.edge_count} {lang === "th" ? "เส้นเชื่อม" : "edges"}</span>
           {graph.meta.warnings.map((warning) => (
             <span key={warning}>{warning}</span>
           ))}
@@ -628,51 +751,51 @@ export default function NetworkGraphClient() {
 
       <div className={`${styles.networkShell} ${filtersCollapsed || focusMode ? styles.filtersCollapsed : ""} ${detailsCollapsed || focusMode ? styles.detailsCollapsed : ""} ${focusMode ? styles.focusMode : ""}`}>
         {!(filtersCollapsed || focusMode) && <aside className={styles.filters} aria-label="Network filters">
-          <h2>Filters</h2>
+          <h2>{localT[lang].filtersHeader}</h2>
           {[
-            ["nodeType", "Node type", options.nodeTypes],
-            ["relation", "Relation type", options.relations],
-            ["cluster", "Cluster", options.clusters],
-            ["robotType", "Robot type", options.robotTypes],
-            ["organization", "Organization", options.organizations],
-            ["sourcePlatform", "Source platform", options.platforms],
-            ["year", "Year", options.years],
-            ["country", "Country", options.countries]
+            ["nodeType", lang === "th" ? "ประเภทโหนด" : "Node type", options.nodeTypes],
+            ["relation", lang === "th" ? "ประเภทความสัมพันธ์" : "Relation type", options.relations],
+            ["cluster", lang === "th" ? "กลุ่มคลัสเตอร์" : "Cluster", options.clusters],
+            ["robotType", lang === "th" ? "ประเภทหุ่นยนต์" : "Robot type", options.robotTypes],
+            ["organization", lang === "th" ? "หน่วยงาน / สังกัด" : "Organization", options.organizations],
+            ["sourcePlatform", lang === "th" ? "แพลตฟอร์มแหล่งที่มา" : "Source platform", options.platforms],
+            ["year", lang === "th" ? "ปีที่เผยแพร่" : "Year", options.years],
+            ["country", lang === "th" ? "ประเทศแหล่งกำเนิด" : "Country", options.countries]
           ].map(([key, label, values]) => (
             <div className={styles.filterGroup} key={key as string}>
               <label>{label as string}</label>
               <select value={(filters as any)[key as string]} onChange={(event) => setFilters((current) => ({ ...current, [key as string]: event.target.value }))}>
-                <option value={allOption}>All</option>
+                <option value={allOption}>{lang === "th" ? "ทั้งหมด" : "All"}</option>
                 {(values as string[]).map((value) => <option key={value} value={value}>{value.replace(/_/g, " ")}</option>)}
               </select>
             </div>
           ))}
           <div className={styles.filterGroup}>
-            <label>Confidence range</label>
+            <label>{lang === "th" ? "ระดับความมั่นใจขั้นต่ำ" : "Confidence range"}</label>
             <input type="range" min="0" max="1" step="0.05" value={filters.confidenceMin} onChange={(event) => setFilters((current) => ({ ...current, confidenceMin: event.target.value }))} />
-            <span className={styles.pill}>Min {Number(filters.confidenceMin).toFixed(2)}</span>
+            <span className={styles.pill}>{lang === "th" ? "ขั้นต่ำ" : "Min"} {Number(filters.confidenceMin).toFixed(2)}</span>
           </div>
           <div className={styles.filterGroup}>
-            <label>Public/private visibility</label>
+            <label>{lang === "th" ? "การมองเห็นข้อมูลภายนอก/ภายใน" : "Public/private visibility"}</label>
             <select value={filters.visibility} onChange={(event) => setFilters((current) => ({ ...current, visibility: event.target.value }))}>
-              <option value={allOption}>All</option>
-              <option value="public">Public only</option>
-              <option value="private">Private markers</option>
+              <option value={allOption}>{lang === "th" ? "ทั้งหมด" : "All"}</option>
+              <option value="public">{lang === "th" ? "เฉพาะสาธารณะ" : "Public only"}</option>
+              <option value="private">{lang === "th" ? "ข้อมูลภายใน/ส่วนตัว" : "Private markers"}</option>
             </select>
           </div>
           <div className={styles.statRow}>
-            <span className={styles.pill}>{visibleGraph?.nodes.length ?? 0} nodes</span>
-            <span className={styles.pill}>{visibleGraph?.edges.length ?? 0} edges</span>
+            <span className={styles.pill}>{visibleGraph?.nodes.length ?? 0} {lang === "th" ? "โหนด" : "nodes"}</span>
+            <span className={styles.pill}>{visibleGraph?.edges.length ?? 0} {lang === "th" ? "เส้นเชื่อม" : "edges"}</span>
           </div>
         </aside>}
 
         <section className={styles.canvasPanel}>
           <div ref={containerRef} className={styles.graphCanvas} aria-label="Interactive network graph" />
-          {loading && <div className={styles.loading}><CircularProgress aria-label="Loading network graph" color="inherit" /><span>Fetching network relationships...</span></div>}
-          {error && <div className={styles.error}><strong>Network graph failed to load.</strong><span>{error}</span></div>}
+          {loading && <div className={styles.loading}><CircularProgress aria-label="Loading network graph" color="inherit" /><span>{localT[lang].fetchingGraph}</span></div>}
+          {error && <div className={styles.error}><strong>{localT[lang].graphFailedLoad}</strong><span>{error}</span></div>}
           {!loading && !error && visibleGraph && visibleGraph.nodes.length === 0 && (
             <div className={styles.empty}>
-              <strong>No network relationships have been generated yet.</strong>
+              <strong>{localT[lang].noRelationships}</strong>
               <div>
                 <code>python -m openatlas analyze nlp</code>
                 <code>python -m openatlas analyze graph</code>
@@ -684,26 +807,26 @@ export default function NetworkGraphClient() {
         </section>
 
         {!(detailsCollapsed || focusMode) && <aside className={styles.details} aria-label="Network detail panel">
-          <h2>Details</h2>
-          {!detail && <p className={styles.detailBlock}>Click a node or relationship to inspect connected records, evidence, and source URLs.</p>}
+          <h2>{localT[lang].detailsHeader}</h2>
+          {!detail && <p className={styles.detailBlock}>{localT[lang].defaultDetailText}</p>}
           {detail?.kind === "node" && (
             <>
-              <h3 className={styles.detailTitle}>{detail.node.label}{detail.node.is_private ? " private" : ""}</h3>
+              <h3 className={styles.detailTitle}>{detail.node.label}{detail.node.is_private ? (lang === "th" ? " (ส่วนตัว)" : " (private)") : ""}</h3>
               <div className={styles.detailMeta}>
                 <span className={styles.pill}>{detail.node.type}</span>
                 <span className={styles.pill}>{detail.node.data_origin.replace("_", " ")}</span>
                 <span className={styles.pill}>{detail.node.cluster.replace(/_/g, " ")}</span>
                 <span className={styles.pill}>confidence {detail.node.confidence.toFixed(2)}</span>
               </div>
-              <div className={styles.detailBlock}><strong>Description</strong>{detail.node.description || "No description."}</div>
-              <div className={styles.detailBlock}><strong>Organization</strong>{detail.node.organization || "None"}</div>
-              <div className={styles.detailBlock}><strong>Country / robot type</strong>{detail.node.country || "Unknown"} / {detail.node.robot_type || "N/A"}</div>
-              <div className={styles.detailBlock}><strong>Source count / connected nodes</strong>{detail.node.source_count} / {detail.connected.length}</div>
-              <div className={styles.detailBlock}><strong>Incoming relationships</strong><ul className={styles.detailList}>{detail.incoming.slice(0, 12).map((edge) => <li key={edge.id}>{edge.relation} from {edge.source}</li>)}</ul></div>
-              <div className={styles.detailBlock}><strong>Outgoing relationships</strong><ul className={styles.detailList}>{detail.outgoing.slice(0, 12).map((edge) => <li key={edge.id}>{edge.relation} to {edge.target}</li>)}</ul></div>
-              <div className={styles.detailBlock}><strong>Evidence / source URL</strong>{detail.node.url ? <a href={detail.node.url} target="_blank" rel="noreferrer">{detail.node.url}</a> : "No public URL."}</div>
-              <div className={styles.detailBlock}><strong>Source IDs</strong>{[...detail.node.source_record_ids, ...detail.node.import_record_ids].slice(0, 8).join(", ") || "None"}</div>
-              {detail.node.record_id && <a className="button primary" href={`/database?q=${encodeURIComponent(detail.node.label)}`}>Open database record</a>}
+              <div className={styles.detailBlock}><strong>{localT[lang].descLabel}</strong>{detail.node.description || (lang === "th" ? "ไม่มีคำอธิบาย" : "No description.")}</div>
+              <div className={styles.detailBlock}><strong>{localT[lang].orgLabel}</strong>{detail.node.organization || localT[lang].none}</div>
+              <div className={styles.detailBlock}><strong>{localT[lang].countryTypeLabel}</strong>{detail.node.country || (lang === "th" ? "ไม่ระบุประเทศ" : "Unknown")} / {detail.node.robot_type || "N/A"}</div>
+              <div className={styles.detailBlock}><strong>{localT[lang].sourceConnectedLabel}</strong>{detail.node.source_count} / {detail.connected.length}</div>
+              <div className={styles.detailBlock}><strong>{localT[lang].incomingLabel}</strong><ul className={styles.detailList}>{detail.incoming.slice(0, 12).map((edge) => <li key={edge.id}>{edge.relation} from {edge.source}</li>)}</ul></div>
+              <div className={styles.detailBlock}><strong>{localT[lang].outgoingLabel}</strong><ul className={styles.detailList}>{detail.outgoing.slice(0, 12).map((edge) => <li key={edge.id}>{edge.relation} to {edge.target}</li>)}</ul></div>
+              <div className={styles.detailBlock}><strong>{localT[lang].evidenceUrlLabel}</strong>{detail.node.url ? <a href={detail.node.url} target="_blank" rel="noreferrer">{detail.node.url}</a> : localT[lang].noPublicUrl}</div>
+              <div className={styles.detailBlock}><strong>{localT[lang].sourceIdsLabel}</strong>{[...detail.node.source_record_ids, ...detail.node.import_record_ids].slice(0, 8).join(", ") || localT[lang].none}</div>
+              {detail.node.record_id && <a className="button primary" href={`/database?q=${encodeURIComponent(detail.node.label)}`}>{localT[lang].openRecordBtn}</a>}
             </>
           )}
           {detail?.kind === "edge" && (
@@ -714,14 +837,14 @@ export default function NetworkGraphClient() {
                 <span className={styles.pill}>weight {detail.edge.weight}</span>
                 <span className={styles.pill}>{detail.edge.data_origin.replace("_", " ")}</span>
               </div>
-              <div className={styles.detailBlock}><strong>Subject</strong>{detail.subject?.label ?? detail.edge.source}</div>
-              <div className={styles.detailBlock}><strong>Relation</strong>{detail.edge.relation}</div>
-              <div className={styles.detailBlock}><strong>Object</strong>{detail.object?.label ?? detail.edge.target}</div>
-              <div className={styles.detailBlock}><strong>Direction</strong>{detail.edge.source} {"->"} {detail.edge.target}</div>
-              <div className={styles.detailBlock}><strong>Evidence excerpt</strong>{detail.edge.evidence_excerpt || "No excerpt."}</div>
-              <div className={styles.detailBlock}><strong>Source platform / date</strong>{detail.edge.source_platform || "N/A"} / {detail.edge.published_at ? new Date(detail.edge.published_at).toLocaleDateString() : "N/A"}</div>
-              <div className={styles.detailBlock}><strong>Review status</strong>{detail.edge.review_status || (detail.edge.is_low_confidence ? "Low-confidence inferred" : "Reviewed or high-confidence")}</div>
-              <div className={styles.detailBlock}><strong>Source URL</strong>{detail.edge.url ? <a href={detail.edge.url} target="_blank" rel="noreferrer">{detail.edge.url}</a> : "Generated internally."}</div>
+              <div className={styles.detailBlock}><strong>{localT[lang].subjectLabel}</strong>{detail.subject?.label ?? detail.edge.source}</div>
+              <div className={styles.detailBlock}><strong>{localT[lang].relationLabel}</strong>{detail.edge.relation}</div>
+              <div className={styles.detailBlock}><strong>{localT[lang].objectLabel}</strong>{detail.object?.label ?? detail.edge.target}</div>
+              <div className={styles.detailBlock}><strong>{localT[lang].directionLabel}</strong>{detail.edge.source} {"->"} {detail.edge.target}</div>
+              <div className={styles.detailBlock}><strong>{localT[lang].excerptLabel}</strong>{detail.edge.evidence_excerpt || (lang === "th" ? "ไม่มีข้อความอ้างอิง" : "No excerpt.")}</div>
+              <div className={styles.detailBlock}><strong>{localT[lang].sourcePlatformDate}</strong>{detail.edge.source_platform || "N/A"} / {detail.edge.published_at ? new Date(detail.edge.published_at).toLocaleDateString() : "N/A"}</div>
+              <div className={styles.detailBlock}><strong>{localT[lang].reviewStatusLabel}</strong>{detail.edge.review_status || (detail.edge.is_low_confidence ? (lang === "th" ? "ประเมินโดยระบบอัตโนมัติ (ความมั่นใจต่ำ)" : "Low-confidence inferred") : (lang === "th" ? "ตรวจสอบแล้วหรือมีความมั่นใจสูง" : "Reviewed or high-confidence"))}</div>
+              <div className={styles.detailBlock}><strong>{localT[lang].evidenceUrlLabel}</strong>{detail.edge.url ? <a href={detail.edge.url} target="_blank" rel="noreferrer">{detail.edge.url}</a> : localT[lang].generatedInternally}</div>
             </>
           )}
         </aside>}
@@ -732,7 +855,7 @@ export default function NetworkGraphClient() {
           <strong>{tooltip.subject} {"->"} {tooltip.object}</strong>
           <div>{tooltip.edge.relation} · confidence {tooltip.edge.confidence.toFixed(2)}</div>
           <div>{tooltip.edge.evidence_excerpt?.slice(0, 160) || tooltip.edge.description}</div>
-          {tooltip.edge.url && <div><a href={tooltip.edge.url} target="_blank" rel="noreferrer">Source URL</a></div>}
+          {tooltip.edge.url && <div><a href={tooltip.edge.url} target="_blank" rel="noreferrer">{lang === "th" ? "ลิงก์แหล่งที่มา" : "Source URL"}</a></div>}
         </div>
       )}
     </>

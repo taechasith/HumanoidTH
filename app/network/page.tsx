@@ -17,7 +17,7 @@ export default async function NetworkPage() {
           <p className="muted">{t.networkDesc}</p>
         </div>
       </div>
-      <NetworkGraphClient />
+      <NetworkGraphClient lang={lang} />
     </>
   );
 }
