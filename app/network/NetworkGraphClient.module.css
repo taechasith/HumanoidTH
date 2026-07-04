@@ -65,6 +65,40 @@
   text-transform: none;
 }
 
+.tagControl {
+  align-items: center;
+  background: rgba(5, 11, 8, 0.38);
+  border: 1px solid #1d4b39;
+  border-radius: 8px;
+  color: #d9fff0;
+  display: inline-flex;
+  gap: 8px;
+  padding: 5px 7px;
+}
+
+.tagControl > span {
+  color: #f5d26c;
+  font-size: 11px;
+  font-weight: 850;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.tagButtons {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.tagButtons button {
+  border-radius: 6px;
+  min-height: 30px;
+  padding: 4px 9px;
+}
+
+.tagControl select {
+  min-height: 30px;
+}
+
 .sourceStatus {
   align-items: center;
   background: #0d1f17;
@@ -293,13 +327,20 @@
 
   .toolbar button,
   .toolbar select,
-  .inlineControl {
+  .inlineControl,
+  .tagControl {
     width: 100%;
   }
 
-  .inlineControl {
+  .inlineControl,
+  .tagControl {
     align-items: stretch;
     display: grid;
+  }
+
+  .tagButtons {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .graphCanvas {

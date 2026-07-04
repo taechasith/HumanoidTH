@@ -84,9 +84,9 @@ const labelModeOptions: Array<{ value: LabelMode; label: string }> = [
 ];
 
 const densitySettings: Record<DensityMode, { label: string; idealEdgeLength: number; nodeRepulsion: number; gravity: number; edgeElasticity: number; componentSpacing: number; spacingFactor: number; padding: number; zoom: number }> = {
-  compact: { label: "Compact", idealEdgeLength: 120, nodeRepulsion: 9000, gravity: 0.28, edgeElasticity: 100, componentSpacing: 110, spacingFactor: 1.35, padding: 80, zoom: 1.05 },
-  balanced: { label: "Balanced", idealEdgeLength: 170, nodeRepulsion: 15000, gravity: 0.2, edgeElasticity: 72, componentSpacing: 160, spacingFactor: 1.75, padding: 108, zoom: 0.9 },
-  spacious: { label: "Spacious", idealEdgeLength: 220, nodeRepulsion: 22000, gravity: 0.14, edgeElasticity: 54, componentSpacing: 220, spacingFactor: 2.15, padding: 128, zoom: 0.78 }
+  compact: { label: "Compact", idealEdgeLength: 170, nodeRepulsion: 15000, gravity: 0.2, edgeElasticity: 72, componentSpacing: 160, spacingFactor: 1.75, padding: 96, zoom: 0.92 },
+  balanced: { label: "Balanced", idealEdgeLength: 240, nodeRepulsion: 30000, gravity: 0.11, edgeElasticity: 45, componentSpacing: 260, spacingFactor: 2.35, padding: 132, zoom: 0.72 },
+  spacious: { label: "Spacious", idealEdgeLength: 320, nodeRepulsion: 52000, gravity: 0.055, edgeElasticity: 28, componentSpacing: 360, spacingFactor: 3, padding: 168, zoom: 0.58 }
 };
 
 function unique(values: Array<string | null | undefined>) {
@@ -99,12 +99,14 @@ const localT = {
     focus: "Focus",
     fitView: "Fit view",
     resetLayout: "Reset layout",
-    labelDisplay: "Label display",
+    labelDisplay: "Name tags",
     density: "Density",
     animation: "Animation",
     focusMode: "Focus mode",
-    collapseFilters: "Collapse filters",
-    collapseDetails: "Collapse details",
+    collapseFilters: "Hide filters",
+    collapseDetails: "Hide details",
+    showFilters: "Show filters",
+    showDetails: "Show details",
     arrows: "Arrows",
     relationLabels: "Relation labels",
     lowConfidence: "Low confidence",
@@ -151,12 +153,14 @@ const localT = {
     focus: "โฟกัส",
     fitView: "จัดพอดีจอ",
     resetLayout: "จัดตำแหน่งใหม่",
-    labelDisplay: "แสดงป้ายชื่อ",
+    labelDisplay: "ป้ายชื่อข้อมูล",
     density: "ความหนาแน่น",
     animation: "แอนิเมชัน",
     focusMode: "โหมดโฟกัส",
-    collapseFilters: "ย่อตัวกรอง",
-    collapseDetails: "ย่อรายละเอียด",
+    collapseFilters: "ซ่อนตัวกรอง",
+    collapseDetails: "ซ่อนรายละเอียด",
+    showFilters: "แสดงตัวกรอง",
+    showDetails: "แสดงรายละเอียด",
     arrows: "ลูกศรทิศทาง",
     relationLabels: "ป้ายความสัมพันธ์",
     lowConfidence: "ความน่าเชื่อถือต่ำ",
@@ -208,6 +212,26 @@ function isImportantNode(node: NetworkNode) {
 
 function truncateLabel(label: string) {
   return label.length > 34 ? `${label.slice(0, 31)}...` : label;
+}
+
+function labelModeText(mode: LabelMode, lang: "en" | "th") {
+  if (lang === "th") {
+    if (mode === "off") return "ปิด";
+    if (mode === "hover") return "ชี้เมาส์";
+    if (mode === "selected") return "เลือก";
+    if (mode === "important") return "สำคัญ";
+    return "ทั้งหมด";
+  }
+  return labelModeOptions.find((option) => option.value === mode)?.label ?? mode;
+}
+
+function densityText(mode: DensityMode, lang: "en" | "th") {
+  if (lang === "th") {
+    if (mode === "compact") return "กะทัดรัด";
+    if (mode === "balanced") return "โปร่ง";
+    return "โปร่งมาก";
+  }
+  return densitySettings[mode].label;
 }
 
 function toElements(graph: NetworkGraph): ElementDefinition[] {
@@ -324,16 +348,16 @@ export default function NetworkGraphClient({ lang = "en" }: { lang?: "en" | "th"
   const [detail, setDetail] = useState<Detail>(null);
   const [tooltip, setTooltip] = useState<{ x: number; y: number; edge: NetworkEdge; subject?: string; object?: string } | null>(null);
   const [search, setSearch] = useState("");
-  const [maxNodes, setMaxNodes] = useState(300);
+  const [maxNodes, setMaxNodes] = useState(240);
   const [sourceMode, setSourceMode] = useState<"auto" | "file" | "database" | "hybrid">("auto");
   const [showArrows, setShowArrows] = useState(true);
   const [showLabels, setShowLabels] = useState(false);
   const [labelMode, setLabelMode] = useState<LabelMode>("important");
   const [animationsEnabled, setAnimationsEnabled] = useState(true);
   const [reducedMotion, setReducedMotion] = useState(false);
-  const [densityMode, setDensityMode] = useState<DensityMode>("balanced");
-  const [filtersCollapsed, setFiltersCollapsed] = useState(false);
-  const [detailsCollapsed, setDetailsCollapsed] = useState(false);
+  const [densityMode, setDensityMode] = useState<DensityMode>("spacious");
+  const [filtersCollapsed, setFiltersCollapsed] = useState(true);
+  const [detailsCollapsed, setDetailsCollapsed] = useState(true);
   const [focusMode, setFocusMode] = useState(false);
   const [showLowConfidence, setShowLowConfidence] = useState(true);
   const [onlyReviewed, setOnlyReviewed] = useState(false);
@@ -368,7 +392,7 @@ export default function NetworkGraphClient({ lang = "en" }: { lang?: "en" | "th"
       const savedFiltersCollapsed = localStorage.getItem("network.filtersCollapsed");
       const savedDetailsCollapsed = localStorage.getItem("network.detailsCollapsed");
       if (savedLabelMode && labelModeOptions.some((option) => option.value === savedLabelMode)) setLabelMode(savedLabelMode);
-      if (savedDensity && savedDensity in densitySettings) setDensityMode(savedDensity);
+      if (savedDensity && savedDensity in densitySettings) setDensityMode(savedDensity === "compact" ? "balanced" : savedDensity);
       if (savedAnimations !== null) setAnimationsEnabled(savedAnimations === "true");
       if (savedFiltersCollapsed !== null) setFiltersCollapsed(savedFiltersCollapsed === "true");
       if (savedDetailsCollapsed !== null) setDetailsCollapsed(savedDetailsCollapsed === "true");
@@ -407,7 +431,7 @@ export default function NetworkGraphClient({ lang = "en" }: { lang?: "en" | "th"
   }, [maxNodes, sourceMode]);
 
   useEffect(() => {
-    fetchGraph(300, sourceMode);
+    fetchGraph(240, sourceMode);
   }, []);
 
   useEffect(() => {
@@ -484,6 +508,7 @@ export default function NetworkGraphClient({ lang = "en" }: { lang?: "en" | "th"
         nestingFactor: 1.2,
         nodeRepulsion: density.nodeRepulsion,
         numIter: 2200,
+        spacingFactor: density.spacingFactor,
         gravity: density.gravity
       } : {})
     } as any).run();
@@ -510,6 +535,7 @@ export default function NetworkGraphClient({ lang = "en" }: { lang?: "en" | "th"
         nodeRepulsion: density.nodeRepulsion,
         numIter: 2200,
         padding: density.padding,
+        spacingFactor: density.spacingFactor,
         randomize: false
       } as any,
       maxZoom: 3,
@@ -688,38 +714,43 @@ export default function NetworkGraphClient({ lang = "en" }: { lang?: "en" | "th"
         <button type="button" onClick={focusSearch}>{localT[lang].focus}</button>
         <button type="button" onClick={() => cyRef.current?.fit(undefined, density.padding)}>{localT[lang].fitView}</button>
         <button type="button" onClick={() => runLayout("cose")}>{localT[lang].resetLayout}</button>
-        <label className={styles.inlineControl}>
-          {localT[lang].labelDisplay}
+        <div className={styles.tagControl} role="group" aria-label={localT[lang].labelDisplay}>
+          <span>{localT[lang].labelDisplay}</span>
+          <div className={styles.tagButtons}>
+            {labelModeOptions.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                className={labelMode === option.value ? styles.active : ""}
+                onClick={() => setLabelMode(option.value)}
+                aria-pressed={labelMode === option.value}
+              >
+                {labelModeText(option.value, lang)}
+              </button>
+            ))}
+          </div>
           <select value={labelMode} onChange={(event) => setLabelMode(event.target.value as LabelMode)} aria-label="Label display">
             {labelModeOptions.map((option) => (
               <option key={option.value} value={option.value}>
-                {lang === "th" ? (
-                  option.value === "off" ? "ปิด" :
-                  option.value === "hover" ? "เมื่อชี้เมาส์" :
-                  option.value === "selected" ? "เมื่อเลือก" :
-                  option.value === "important" ? "เฉพาะที่สำคัญ" : "ทั้งหมด"
-                ) : option.label}
+                {labelModeText(option.value, lang)}
               </option>
             ))}
           </select>
-        </label>
+        </div>
         <label className={styles.inlineControl}>
           {localT[lang].density}
           <select value={densityMode} onChange={(event) => setDensityMode(event.target.value as DensityMode)} aria-label="Graph density">
             {(Object.keys(densitySettings) as DensityMode[]).map((key) => (
               <option key={key} value={key}>
-                {lang === "th" ? (
-                  key === "compact" ? "หนาแน่นสูง" :
-                  key === "balanced" ? "สมดุล" : "กว้างขวาง"
-                ) : densitySettings[key].label}
+                {densityText(key, lang)}
               </option>
             ))}
           </select>
         </label>
         <button type="button" className={animationsEnabled ? styles.active : ""} onClick={() => setAnimationsEnabled((value) => !value)}>{localT[lang].animation}</button>
         <button type="button" className={focusMode ? styles.active : ""} onClick={() => setFocusMode((value) => !value)}>{localT[lang].focusMode}</button>
-        <button type="button" className={filtersCollapsed ? styles.active : ""} onClick={() => setFiltersCollapsed((value) => !value)}>{localT[lang].collapseFilters}</button>
-        <button type="button" className={detailsCollapsed ? styles.active : ""} onClick={() => setDetailsCollapsed((value) => !value)}>{localT[lang].collapseDetails}</button>
+        <button type="button" className={filtersCollapsed ? styles.active : ""} onClick={() => setFiltersCollapsed((value) => !value)}>{filtersCollapsed ? localT[lang].showFilters : localT[lang].collapseFilters}</button>
+        <button type="button" className={detailsCollapsed ? styles.active : ""} onClick={() => setDetailsCollapsed((value) => !value)}>{detailsCollapsed ? localT[lang].showDetails : localT[lang].collapseDetails}</button>
         <button type="button" className={showArrows ? styles.active : ""} onClick={() => setShowArrows((value) => !value)}>{localT[lang].arrows}</button>
         <button type="button" className={showLabels ? styles.active : ""} onClick={() => setShowLabels((value) => !value)}>{localT[lang].relationLabels}</button>
         <button type="button" className={showLowConfidence ? styles.active : ""} onClick={() => setShowLowConfidence((value) => !value)}>{localT[lang].lowConfidence}</button>

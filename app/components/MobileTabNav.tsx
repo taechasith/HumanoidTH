@@ -9,17 +9,22 @@ import {
   Bot,
   CircleUserRound
 } from "lucide-react";
+import { getTranslation } from "@/lib/translations";
 
-const tabs = [
-  { href: "/", label: "Home", icon: Home },
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/network", label: "Network", icon: Network },
-  { href: "/robots", label: "Robots", icon: Bot },
-  { href: "/profile", label: "Profile", icon: CircleUserRound }
-];
+interface MobileTabNavProps {
+  currentLang?: "en" | "th";
+}
 
-export default function MobileTabNav() {
+export default function MobileTabNav({ currentLang = "en" }: MobileTabNavProps) {
   const pathname = usePathname() || "/";
+  const t = getTranslation(currentLang);
+  const tabs = [
+    { href: "/", label: t.overview, icon: Home },
+    { href: "/dashboard", label: t.dashboard, icon: LayoutDashboard },
+    { href: "/network", label: t.network, icon: Network },
+    { href: "/robots", label: t.robots, icon: Bot },
+    { href: "/profile", label: t.profile, icon: CircleUserRound }
+  ];
 
   return (
     <nav className="mobile-tab-nav" aria-label="Primary mobile navigation">

@@ -52,7 +52,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           </aside>
           <main className="main motion-page">{children}</main>
           <DataPullFab />
-          <MobileTabNav />
+          <MobileTabNav currentLang={lang} />
         </div>
       </body>
     </html>

@@ -66,8 +66,8 @@ test("network page renders graph UI and core controls", async ({ page }) => {
   await expect(page.getByLabel("Label display")).toBeVisible();
   await expect(page.getByLabel("Graph density")).toBeVisible();
   await expect(page.getByRole("button", { name: "Focus mode" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Collapse filters" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Collapse details" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Show filters" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Show details" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Arrows" })).toBeVisible();
   await expect(page.getByLabel("Network data source")).toBeVisible();
   await expect(page.getByLabel("Interactive network graph")).toBeVisible({ timeout: 20000 });
@@ -131,6 +131,7 @@ test("network page renders graph UI and core controls", async ({ page }) => {
     await page.getByRole("button", { name: "Focus mode" }).click();
     await expect(page.getByLabel("Interactive network graph")).toBeVisible();
     await page.getByRole("button", { name: "Focus mode" }).click();
+    await page.getByRole("button", { name: "Show details" }).click();
 
     const renderedLabel = await page.evaluate(() => {
       const cy = (window as any).__networkCy;
