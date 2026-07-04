@@ -278,12 +278,66 @@ GEMINI_API_KEY="your-gemini-api-key"
 
 ---
 
-## 🛠️ Database Utility Commands
+## 🛠️ Developer Scripts & CLI Tools
 
-Prisma commands are mapped to convenient `pnpm` scripts:
-* 🗄️ **Generate Client:** `pnpm db:generate`
-* 🔄 **Schema Sync:** `pnpm db:push`
-* 🌾 **Database Seeding:** `pnpm db:seed`
+The platform provides a suite of developer utilities for testing, data integrity checking, database synchronization, and search engine optimization.
+
+| Script Command | Purpose | Details |
+| :--- | :--- | :--- |
+| `pnpm dev` | Run full dev suite | Boots the Next.js local server *and* starts the background dataset hot-reloader. |
+| `pnpm dev:next` | Next.js server only | Launches only the local Next.js client (`localhost:3000`). |
+| `pnpm seed:watch` | Hot-reloading seed sync | Watches [thailand_humanoid_atlas_seed_records.json](file:///C:/Users/HP%20OMEN/HumanoidTH/thailand_humanoid_atlas_seed_records.json) for modifications and automatically synchronizes updates into PostgreSQL. |
+| `pnpm check:no-mock-data` | Audit data integrity | Checks page components under `/app` to ensure no mock constants, fallback placeholders, or static records are used, enforcing active DB routing. |
+| `pnpm seo:audit` | Audit metadata and tags | Scans Next.js dynamic routing structures to verify Title, Meta Descriptions, Canonicals, OpenGraph schemas, and headers. |
+| `pnpm seo:optimize` | Auto-apply SEO fixes | Programmatically rewrites page component metadata blocks with audit-approved SEO structures. |
+| `pnpm test` | Run test suite | Executes unit and integration test specs defined in the `test/` directory. |
+| `pnpm db:generate` | Generate Prisma Client | Re-compiles types and schemas into `generated/prisma` client files. |
+| `pnpm db:push` | Sync database schemas | Migrates model changes directly into the PostgreSQL database. |
+| `pnpm db:seed` | Seed database manually | Performs a one-time import of the seed record file into the database. |
+
+---
+
+## 📁 Repository Structure Map
+
+Below is a breakdown of the key files and folders in the project to help navigate:
+
+```text
+├── app/                      # Next.js App Router (pages and layouts)
+│   ├── components/           # Reusable widgets (SidebarNav, LanguageSelector, etc.)
+│   │   ├── FirstTimeLoader.tsx   # Fullscreen landing splash screen loader (Minimal style)
+│   │   └── RobotViewer.tsx       # Interactive 3D robot model renderer (Three.js)
+│   ├── loading.tsx           # Page routing transition loader
+│   ├── globals.css           # Global custom stylesheet
+│   └── page.tsx              # Home / Overview dashboard page
+├── components/               # App-wide UI design system components
+│   └── loading-ui/           # Reusable inline spinner components (Ring, DotsRing)
+├── data/                     # Data feeds, pipeline configurations, and seed templates
+├── lib/                      # Shared logic, configurations, and API clients
+│   ├── prisma.ts             # Prisma Database client instance
+│   ├── seo.ts                # Search Engine Optimization constants
+│   └── translations.ts       # Bilingual translation catalog (EN/TH)
+├── prisma/                   # Prisma database setup
+│   ├── schema.prisma         # Unified entity relationships model definitions
+│   └── seed.ts               # Core database seeder scripts
+├── public/                   # Client static assets (logos, images, and model assets)
+│   └── teal_v.2.glb          # Canonical 3D humanoid robot model mesh (Three.js)
+├── scripts/                  # CLI background tasks and dev helpers
+└── test/                     # Unit and integration test definitions
+```
+
+---
+
+## 🌐 Dynamic Components & Architecture
+
+### 🌀 Fullscreen Landing Splash vs Route Loader
+- **First Time Landing Loader**: Configured in [FirstTimeLoader.tsx](file:///C:/Users/HP%20OMEN/HumanoidTH/app/components/FirstTimeLoader.tsx). Runs a fullscreen, modern dark-gradient splash screen once per user session (using `sessionStorage` tracking) with orbiting HUD rings, rotating logo details, and loading status progress messages.
+- **Router Transition Loader**: A lightweight spinner configured in [loading.tsx](file:///C:/Users/HP%20OMEN/HumanoidTH/app/loading.tsx) that handles page-to-page Next.js transitions without blocky overlays.
+
+### 🤖 3D Robot Viewer
+- Powered by [Three.js](https://threejs.org/) inside [RobotViewer.tsx](file:///C:/Users/HP%20OMEN/HumanoidTH/app/components/RobotViewer.tsx). It dynamically loads the 3D model `public/teal_v.2.glb`, sets up lighting grids (ambient, fill, key, rim lights), supports click-and-drag rotation, and renders an interactive welcoming wave.
+
+### 🇹🇭 Bilingual Localization Catalog
+- Supports dynamic English (`en`) and Thai (`th`) language switching. Language settings are stored in the browser cookie (`lang`) and resolved using Next.js layouts alongside the dictionary catalog in [translations.ts](file:///C:/Users/HP%20OMEN/HumanoidTH/lib/translations.ts).
 
 ---
 
