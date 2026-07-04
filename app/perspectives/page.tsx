@@ -43,7 +43,7 @@ export default async function PerspectivesPage() {
       )}
       <div className="table-wrap">
         <table>
-          <thead><tr><th>Source</th><th>Theme</th><th>Stance</th><th>Sentiment</th><th>Confidence</th><th>Evidence</th></tr></thead>
+          <thead><tr><th>Source</th><th>Theme</th><th>Stance</th><th>Sentiment</th><th>Confidence</th><th>Source Excerpt</th></tr></thead>
           <tbody>
             {items.map((item) => (
               <tr key={item.id}>

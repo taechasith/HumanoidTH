@@ -57,7 +57,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <LanguageSelector currentLang={lang} />
             </div>
           </aside>
-          <main className="main">{children}</main>
+          <main className="main motion-page">{children}</main>
           <DataPullFab />
           <MobileTabNav />
         </div>
@@ -65,4 +65,3 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     </html>
   );
 }
-

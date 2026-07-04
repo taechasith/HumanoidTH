@@ -20,7 +20,7 @@ export default async function SubmitDataPage() {
       type: "Submission Type",
       title: "Title / Identifier",
       refUrl: "Reference URL",
-      desc: "Description / Core Evidence Notes",
+      desc: "Description / Core Source Notes",
       name: "Your Name",
       contact: "Contact Email / Phone",
       submitBtn: "Submit for Verification Review",
@@ -34,7 +34,7 @@ export default async function SubmitDataPage() {
       type: "ประเภทการส่งข้อมูล",
       title: "หัวข้อ / ตัวระบุข้อมูล",
       refUrl: "ลิงก์อ้างอิง",
-      desc: "คำอธิบาย / รายละเอียดหลักฐานอ้างอิง",
+      desc: "คำอธิบาย / รายละเอียดแหล่งข้อมูลอ้างอิง",
       name: "ชื่อของคุณ",
       contact: "ข้อมูลติดต่อ (อีเมล / โทรศัพท์)",
       submitBtn: "ส่งข้อมูลเพื่อรอการตรวจสอบ",
@@ -80,7 +80,7 @@ export default async function SubmitDataPage() {
           
           <label>
             {localT.refUrl}
-            <input name="url" type="url" placeholder="https://example.com/source-evidence" />
+            <input name="url" type="url" placeholder="https://example.com/source-link" />
           </label>
           
           <label>
@@ -111,7 +111,7 @@ export default async function SubmitDataPage() {
             {lang === "th" ? "ขอบคุณที่เป็นส่วนหนึ่งในการส่งข้อมูลให้ระบบบันทึก ทุกข้อมูลที่ส่งเข้ามาจะเข้าสู่คิวการตรวจสอบของทีมงานก่อนการนำไปเผยแพร่ต่อสาธารณะ" : "Thank you for contributing to the Thailand Humanoid Atlas. All submissions are stored in the review queue before they become public records."}
           </p>
           <ul style={{ paddingLeft: "18px", margin: "6px 0", color: "var(--text-secondary)", display: "flex", flexDirection: "column", gap: "6px" }}>
-            <li>{lang === "th" ? "ข้อมูลและบันทึกข้อความถูกใช้เป็นหลักฐานสำหรับผู้ดูแลระบบ" : "Submitted URLs and notes are evidence for reviewer decisions."}</li>
+            <li>{lang === "th" ? "ข้อมูลและบันทึกข้อความถูกใช้เป็นแหล่งข้อมูลสำหรับผู้ดูแลระบบ" : "Submitted URLs and notes are sources for reviewer decisions."}</li>
             <li>{lang === "th" ? "การเรียกใช้งานการดึงข้อมูลจะวิเคราะห์แหล่งข้อมูลภายนอกแยกส่วนกัน" : "Data pull jobs can classify external source records separately."}</li>
             <li>{lang === "th" ? "ผู้ดูแลระบบจะอนุมัติ ปฏิเสธ หรือขอข้อมูลเพิ่มเติมก่อนการจัดทำดัชนี" : "Administrators approve, reject, or request more information before indexing submissions."}</li>
           </ul>
@@ -128,7 +128,7 @@ export default async function SubmitDataPage() {
               <th>{localT.typeCol}</th>
               <th>{lang === "th" ? "ผู้ส่งข้อมูล" : "Submitter"}</th>
               <th>{localT.statusCol}</th>
-              <th>{lang === "th" ? "หมายเหตุและหลักฐาน" : "Notes & Evidence"}</th>
+              <th>{lang === "th" ? "หมายเหตุและแหล่งข้อมูล" : "Notes & Sources"}</th>
               <th>{lang === "th" ? "วันที่ส่ง" : "Date"}</th>
             </tr>
           </thead>

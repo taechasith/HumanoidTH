@@ -21,11 +21,11 @@
 
 ---
 
-**Thailand Humanoid Atlas** is a labor of love, I believe that the future of humanoid and social robotics belongs to the community. We designed this research database platform to help map, understand, and accelerate Thailand’s robotics ecosystem. 
+✨ **Thailand Humanoid Atlas** is a labor of love. We believe that the future of humanoid and social robotics belongs to the community. We designed this research database platform to help map, understand, and accelerate Thailand’s robotics ecosystem. 🇹🇭🤖
 
-Whether it is cataloging companion robots caring for our grandparents, mapping academic publications by local researchers, or open-sourcing data structures, we want to create a transparent, reliable, and collaborative atlas for all.
+Whether it is cataloging companion robots caring for our grandparents, mapping academic publications by local researchers, or open-sourcing data structures, we want to create a transparent, reliable, and collaborative atlas for all. 📚💖
 
-We open-source this project from the heart, and we invite you to hack, contribute, and build the future of embodied AI in Thailand together! 🤝🚀
+We open-source this project from the heart, and we invite you to hack, contribute, and build the future of embodied AI in Thailand together! 🤝🚀❤️
 
 ---
 
@@ -35,10 +35,10 @@ The platform collects, normalizes, classifies, and visualizes four connected lay
 
 | Layer | Focus | Key Indicators & Features |
 | :--- | :--- | :--- |
-| 🟢 **1. Perspectives** | **Public & Media Voice** | Stance analysis, sentiment, healthcare trust, job displacement, ethics |
-| 🟡 **2. Contributions**| **Hacker & Researcher Directory** | Projects, papers, GitHub repositories, hardware builds, community events |
-| 🟢 **3. Model Registry**| **Robot Catalog** | Manufacturer specs, country of origin, Thailand deployment status |
-| 🟡 **4. Inventory** | **Physical Assets** | Maintenance logs, custody tracking, condition, and availability |
+| 🟢 **1. Perspectives** | 📣 **Public & Media Voice** | Stance analysis, sentiment, healthcare trust, job displacement, ethics |
+| 🟡 **2. Contributions**| 💻 **Hacker & Researcher Directory** | Projects, papers, GitHub repositories, hardware builds, community events |
+| 🟢 **3. Model Registry**| 🤖 **Robot Catalog** | Manufacturer specs, country of origin, Thailand deployment status |
+| 🟡 **4. Inventory** | 📦 **Physical Assets** | Maintenance logs, custody tracking, condition, and availability |
 
 ---
 
@@ -46,10 +46,10 @@ The platform collects, normalizes, classifies, and visualizes four connected lay
 
 We built this platform using a modern, scalable, and developer-friendly stack:
 
-- **Frontend & Routing:** [Next.js 15 (App Router)](https://nextjs.org/) for highly responsive Server Components and dynamic layouts.
-- **Database & Modeling:** [Prisma ORM](https://www.prisma.io/) with [PostgreSQL](https://www.postgresql.org/) for transparent, typed data structures.
-- **Data Ingestion Adapters:** Multi-source background adapters retrieving records from **OpenAlex**, **GitHub**, **GDELT**, and **YouTube**.
-- **Interactive Visualization:** [Cytoscape.js](https://js.cytoscape.org/) for rendered interactive ecosystem network graphs.
+- 💻 **Frontend & Routing:** [Next.js 15 (App Router)](https://nextjs.org/) for highly responsive Server Components and dynamic layouts.
+- 🗄️ **Database & Modeling:** [Prisma ORM](https://www.prisma.io/) with [PostgreSQL](https://www.postgresql.org/) for transparent, typed data structures.
+- ⚙️ **Data Ingestion Adapters:** Multi-source background adapters retrieving records from **OpenAlex** 🎓, **GitHub** 🐙, **GDELT** 🌍, and **YouTube** 📺.
+- 🧠 **AI Integration:** [Gemini API](https://ai.google.dev/) (`gemini-1.5-flash`) for automated relevance classification, stance extraction, and geographical contribution clustering.
 
 ---
 
@@ -57,7 +57,7 @@ We built this platform using a modern, scalable, and developer-friendly stack:
 
 Follow these simple steps to spin up the Thailand Humanoid Atlas on your local machine:
 
-### 1. Clone the repository and install dependencies
+### 📥 1. Clone the repository and install dependencies
 ```bash
 # Clone the repository
 git clone https://github.com/taechasith/HumanoidTH.git
@@ -67,7 +67,7 @@ cd HumanoidTH
 pnpm install
 ```
 
-### 2. Configure Environment Variables
+### ⚙️ 2. Configure Environment Variables
 Create a local `.env` file by copying the template:
 ```bash
 cp .env.example .env
@@ -78,11 +78,12 @@ Ensure your `.env` contains the required database link and API keys:
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/thailand_humanoid_atlas?schema=public"
 YOUTUBE_API_KEY="your-youtube-api-key"
 GITHUB_TOKEN="your-github-personal-access-token"
+GEMINI_API_KEY="your-gemini-api-key"
 ```
 > [!NOTE]
-> `YOUTUBE_API_KEY` is required only for video ingestion. `GITHUB_TOKEN` is optional but highly recommended to avoid API rate limiting.
+> 📺 `YOUTUBE_API_KEY` is required only for video ingestion. 🔑 `GEMINI_API_KEY` is required for AI-powered contribution mapping and source analysis. 🐙 `GITHUB_TOKEN` is optional but highly recommended to avoid API rate limiting.
 
-### 3. Initialize & Seed the Database
+### 🗄️ 3. Initialize & Seed the Database
 ```bash
 # Generate Prisma client files
 pnpm db:generate
@@ -94,7 +95,7 @@ pnpm db:push
 pnpm db:seed
 ```
 
-### 4. Run Development Server
+### 🟢 4. Run Development Server
 ```bash
 pnpm dev
 ```
@@ -106,14 +107,14 @@ Open [http://localhost:3000](http://localhost:3000) inside your browser to see t
 
 The platform features built-in ingestion adapters. You can use the UI dashboard at `/data-pulls` or trigger the background ingest API endpoints directly using `curl`:
 
-#### 🌾 Ingest Academic papers from OpenAlex
+#### 🌾 Ingest Academic papers from OpenAlex 🎓
 ```bash
 curl -X POST http://localhost:3000/api/ingest/openalex \
   -H "content-type: application/json" \
   -d '{"query":"humanoid robot Thailand","limit":10}'
 ```
 
-#### 💻 Ingest Repositories from GitHub
+#### 💻 Ingest Repositories from GitHub 🐙
 ```bash
 curl -X POST http://localhost:3000/api/ingest/github \
   -H "content-type: application/json" \
@@ -125,14 +126,133 @@ curl -X POST http://localhost:3000/api/ingest/github \
 ## 🌐 Product Routes Map
 
 Explore the main app modules:
-- `🟢 /` — Interactive overview of the corpus, stats, and active tasks.
-- `🟡 /robots` — Registry of robot models deployed or researched in Thailand.
-- `🟢 /perspectives` — Media coverage database, platform sentiment, and safety metrics.
-- `🟡 /contributions` — Directory of open-source repositories, makers, and papers.
-- `🟢 /network` — Dynamic Cytoscape network graph mapping connections between institutions, developers, and robots.
-- `🟡 /analytics` — Statistics, sentiment graphs, and attention metrics over time.
-- `🟢 /data-pulls` — Control room to trigger data ingestion pipelines.
-- `🟡 /submit-data` — Community submission form for sharing robot models and projects.
+- `🟢 /` — 📊 Interactive overview of the corpus, statistics, and active tasks.
+- `🟡 /robots` — 🤖 Registry of robot models deployed, researched, or observed in Thailand.
+- `🟢 /perspectives` — 📣 Media coverage database, platform sentiment, and safety metrics.
+- `🟡 /contributions` — 📂 Directory of open-source repositories, makers, and papers.
+- `🟢 /map` — 🗺️ AI-powered ecosystem contribution map geolocating Thai robotics research and inventory.
+- `🟢 /network` — 🔗 Dynamic Cytoscape network graph mapping connections between institutions, developers, and robots.
+- `🟡 /analytics` — 📈 Statistics, sentiment graphs, and attention metrics over time.
+- `🟢 /data-pulls` — 🔌 Control room to trigger data ingestion pipelines.
+- `🟡 /submit-data` — 📥 Community submission form for sharing robot models and projects.
+
+---
+
+## 📚 Research Methodology Guide
+
+This atlas is intended to support transparent, repeatable research rather than a one-time scrape. Researchers extending the dataset should follow a documented workflow so every record can be audited, corrected, and cited.
+
+### 🎯 1. Define the Research Question
+Start each research round with a narrow question, for example:
+- ❓ Which humanoid or social robots have been publicly deployed in Thailand since 2020?
+- ❓ Which Thai universities, labs, companies, or maker communities contribute to humanoid robotics?
+- ❓ How does public/media sentiment frame eldercare, hospital, education, or service robots?
+- ❓ Which robot models are observed in Thailand, imported for evaluation, locally developed, or owned by the project team?
+
+Write the question, date range, inclusion rules, and source types before collecting data. 📝
+
+### 📥 2. Source Collection Protocol
+Use multiple source classes and keep provenance for each record:
+- 🎓 **Academic indexes:** OpenAlex, university repositories, conference pages.
+- 💻 **Code and hardware repositories:** GitHub, GitLab, project documentation.
+- 📰 **News and public media:** Thai and international news, press releases, institutional announcements.
+- 📺 **Video platforms:** YouTube demos, public talks, product launches.
+- 👥 **Community submissions:** forms, field notes, correction requests, robot sightings.
+- 📂 **Project records:** owned inventory, custody notes, maintenance logs, deployment logs.
+
+For every source, store the canonical URL, title, platform, publication date, author or organization when available, short source excerpt, ingestion date, and any query terms used.
+
+### ⚖️ 3. Inclusion and Exclusion Criteria
+Include records when they have clear evidence for both robotics relevance and Thailand relevance.
+
+**Include:**
+- 🤖 Humanoid, social, companion, education, hospital, eldercare, museum, exhibition, or human-facing service robots.
+- 🧪 Research prototypes, field deployments, demos, datasets, repositories, papers, and hardware builds.
+- 🇹🇭 Thailand-based organizations or Thailand deployment/use/evaluation.
+
+**Exclude or mark for review:**
+- 🚫 Generic AI chatbot records with no embodied robot.
+- 🚫 Industrial automation records with no human-facing robotics relevance.
+- 🚫 Vendor claims without independent evidence.
+- 🚫 Private personal data or content that cannot be ethically stored.
+- 🚫 Full-text copyrighted material beyond short source excerpts.
+
+### 🔍 4. Screening and Confidence Scoring
+Each candidate record should be screened in two passes:
+1. **Relevance pass:** decide whether the source is about humanoid/social/service robotics and connected to Thailand.
+2. **Source pass:** verify that the record has enough source material to support classification.
+
+Recommended confidence buckets:
+- 🟢 `0.85-1.00`: strong evidence, source directly supports the claim.
+- 🟡 `0.60-0.84`: plausible evidence, accepted but should be revisited.
+- 🔴 `< 0.60`: weak or ambiguous evidence, keep in review or reject.
+
+Do not publish generated or placeholder records as real data. If the database or API is unavailable, the UI should show an unavailable/empty state rather than substitute mock records. ⚠️
+
+### 🏷️ 5. Coding Scheme
+Use consistent labels so the dataset remains analyzable:
+- 🚦 **Robot status:** `observed_in_thailand`, `developed_in_thailand`, `imported_for_evaluation`, `owned`, `retired`, `unknown`.
+- 🗃️ **Contribution type:** research paper, repository, dataset, hardware build, event, field observation, media analysis, education module, repair, deployment.
+- 🧠 **Perspective themes:** healthcare trust, job displacement, safety, privacy, education, accessibility, national innovation, entertainment, ethics.
+- 📣 **Stance:** supportive, cautious supportive, neutral, skeptical, critical, mixed.
+- 📁 **Source type:** primary source, institutional source, academic source, news article, social/video source, community submission.
+
+When adding new labels, document why the existing taxonomy was insufficient.
+
+### 🧹 6. Deduplication and Entity Resolution
+Before analysis, deduplicate records:
+- 🔗 Canonicalize URLs and remove tracking parameters.
+- 🆔 Match platform IDs when available.
+- 🔤 Compare normalized titles, organizations, robot model names, and dates.
+- 📰 Merge syndicated news and repeated press releases when they describe the same event.
+- 📂 Preserve all source URLs as evidence when merging duplicates.
+
+Entity resolution should be conservative. If two names may refer to the same lab, company, robot, or project, mark them for review rather than merging automatically. 🧐
+
+### 🔗 7. Relationship Modeling
+Represent relationships as directed triplets:
+```text
+subject -> relation -> object
+```
+
+Examples:
+```text
+University Lab -> developed -> Robot Prototype
+Source Article -> discusses -> Robot Model
+Contribution -> uses -> Robot Model
+Organization -> deployed_at -> Hospital/Event/School
+Public Perspective -> concerns -> Safety/Privacy/Jobs
+```
+
+Each edge should carry source evidence, confidence, and timestamp metadata. Avoid graph links that are only inferred from vague similarity. 🕸️
+
+### 🛡️ 8. Validation and Audit
+For each research batch:
+- 🔍 Sample accepted records and manually verify source evidence.
+- 🔍 Review all low-confidence records.
+- 🔍 Check for duplicated robot models and organizations.
+- 🔍 Confirm that claims about ownership, deployment, or custody are supported by explicit evidence.
+- ⚙️ Run automated checks before publishing:
+
+```bash
+pnpm check:no-mock-data
+pnpm typecheck
+pnpm build
+```
+
+### 🔒 9. Ethics, Privacy, and Legal Care
+Use public, permissible sources only. Do not store private personal data, private account content, or sensitive location details unless there is a clear operational need and consent. For owned inventory, mask public location and serial information when appropriate. Store short excerpts for sources; link to original sources rather than redistributing full copyrighted text. ⚖️
+
+### 📊 10. Reporting and Citation
+When publishing analysis from the atlas, report:
+- 📅 Dataset snapshot date.
+- 🔌 Query terms and source adapters used.
+- ⚖️ Inclusion/exclusion criteria.
+- 📈 Number of records screened, accepted, rejected, and pending review.
+- ⚠️ Known gaps and biases, such as language coverage, platform API limits, or overrepresentation of English-language sources.
+- 🆔 Version or commit hash of the code used for analysis.
+
+This makes future research rounds comparable and allows other researchers to reproduce or challenge the findings.
 
 ---
 
@@ -140,7 +260,7 @@ Explore the main app modules:
 
 This project is fully optimized for **Vercel** out-of-the-box using the provided `vercel.json` configuration.
 
-### Vercel Environment Variables
+### 🔑 Vercel Environment Variables
 Set these variables in your Vercel project settings:
 ```env
 DATABASE_URL="prisma+postgres://accelerate.prisma-data.net/?api_key=..."
@@ -149,30 +269,31 @@ ADMIN_BASIC_USER="creativelab.co.th@gmail.com"
 ADMIN_BASIC_PASSWORD="use-a-strong-password"
 YOUTUBE_API_KEY="your-api-key"
 GITHUB_TOKEN="your-token"
+GEMINI_API_KEY="your-gemini-api-key"
 ```
 
 > [!IMPORTANT]
-> - Production endpoints `/admin/*`, `/data-pulls`, and `/api/ingest/*` are protected with Basic Auth using `ADMIN_BASIC_USER` and `ADMIN_BASIC_PASSWORD`. Keep credentials safe!
-> - The Vercel build command is configured to run `pnpm vercel-build` which automatically handles schema generation. Do **not** run `db:push` inside the Vercel build phase.
+> - 🔒 Production endpoints `/admin/*`, `/data-pulls`, and `/api/ingest/*` are protected with Basic Auth using `ADMIN_BASIC_USER` and `ADMIN_BASIC_PASSWORD`. Keep credentials safe!
+> - ⚙️ The Vercel build command is configured to run `pnpm vercel-build` which automatically handles schema generation. Do **not** run `db:push` inside the Vercel build phase.
 
 ---
 
 ## 🛠️ Database Utility Commands
 
 Prisma commands are mapped to convenient `pnpm` scripts:
-* **Generate Client:** `pnpm db:generate`
-* **Schema Sync:** `pnpm db:push`
-* **Database Seeding:** `pnpm db:seed`
+* 🗄️ **Generate Client:** `pnpm db:generate`
+* 🔄 **Schema Sync:** `pnpm db:push`
+* 🌾 **Database Seeding:** `pnpm db:seed`
 
 ---
 
 ## 🤝 Join the Robotics Movement!
 
 We believe that building a database for the Thailand robotics community should be a collective effort. Here is how you can help:
-1. **Add Robot Models:** Spatially document models, prototypes, or service robots you've encountered or built in Thailand.
-2. **Develop Adapters:** Help build connectors for localized Thai news portals, government research sites, or forums.
-3. **Refine Stance Models:** Help improve sentiment/stance classification rules so we better map public trust.
-4. **Fix Bugs & Improve UX:** Feel free to open issues or file PRs!
+1. 🤖 **Add Robot Models:** Spatially document models, prototypes, or service robots you've encountered or built in Thailand.
+2. 🔌 **Develop Adapters:** Help build connectors for localized Thai news portals, government research sites, or forums.
+3. 🧠 **Refine Stance Models:** Help improve sentiment/stance classification rules so we better map public trust.
+4. 🛠️ **Fix Bugs & Improve UX:** Feel free to open issues or file PRs!
 
 We look forward to seeing your pull requests! Keep building, keep sharing! 🤖💛💚
 
@@ -184,6 +305,5 @@ The original Python/FastAPI MVP remains in the `src/` directory for historical r
 ---
 
 <p align="center">
-  Made with 💚, 💛
+  Made with 💚, 💛 and 🤖 in Thailand
 </p>
-

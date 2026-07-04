@@ -1,5 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const useExternalServer = process.env.PLAYWRIGHT_EXTERNAL_SERVER === "1";
+
 export default defineConfig({
   testDir: "./tests-node",
   fullyParallel: true,
@@ -17,10 +19,13 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"] },
     },
   ],
-  webServer: {
-    command: "pnpm dev",
-    url: "http://localhost:3000",
-    reuseExistingServer: !process.env.CI,
-    timeout: 60000,
-  },
+  webServer: useExternalServer
+    ? undefined
+    : {
+        command: "node ./node_modules/next/dist/bin/next dev",
+        env: { NETWORK_GRAPH_SOURCE: "auto", PRISMA_LOG_LEVEL: "silent" },
+        url: "http://localhost:3000/network",
+        reuseExistingServer: !process.env.CI,
+        timeout: 60000,
+      },
 });

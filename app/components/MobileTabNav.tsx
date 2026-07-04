@@ -5,16 +5,16 @@ import { usePathname } from "next/navigation";
 import {
   Home,
   LayoutDashboard,
+  Network,
   Bot,
-  Settings2,
   CircleUserRound
 } from "lucide-react";
 
 const tabs = [
   { href: "/", label: "Home", icon: Home },
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/network", label: "Network", icon: Network },
   { href: "/robots", label: "Robots", icon: Bot },
-  { href: "/admin", label: "Admin", icon: Settings2 },
   { href: "/profile", label: "Profile", icon: CircleUserRound }
 ];
 
