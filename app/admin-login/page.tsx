@@ -36,15 +36,15 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: S
     <div className="login-wrapper">
       <style dangerouslySetInnerHTML={{ __html: `
         .login-wrapper {
-          min-height: 100vh;
-          width: 100vw;
+          min-height: 100dvh;
+          width: 100%;
           background: #eae9df;
           background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px);
           background-size: 24px 24px;
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 20px;
+          padding: 28px 20px;
           position: fixed;
           top: 0;
           left: 0;
@@ -52,13 +52,31 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: S
           font-family: var(--font-sans);
         }
 
+        .login-stack {
+          align-items: center;
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+          max-height: calc(100dvh - 56px);
+          width: min(100%, 430px);
+        }
+
+        .login-logo {
+          width: clamp(92px, 8vw, 128px);
+          height: clamp(92px, 8vw, 128px);
+          object-fit: contain;
+          border-radius: 18px;
+          filter: drop-shadow(0 18px 24px rgba(5, 13, 10, 0.22));
+          position: relative;
+          z-index: 3;
+        }
+
         .login-card {
           background: #08130f;
           border: 1px solid #11261f;
           border-radius: 16px;
-          padding: 36px 40px;
+          padding: 28px 34px 32px;
           width: 100%;
-          max-width: 440px;
           box-shadow: 0 20px 50px rgba(5, 13, 10, 0.45);
           position: relative;
           overflow: hidden;
@@ -75,19 +93,8 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: S
           pointer-events: none;
         }
 
-        .login-logo {
-          width: 48px;
-          height: 48px;
-          object-fit: contain;
-          border-radius: 8px;
-          border: 1px solid #14352a;
-          margin-bottom: 20px;
-          position: relative;
-          z-index: 2;
-        }
-
         .login-title {
-          font-size: 22px;
+          font-size: 21px;
           font-weight: 800;
           color: #ffffff;
           margin: 0 0 6px 0;
@@ -100,7 +107,7 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: S
           font-size: 13px;
           color: #78998c;
           line-height: 1.4;
-          margin: 0 0 24px 0;
+          margin: 0 0 20px 0;
           position: relative;
           z-index: 2;
         }
@@ -221,20 +228,56 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: S
           position: relative;
           z-index: 2;
         }
+
+        @media (min-width: 960px) and (max-height: 760px) {
+          .login-wrapper {
+            align-items: flex-start;
+            padding-top: 22px;
+          }
+
+          .login-stack {
+            gap: 10px;
+          }
+
+          .login-logo {
+            width: 88px;
+            height: 88px;
+          }
+
+          .login-card {
+            padding: 24px 32px 28px;
+          }
+        }
+
+        @media (max-width: 520px) {
+          .login-wrapper {
+            padding: 20px 14px;
+          }
+
+          .login-stack {
+            gap: 12px;
+          }
+
+          .login-card {
+            padding: 24px 22px 28px;
+          }
+        }
       `}} />
 
-      <div className="login-card">
+      <div className="login-stack">
         <img src="/logo.png" alt="Atlas Logo" className="login-logo" />
-        <h2 className="login-title">{localT.title}</h2>
-        <p className="login-desc">{localT.desc}</p>
+        <div className="login-card">
+          <h2 className="login-title">{localT.title}</h2>
+          <p className="login-desc">{localT.desc}</p>
 
-        {error && (
-          <div className="login-error">
-            {localT.errorMsg}
-          </div>
-        )}
+          {error && (
+            <div className="login-error">
+              {localT.errorMsg}
+            </div>
+          )}
 
-        <AdminLoginForm from={from} emailLabel={localT.email} passwordLabel={localT.password} buttonLabel={localT.btn} />
+          <AdminLoginForm from={from} emailLabel={localT.email} passwordLabel={localT.password} buttonLabel={localT.btn} />
+        </div>
       </div>
     </div>
   );

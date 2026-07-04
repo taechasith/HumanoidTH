@@ -112,13 +112,24 @@ export default function FirstTimeLoader() {
           letter-spacing: 0.5px;
           text-transform: uppercase;
           color: #ffffff;
-          margin: 6px 0 32px 0;
+          margin: 6px 0 10px 0;
           text-align: center;
           z-index: 2;
         }
 
         .splash-title span {
           color: var(--warning);
+        }
+
+        .splash-advisory {
+          color: #8fa396;
+          font-size: 12.5px;
+          font-weight: 600;
+          line-height: 1.5;
+          margin: 0 20px 30px;
+          max-width: 420px;
+          text-align: center;
+          z-index: 2;
         }
 
         .splash-progress-wrapper {
@@ -173,6 +184,7 @@ export default function FirstTimeLoader() {
 
       <p className="splash-brand">Thailand Humanoid</p>
       <h1 className="splash-title">Ecosystem <span>Atlas</span></h1>
+      <p className="splash-advisory">For the most complete research-console experience, Thailand Humanoid Atlas is best viewed on a desktop display.</p>
 
       <div className="splash-progress-wrapper">
         <div className="splash-progress-track">
