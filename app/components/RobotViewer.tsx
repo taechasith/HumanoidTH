@@ -71,7 +71,7 @@ export default function RobotViewer() {
     scene.add(rimLight);
 
     const robotRoot = new Group();
-    robotRoot.position.y = -0.32;
+    robotRoot.position.y = -0.52;
     scene.add(robotRoot);
 
     const pointer = new Vector2(0, 0);
