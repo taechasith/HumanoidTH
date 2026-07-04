@@ -8,6 +8,15 @@ export default function FirstTimeLoader() {
   const [progress, setProgress] = useState(0);
   const [fadeOut, setFadeOut] = useState(false);
 
+  const getStatusText = (prog: number) => {
+    if (prog < 20) return "CONNECTING TO ECOSYSTEM CORE...";
+    if (prog < 40) return "RESOLVING DATABASE SCHEMA...";
+    if (prog < 60) return "LOADING GEOSPATIAL MAP NODES...";
+    if (prog < 80) return "CALIBRATING KINEMATIC SOLVERS...";
+    if (prog < 95) return "FINALIZING RENDER PIPELINE...";
+    return "SYSTEM OPERATIONAL - STARTING";
+  };
+
   useEffect(() => {
     setMounted(true);
     const hasLoaded = sessionStorage.getItem("th_atlas_loaded_before");
@@ -62,6 +71,21 @@ export default function FirstTimeLoader() {
           color: #ffffff;
           font-family: var(--font-sans);
           transition: opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1), transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .splash-screen::before {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-image: 
+            linear-gradient(rgba(16, 185, 129, 0.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(16, 185, 129, 0.02) 1px, transparent 1px);
+          background-size: 24px 24px;
+          pointer-events: none;
+          z-index: 1;
         }
 
         .splash-screen.fade-out {
@@ -191,7 +215,7 @@ export default function FirstTimeLoader() {
           <div className="splash-progress-bar" style={{ width: `${progress}%` }} />
         </div>
         <div className="splash-status">
-          <span>INITIALIZING INTERACTIVE ENVIRONMENT</span>
+          <span>{getStatusText(progress)}</span>
           <span>{progress}%</span>
         </div>
       </div>
