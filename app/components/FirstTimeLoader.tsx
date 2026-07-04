@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Bot } from "lucide-react";
 
 export default function FirstTimeLoader() {
   const [mounted, setMounted] = useState(false);
@@ -87,9 +86,12 @@ export default function FirstTimeLoader() {
           animation: pulseGlow 2s infinite ease-in-out;
         }
 
-        .splash-icon {
-          color: #12a879;
-          filter: drop-shadow(0 0 10px rgba(18, 168, 121, 0.6));
+        .splash-logo {
+          width: 118px;
+          height: auto;
+          max-height: 150px;
+          object-fit: contain;
+          filter: drop-shadow(0 0 14px rgba(18, 168, 121, 0.45));
           z-index: 2;
           animation: floatIcon 3s infinite ease-in-out;
         }
@@ -166,7 +168,7 @@ export default function FirstTimeLoader() {
 
       <div className="splash-logo-container">
         <div className="splash-glow" />
-        <Bot size={64} className="splash-icon" />
+        <img src="/logo.png" alt="Thailand Humanoid Atlas" className="splash-logo" />
       </div>
 
       <p className="splash-brand">Thailand Humanoid</p>

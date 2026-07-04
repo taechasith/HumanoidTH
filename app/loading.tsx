@@ -14,47 +14,32 @@ export default function Loading() {
           font-family: var(--font-sans);
         }
 
-        .loader-ring {
+        .loader-logo-wrap {
           position: relative;
-          width: 80px;
-          height: 80px;
-        }
-
-        .loader-ring svg {
-          width: 100%;
-          height: 100%;
-          animation: rotate 2s linear infinite;
-        }
-
-        .loader-ring circle {
-          fill: none;
-          stroke-width: 4;
-          stroke-linecap: round;
-        }
-
-        .loader-ring .track {
-          stroke: rgba(20, 53, 42, 0.1);
-        }
-
-        .loader-ring .fill {
-          stroke: #10B981; /* Emerald Green */
-          stroke-dasharray: 226; /* 2 * pi * r (r=36 -> 226.19) */
-          stroke-dashoffset: 60;
-          animation: dash 1.5s ease-in-out infinite alternate;
-        }
-
-        .loader-center {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          width: 32px;
-          height: 32px;
+          width: 120px;
+          min-height: 150px;
           display: flex;
           align-items: center;
           justify-content: center;
-          color: #EAB308; /* Yellow/Gold */
           animation: pulse 1.5s ease-in-out infinite alternate;
+        }
+
+        .loader-logo-wrap::before {
+          content: "";
+          position: absolute;
+          inset: 10px;
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, transparent 68%);
+          filter: blur(2px);
+        }
+
+        .loader-logo {
+          position: relative;
+          width: 100%;
+          height: auto;
+          max-height: 150px;
+          object-fit: contain;
+          filter: drop-shadow(0 8px 18px rgba(20, 53, 42, 0.18));
         }
 
         .loading-text {
@@ -75,30 +60,14 @@ export default function Loading() {
           letter-spacing: 1px;
         }
 
-        @keyframes rotate {
-          100% {
-            transform: rotate(360deg);
-          }
-        }
-
-        @keyframes dash {
-          0% {
-            stroke-dashoffset: 226;
-          }
-          100% {
-            stroke-dashoffset: 40;
-          }
-        }
-
         @keyframes pulse {
           0% {
-            transform: translate(-50%, -50%) scale(0.9);
+            transform: translateY(0) scale(0.96);
             opacity: 0.8;
           }
           100% {
-            transform: translate(-50%, -50%) scale(1.1);
+            transform: translateY(-4px) scale(1);
             opacity: 1;
-            filter: drop-shadow(0 0 4px rgba(234, 179, 8, 0.6));
           }
         }
 
@@ -112,14 +81,8 @@ export default function Loading() {
         }
       `}} />
 
-      <div className="loader-ring">
-        <svg viewBox="0 0 80 80">
-          <circle className="track" cx="40" cy="40" r="36" />
-          <circle className="fill" cx="40" cy="40" r="36" />
-        </svg>
-        <div className="loader-center">
-          <img src="/logo.png" alt="Atlas Logo" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
-        </div>
+      <div className="loader-logo-wrap">
+        <img src="/logo.png" alt="Thailand Humanoid Atlas" className="loader-logo" />
       </div>
       <div className="loading-text">Accessing Thailand Humanoid Atlas...</div>
       <div className="loading-subtext">CONNECTING TO CORPUS NODE...</div>

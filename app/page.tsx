@@ -139,7 +139,7 @@ export default async function OverviewPage() {
 
         .topbar h1 {
           font-family: var(--font-sans);
-          font-size: clamp(36px, 3vw, 48px);
+          font-size: clamp(32px, 2.6vw, 42px);
           font-weight: 950;
           text-transform: uppercase;
           letter-spacing: 0;
@@ -618,7 +618,7 @@ export default async function OverviewPage() {
             gap: 4px;
           }
           .topbar h1 {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 800;
             letter-spacing: -0.5px;
             margin: 0;
