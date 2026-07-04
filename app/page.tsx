@@ -220,6 +220,10 @@ export default async function OverviewPage() {
           transition: all 0.2s ease;
         }
 
+        .topbar .actions .button.primary {
+          color: #ffffff;
+        }
+
         .topbar .actions .button:hover {
           transform: translateY(-1px);
         }
@@ -420,6 +424,7 @@ export default async function OverviewPage() {
 
         .platform-item.facebook span { background: #1877F2; }
         .platform-item.youtube span { background: #FF0000; }
+        .platform-item.github span { background: #0b0b0f; }
         .platform-item.website span { background: #10B981; }
 
         .platform-item p {
