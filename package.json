@@ -17,6 +17,8 @@
     "lint": "next lint",
     "typecheck": "node ./node_modules/typescript/bin/tsc --noEmit",
     "check:no-mock-data": "tsx scripts/assert-no-mock-data.ts",
+    "seo:audit": "tsx scripts/seo-optimizer.ts --dry-run",
+    "seo:optimize": "tsx scripts/seo-optimizer.ts --apply",
     "network:check": "node --import tsx scratch/check-network-sources.mjs",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",

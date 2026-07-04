@@ -1026,9 +1026,13 @@ tbody tr:hover {
   to { transform: translateY(0) scale(1); opacity: 1; }
 }
 
-/* Hide logo on data pull pages */
+/* Hide logo on data pull and admin pages */
 body:has(.data-pulls-page) .brand-logo-container,
-body:has(.data-pulls-page) .mobile-logo-img {
+body:has(.data-pulls-page) .mobile-logo-img,
+body:has(.admin-page) .brand-logo-container,
+body:has(.admin-page) .mobile-logo-img,
+body:has(.admin-login-page) .brand-logo-container,
+body:has(.admin-login-page) .mobile-logo-img {
   display: none !important;
 }
 

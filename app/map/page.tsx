@@ -10,11 +10,31 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Ecosystem Contribution Map | Thailand Humanoid Atlas",
-  description: "Geospatial visualization and AI-clustered mapping of humanoid robotics research, development, and inventories across Thailand's universities and institutes.",
-  alternates: { canonical: "/map" }
-};
-
-const localT = {
+  description: "Geospatial visualization and AI-clustered mapping of humanoid robotics research, development, and inventories across Thailand",
+  alternates: { canonical: "/map" },
+  openGraph: {
+    title: "Ecosystem Contribution Map | Thailand Humanoid Atlas",
+    description: "Geospatial visualization and AI-clustered mapping of humanoid robotics research, development, and inventories across Thailand",
+    url: "/map",
+    siteName: "Thailand Humanoid Atlas",
+    images: [
+      {
+        url: "/logo.png",
+        width: 512,
+        height: 512,
+        alt: "Thailand Humanoid Atlas Logo"
+      }
+    ],
+    locale: "en_US",
+    type: "website"
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Ecosystem Contribution Map | Thailand Humanoid Atlas",
+    description: "Geospatial visualization and AI-clustered mapping of humanoid robotics research, development, and inventories across Thailand",
+    images: ["/logo.png"]
+  }
+};const localT = {
   en: {
     clustersStat: "Ecosystem Clusters",
     analyzedStat: "Database Items Analyzed",

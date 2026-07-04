@@ -87,10 +87,12 @@ export default async function AdminConsolePage({ searchParams }: { searchParams:
 
   if (!isAdmin) {
     return (
-      <div style={{ maxWidth: "560px", margin: "40px auto", textAlign: "center" }} className="panel">
-        <h1 style={{ color: "var(--danger)" }}>{localT.denied}</h1>
-        <p className="muted" style={{ margin: "14px 0" }}>{localT.deniedDesc}</p>
-        <Link href="/profile" className="button primary">{localT.goProfile}</Link>
+      <div className="admin-page">
+        <div style={{ maxWidth: "560px", margin: "40px auto", textAlign: "center" }} className="panel">
+          <h1 style={{ color: "var(--danger)" }}>{localT.denied}</h1>
+          <p className="muted" style={{ margin: "14px 0" }}>{localT.deniedDesc}</p>
+          <Link href="/profile" className="button primary">{localT.goProfile}</Link>
+        </div>
       </div>
     );
   }
@@ -153,7 +155,7 @@ export default async function AdminConsolePage({ searchParams }: { searchParams:
   const titleForCollection = collectionLabels[collection];
 
   return (
-    <>
+    <div className="admin-page">
       <div className="topline">
         <div>
           <h1>{t.adminTitle}</h1>
@@ -526,6 +528,6 @@ export default async function AdminConsolePage({ searchParams }: { searchParams:
           )}
         </aside>
       </div>
-    </>
+    </div>
   );
 }

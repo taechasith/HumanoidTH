@@ -8,10 +8,30 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Ecosystem Relationship Graph | Thailand Humanoid Atlas",
   description: "Interactive connection graph mapping relationships between Thai research labs, robot models, developers, and public media records.",
-  alternates: { canonical: "/network" }
-};
-
-export default async function NetworkPage() {
+  alternates: { canonical: "/network" },
+  openGraph: {
+    title: "Ecosystem Relationship Graph | Thailand Humanoid Atlas",
+    description: "Interactive connection graph mapping relationships between Thai research labs, robot models, developers, and public media records.",
+    url: "/network",
+    siteName: "Thailand Humanoid Atlas",
+    images: [
+      {
+        url: "/logo.png",
+        width: 512,
+        height: 512,
+        alt: "Thailand Humanoid Atlas Logo"
+      }
+    ],
+    locale: "en_US",
+    type: "website"
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Ecosystem Relationship Graph | Thailand Humanoid Atlas",
+    description: "Interactive connection graph mapping relationships between Thai research labs, robot models, developers, and public media records.",
+    images: ["/logo.png"]
+  }
+};export default async function NetworkPage() {
   const cookieStore = await cookies();
   const lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
   const t = getTranslation(lang);

@@ -9,10 +9,30 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Robot Inventory & Asset Custody | Thailand Humanoid Atlas",
   description: "Registry of physical humanoid and social robot units managed, operated, or tested under the Thailand Humanoid Atlas project.",
-  alternates: { canonical: "/inventory" }
-};
-
-type SearchParams = Promise<{ mode?: string }>;
+  alternates: { canonical: "/inventory" },
+  openGraph: {
+    title: "Robot Inventory & Asset Custody | Thailand Humanoid Atlas",
+    description: "Registry of physical humanoid and social robot units managed, operated, or tested under the Thailand Humanoid Atlas project.",
+    url: "/inventory",
+    siteName: "Thailand Humanoid Atlas",
+    images: [
+      {
+        url: "/logo.png",
+        width: 512,
+        height: 512,
+        alt: "Thailand Humanoid Atlas Logo"
+      }
+    ],
+    locale: "en_US",
+    type: "website"
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Robot Inventory & Asset Custody | Thailand Humanoid Atlas",
+    description: "Registry of physical humanoid and social robot units managed, operated, or tested under the Thailand Humanoid Atlas project.",
+    images: ["/logo.png"]
+  }
+};type SearchParams = Promise<{ mode?: string }>;
 
 export default async function InventoryPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;

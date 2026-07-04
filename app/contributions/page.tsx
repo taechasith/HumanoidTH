@@ -8,10 +8,30 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Academic & Software Contributions | Thailand Humanoid Atlas",
   description: "Directory of open-source software, research publications, datasets, and hardware designs contributing to humanoid robotics in Thailand.",
-  alternates: { canonical: "/contributions" }
-};
-
-type SearchParams = Promise<{
+  alternates: { canonical: "/contributions" },
+  openGraph: {
+    title: "Academic & Software Contributions | Thailand Humanoid Atlas",
+    description: "Directory of open-source software, research publications, datasets, and hardware designs contributing to humanoid robotics in Thailand.",
+    url: "/contributions",
+    siteName: "Thailand Humanoid Atlas",
+    images: [
+      {
+        url: "/logo.png",
+        width: 512,
+        height: 512,
+        alt: "Thailand Humanoid Atlas Logo"
+      }
+    ],
+    locale: "en_US",
+    type: "website"
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Academic & Software Contributions | Thailand Humanoid Atlas",
+    description: "Directory of open-source software, research publications, datasets, and hardware designs contributing to humanoid robotics in Thailand.",
+    images: ["/logo.png"]
+  }
+};type SearchParams = Promise<{
   type?: string;
   org?: string;
   robot?: string;

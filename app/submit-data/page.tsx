@@ -9,10 +9,30 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Contribute Data & Sightings | Thailand Humanoid Atlas",
   description: "Help keep the Thailand Humanoid Atlas accurate. Submit new robot deployments, academic papers, source links, or physical inventory updates.",
-  alternates: { canonical: "/submit-data" }
-};
-
-const copy = {
+  alternates: { canonical: "/submit-data" },
+  openGraph: {
+    title: "Contribute Data & Sightings | Thailand Humanoid Atlas",
+    description: "Help keep the Thailand Humanoid Atlas accurate. Submit new robot deployments, academic papers, source links, or physical inventory updates.",
+    url: "/submit-data",
+    siteName: "Thailand Humanoid Atlas",
+    images: [
+      {
+        url: "/logo.png",
+        width: 512,
+        height: 512,
+        alt: "Thailand Humanoid Atlas Logo"
+      }
+    ],
+    locale: "en_US",
+    type: "website"
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Contribute Data & Sightings | Thailand Humanoid Atlas",
+    description: "Help keep the Thailand Humanoid Atlas accurate. Submit new robot deployments, academic papers, source links, or physical inventory updates.",
+    images: ["/logo.png"]
+  }
+};const copy = {
   en: {
     accountTitle: "Create an account to submit data",
     accountText: "Submissions are connected to your profile so you can track review status and show your contribution history to the community.",

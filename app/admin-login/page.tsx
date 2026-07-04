@@ -8,9 +8,7 @@ type SearchParams = Promise<{ error?: string; from?: string }>;
 export const metadata: Metadata = {
   title: "Admin Login",
   robots: { index: false, follow: false }
-};
-
-export default async function AdminLoginPage({ searchParams }: { searchParams: SearchParams }) {
+};export default async function AdminLoginPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
   const error = params.error;
   const from = params.from || "/";
@@ -39,7 +37,7 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: S
   }[lang];
 
   return (
-    <div className="login-wrapper">
+    <div className="login-wrapper admin-login-page">
       <style dangerouslySetInnerHTML={{ __html: `
         .login-wrapper {
           min-height: 100dvh;
@@ -271,7 +269,7 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: S
       `}} />
 
       <div className="login-stack">
-        <img src="/logo.png" alt="Atlas Logo" className="login-logo" />
+        <img loading="lazy" src="/logo.png" alt="Atlas Logo" className="login-logo" />
         <div className="login-card">
           <h2 className="login-title">{localT.title}</h2>
           <p className="login-desc">{localT.desc}</p>

@@ -8,10 +8,30 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Public & Media Perspectives | Thailand Humanoid Atlas",
   description: "Analyze public opinion and media stance on humanoid robots in Thailand. Explore stance and sentiment analysis on safety, healthcare trust, and employment impact.",
-  alternates: { canonical: "/perspectives" }
-};
-
-export default async function PerspectivesPage() {
+  alternates: { canonical: "/perspectives" },
+  openGraph: {
+    title: "Public & Media Perspectives | Thailand Humanoid Atlas",
+    description: "Analyze public opinion and media stance on humanoid robots in Thailand. Explore stance and sentiment analysis on safety, healthcare trust, and employment impact.",
+    url: "/perspectives",
+    siteName: "Thailand Humanoid Atlas",
+    images: [
+      {
+        url: "/logo.png",
+        width: 512,
+        height: 512,
+        alt: "Thailand Humanoid Atlas Logo"
+      }
+    ],
+    locale: "en_US",
+    type: "website"
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Public & Media Perspectives | Thailand Humanoid Atlas",
+    description: "Analyze public opinion and media stance on humanoid robots in Thailand. Explore stance and sentiment analysis on safety, healthcare trust, and employment impact.",
+    images: ["/logo.png"]
+  }
+};export default async function PerspectivesPage() {
   const cookieStore = await cookies();
   const lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
   const t = getTranslation(lang);

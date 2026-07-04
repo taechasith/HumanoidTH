@@ -8,10 +8,30 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Robot Model Registry | Thailand Humanoid Atlas",
   description: "Comprehensive catalog of humanoid, social, and service robot models deployed, researched, or active in Thailand. Track specifications, developers, and source links.",
-  alternates: { canonical: "/robots" }
-};
-
-type SourceLike = {
+  alternates: { canonical: "/robots" },
+  openGraph: {
+    title: "Robot Model Registry | Thailand Humanoid Atlas",
+    description: "Comprehensive catalog of humanoid, social, and service robot models deployed, researched, or active in Thailand. Track specifications, developers, and source links.",
+    url: "/robots",
+    siteName: "Thailand Humanoid Atlas",
+    images: [
+      {
+        url: "/logo.png",
+        width: 512,
+        height: 512,
+        alt: "Thailand Humanoid Atlas Logo"
+      }
+    ],
+    locale: "en_US",
+    type: "website"
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Robot Model Registry | Thailand Humanoid Atlas",
+    description: "Comprehensive catalog of humanoid, social, and service robot models deployed, researched, or active in Thailand. Track specifications, developers, and source links.",
+    images: ["/logo.png"]
+  }
+};type SourceLike = {
   title: string;
   url: string;
   platform: string | null;
