@@ -692,9 +692,8 @@ function mergeNode(nodes: Map<string, NetworkNode>, node: Omit<NetworkNode, "deg
   return existing.id;
 }
 
-function edgeId(source: string, relation: string, target: string, url?: string | null) {
-  const sourceHint = url ? `_${slugify(url).slice(0, 28)}` : "";
-  return `edge:${slugify(source)}-${slugify(relation)}-${slugify(target)}${sourceHint}`;
+function edgeId(source: string, relation: string, target: string) {
+  return `edge:${slugify(source)}-${slugify(relation)}-${slugify(target)}`;
 }
 
 function mergeEdge(edges: Map<string, NetworkEdge>, edge: NetworkEdge) {
@@ -716,7 +715,7 @@ function mergeEdge(edges: Map<string, NetworkEdge>, edge: NetworkEdge) {
 }
 
 function addEdge(edges: Map<string, NetworkEdge>, edge: Omit<NetworkEdge, "id" | "label" | "is_low_confidence"> & { id?: string; label?: string }) {
-  const id = edge.id ?? edgeId(edge.source, edge.relation, edge.target, edge.url);
+  const id = edge.id ?? edgeId(edge.source, edge.relation, edge.target);
   const confidence = clampConfidence(edge.confidence);
   mergeEdge(edges, {
     ...edge,

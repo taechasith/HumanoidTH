@@ -1,347 +1,44 @@
-import { prisma } from "@/lib/prisma";
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
-import { getTranslation } from "@/lib/translations";
+import { prisma } from "@/lib/prisma";
+import DashboardCharts from "./DashboardCharts";
+import { Bot, Database, FileText, Globe2, MessageSquareText } from "lucide-react";
 
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = { title: "Ecosystem Dashboard", description: "A clear, high-level view of Thailand's humanoid robotics ecosystem.", alternates: { canonical: "/dashboard" } };
 
-export const metadata: Metadata = {
-  title: "Robotics Ecosystem Dashboard",
-  description: "Aggregate dashboard for Thailand humanoid robotics records, robot types, sources, contributions, perspective themes, and confidence levels.",
-  alternates: { canonical: "/dashboard" }
-};
+type Group = { _count: { _all: number }; [key: string]: unknown };
+const label = (value: unknown) => String(value || "Unknown").replace(/[_-]/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+const toData = (groups: Group[], key: string, limit = 7) => groups.sort((a, b) => b._count._all - a._count._all).slice(0, limit).map((item) => ({ label: label(item[key]), value: item._count._all }));
+function categoryForRobot(value: string | null) {
+  const text = (value || "").toLowerCase();
+  if (text.includes("education")) return "Education";
+  if (text.includes("medical") || text.includes("health")) return "Medical";
+  if (text.includes("assist") || text.includes("rehab")) return "Assistive";
+  if (text.includes("security")) return "Security";
+  if (text.includes("humanoid")) return "Humanoid";
+  if (text.includes("service") || text.includes("social") || text.includes("telepresence")) return "Service";
+  return "Other";
+}
 
 export default async function DashboardPage() {
-  const cookieStore = await cookies();
-  const lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
-  const t = getTranslation(lang);
-
-  let data = {
-    locations: [] as any[],
-    robotTypes: [] as any[],
-    sourceTypes: [] as any[],
-    embodimentLevels: [] as any[],
-    contributionTypes: [] as any[],
-    themes: [] as any[],
-    highConfidenceAnn: 0,
-    medConfidenceAnn: 0,
-    lowConfidenceAnn: 0,
-    highConfidenceSrc: 0,
-    medConfidenceSrc: 0,
-    lowConfidenceSrc: 0,
-    dbOffline: false
-  };
+  let offline = false;
+  let kpis = { robots: 0, sources: 0, contributions: 0, perspectives: 0, countries: 0 };
+  let composition: Array<{ label: string; value: number }> = [], sourceTypes: Array<{ label: string; value: number }> = [], origins: Array<{ label: string; value: number }> = [], contributionTypes: Array<{ label: string; value: number }> = [], embodiment: Array<{ label: string; value: number }> = [], themes: Array<{ label: string; value: number }> = [];
+  let perspectiveConfidence = { high: 0, moderate: 0, low: 0 }, sourceConfidence = { high: 0, moderate: 0, low: 0 };
 
   try {
-    const [
-      locations,
-      robotTypes,
-      sourceTypes,
-      embodimentLevels,
-      contributionTypes,
-      themes,
-      highConfidenceAnn,
-      medConfidenceAnn,
-      lowConfidenceAnn,
-      highConfidenceSrc,
-      medConfidenceSrc,
-      lowConfidenceSrc
-    ] = await Promise.all([
-      prisma.robotModel.groupBy({ by: ["countryOfOrigin"], _count: { _all: true } }),
-      prisma.robotModel.groupBy({ by: ["robotType"], _count: { _all: true } }),
-      prisma.sourceRecord.groupBy({ by: ["sourceType"], _count: { _all: true } }),
-      prisma.robotModel.groupBy({ by: ["embodimentLevel"], _count: { _all: true } }),
-      prisma.contribution.groupBy({ by: ["contributionType"], _count: { _all: true } }),
-      prisma.perspectiveAnnotation.groupBy({ by: ["perspectiveTheme"], _count: { _all: true } }),
-      // Confidence buckets
-      prisma.perspectiveAnnotation.count({ where: { confidence: { gte: 0.8 } } }),
-      prisma.perspectiveAnnotation.count({ where: { confidence: { gte: 0.5, lt: 0.8 } } }),
-      prisma.perspectiveAnnotation.count({ where: { confidence: { lt: 0.5 } } }),
-      prisma.sourceRecord.count({ where: { relevanceConfidence: { gte: 0.8 } } }),
-      prisma.sourceRecord.count({ where: { relevanceConfidence: { gte: 0.5, lt: 0.8 } } }),
-      prisma.sourceRecord.count({ where: { relevanceConfidence: { lt: 0.5 } } })
+    const [robots, sources, contributions, perspectives, originsRaw, typesRaw, sourceTypesRaw, embodimentRaw, contributionRaw, themesRaw, pHigh, pModerate, pLow, sHigh, sModerate, sLow] = await Promise.all([
+      prisma.robotModel.findMany({ select: { robotType: true } }), prisma.sourceRecord.count(), prisma.contribution.count(), prisma.perspectiveAnnotation.count(), prisma.robotModel.groupBy({ by: ["countryOfOrigin"], _count: { _all: true } }), prisma.robotModel.groupBy({ by: ["robotType"], _count: { _all: true } }), prisma.sourceRecord.groupBy({ by: ["sourceType"], _count: { _all: true } }), prisma.robotModel.groupBy({ by: ["embodimentLevel"], _count: { _all: true } }), prisma.contribution.groupBy({ by: ["contributionType"], _count: { _all: true } }), prisma.perspectiveAnnotation.groupBy({ by: ["perspectiveTheme"], _count: { _all: true } }), prisma.perspectiveAnnotation.count({ where: { confidence: { gte: .8 } } }), prisma.perspectiveAnnotation.count({ where: { confidence: { gte: .5, lt: .8 } } }), prisma.perspectiveAnnotation.count({ where: { confidence: { lt: .5 } } }), prisma.sourceRecord.count({ where: { relevanceConfidence: { gte: .8 } } }), prisma.sourceRecord.count({ where: { relevanceConfidence: { gte: .5, lt: .8 } } }), prisma.sourceRecord.count({ where: { relevanceConfidence: { lt: .5 } } })
     ]);
+    const grouped = robots.reduce<Record<string, number>>((result, robot) => { const key = categoryForRobot(robot.robotType); result[key] = (result[key] || 0) + 1; return result; }, {});
+    composition = Object.entries(grouped).map(([label, value]) => ({ label, value })).sort((a, b) => b.value - a.value);
+    sourceTypes = toData(sourceTypesRaw, "sourceType", 5); origins = toData(originsRaw, "countryOfOrigin", 6); contributionTypes = toData(contributionRaw, "contributionType", 6); embodiment = toData(embodimentRaw, "embodimentLevel", 6); themes = toData(themesRaw, "perspectiveTheme", 6);
+    kpis = { robots: robots.length, sources, contributions, perspectives, countries: originsRaw.filter((item) => item.countryOfOrigin).length };
+    perspectiveConfidence = { high: pHigh, moderate: pModerate, low: pLow }; sourceConfidence = { high: sHigh, moderate: sModerate, low: sLow };
+  } catch { offline = true; }
 
-    data = {
-      locations,
-      robotTypes,
-      sourceTypes,
-      embodimentLevels,
-      contributionTypes,
-      themes,
-      highConfidenceAnn,
-      medConfidenceAnn,
-      lowConfidenceAnn,
-      highConfidenceSrc,
-      medConfidenceSrc,
-      lowConfidenceSrc,
-      dbOffline: false
-    };
-  } catch (error) {
-    console.error("Database connection failed in dashboard:", error);
-    data = {
-      locations: [],
-      robotTypes: [],
-      sourceTypes: [],
-      embodimentLevels: [],
-      contributionTypes: [],
-      themes: [],
-      highConfidenceAnn: 0,
-      medConfidenceAnn: 0,
-      lowConfidenceAnn: 0,
-      highConfidenceSrc: 0,
-      medConfidenceSrc: 0,
-      lowConfidenceSrc: 0,
-      dbOffline: true
-    };
-  }
-
-  // Helper to calculate total count for percentages
-  const sumCounts = (arr: { _count: { _all: number } }[]) => 
-    arr.reduce((acc, curr) => acc + curr._count._all, 0);
-
-  const locTotal = sumCounts(data.locations);
-  const typeTotal = sumCounts(data.robotTypes);
-  const srcTotal = sumCounts(data.sourceTypes);
-  const embTotal = sumCounts(data.embodimentLevels);
-  const contribTotal = sumCounts(data.contributionTypes);
-  const themeTotal = sumCounts(data.themes);
-
-  const totalAnnotations = data.highConfidenceAnn + data.medConfidenceAnn + data.lowConfidenceAnn;
-  const totalSources = data.highConfidenceSrc + data.medConfidenceSrc + data.lowConfidenceSrc;
-
-  return (
-    <>
-      <div className="topline">
-        <div>
-          <h1>{t.dashboardTitle}</h1>
-          <p className="muted">
-            {t.dashboardDesc}
-          </p>
-        </div>
-      </div>
-
-      {data.dbOffline && (
-        <div className="notice" style={{ backgroundColor: "#fffbeb", borderLeftColor: "var(--warning)", marginBottom: "16px" }}>
-          <strong>Database Offline:</strong> Live PostgreSQL is unavailable. This dashboard is not substituting example records.
-        </div>
-      )}
-
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "16px", marginTop: "12px" }}>
-        
-        {/* Location Distribution */}
-        <section className="panel">
-          <h2>Robot Origin Locations</h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-            {data.locations.map((loc) => {
-              const count = loc._count._all;
-              const pct = locTotal > 0 ? (count / locTotal) * 100 : 0;
-              return (
-                <div key={loc.countryOfOrigin || "unknown"}>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", marginBottom: "4px" }}>
-                    <span>{loc.countryOfOrigin || "Unknown"}</span>
-                    <strong>{count} ({pct.toFixed(1)}%)</strong>
-                  </div>
-                  <div style={{ height: "8px", background: "var(--surface-muted)", borderRadius: "4px", overflow: "hidden" }}>
-                    <div style={{ width: `${pct}%`, height: "100%", background: "var(--accent)" }} />
-                  </div>
-                </div>
-              );
-            })}
-            {!data.locations.length && <div className="empty">No location statistics available.</div>}
-          </div>
-        </section>
-
-        {/* Robot Categories */}
-        <section className="panel">
-          <h2>Robot Categories</h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-            {data.robotTypes.map((type) => {
-              const count = type._count._all;
-              const pct = typeTotal > 0 ? (count / typeTotal) * 100 : 0;
-              return (
-                <div key={type.robotType}>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", marginBottom: "4px" }}>
-                    <span style={{ textTransform: "capitalize" }}>{type.robotType.replace(/_/g, " ")}</span>
-                    <strong>{count} ({pct.toFixed(1)}%)</strong>
-                  </div>
-                  <div style={{ height: "8px", background: "var(--surface-muted)", borderRadius: "4px", overflow: "hidden" }}>
-                    <div style={{ width: `${pct}%`, height: "100%", background: "var(--accent)" }} />
-                  </div>
-                </div>
-              );
-            })}
-            {!data.robotTypes.length && <div className="empty">No category statistics available.</div>}
-          </div>
-        </section>
-
-        {/* Source Record Types */}
-        <section className="panel">
-          <h2>Source Record Types</h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-            {data.sourceTypes.map((st) => {
-              const count = st._count._all;
-              const pct = srcTotal > 0 ? (count / srcTotal) * 100 : 0;
-              return (
-                <div key={st.sourceType}>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", marginBottom: "4px" }}>
-                    <span style={{ textTransform: "capitalize" }}>{st.sourceType.replace(/_/g, " ")}</span>
-                    <strong>{count} ({pct.toFixed(1)}%)</strong>
-                  </div>
-                  <div style={{ height: "8px", background: "var(--surface-muted)", borderRadius: "4px", overflow: "hidden" }}>
-                    <div style={{ width: `${pct}%`, height: "100%", background: "var(--accent)" }} />
-                  </div>
-                </div>
-              );
-            })}
-            {!data.sourceTypes.length && <div className="empty">No source types statistics available.</div>}
-          </div>
-        </section>
-
-        {/* Embodiment Level */}
-        <section className="panel">
-          <h2>Robot Embodiment Levels</h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-            {data.embodimentLevels.map((el) => {
-              const count = el._count._all;
-              const pct = embTotal > 0 ? (count / embTotal) * 100 : 0;
-              return (
-                <div key={el.embodimentLevel}>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", marginBottom: "4px" }}>
-                    <span style={{ textTransform: "capitalize" }}>{el.embodimentLevel.replace(/_/g, " ")}</span>
-                    <strong>{count} ({pct.toFixed(1)}%)</strong>
-                  </div>
-                  <div style={{ height: "8px", background: "var(--surface-muted)", borderRadius: "4px", overflow: "hidden" }}>
-                    <div style={{ width: `${pct}%`, height: "100%", background: "var(--accent)" }} />
-                  </div>
-                </div>
-              );
-            })}
-            {!data.embodimentLevels.length && <div className="empty">No embodiment levels statistics available.</div>}
-          </div>
-        </section>
-
-        {/* Contribution Type */}
-        <section className="panel">
-          <h2>Contribution Types</h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-            {data.contributionTypes.map((ct) => {
-              const count = ct._count._all;
-              const pct = contribTotal > 0 ? (count / contribTotal) * 100 : 0;
-              return (
-                <div key={ct.contributionType}>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", marginBottom: "4px" }}>
-                    <span style={{ textTransform: "capitalize" }}>{ct.contributionType.replace(/_/g, " ")}</span>
-                    <strong>{count} ({pct.toFixed(1)}%)</strong>
-                  </div>
-                  <div style={{ height: "8px", background: "var(--surface-muted)", borderRadius: "4px", overflow: "hidden" }}>
-                    <div style={{ width: `${pct}%`, height: "100%", background: "var(--accent)" }} />
-                  </div>
-                </div>
-              );
-            })}
-            {!data.contributionTypes.length && <div className="empty">No contribution type statistics available.</div>}
-          </div>
-        </section>
-
-        {/* Perspective Themes */}
-        <section className="panel">
-          <h2>Perspective Themes</h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-            {data.themes.map((th) => {
-              const count = th._count._all;
-              const pct = themeTotal > 0 ? (count / themeTotal) * 100 : 0;
-              return (
-                <div key={th.perspectiveTheme}>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", marginBottom: "4px" }}>
-                    <span style={{ textTransform: "capitalize" }}>{th.perspectiveTheme.replace(/_/g, " ")}</span>
-                    <strong>{count} ({pct.toFixed(1)}%)</strong>
-                  </div>
-                  <div style={{ height: "8px", background: "var(--surface-muted)", borderRadius: "4px", overflow: "hidden" }}>
-                    <div style={{ width: `${pct}%`, height: "100%", background: "var(--accent)" }} />
-                  </div>
-                </div>
-              );
-            })}
-            {!data.themes.length && <div className="empty">No theme statistics available.</div>}
-          </div>
-        </section>
-
-      </div>
-
-      {/* Confidence Score Buckets */}
-      <h2 style={{ marginTop: "24px" }}>Extracted Confidence Distribution</h2>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "16px", marginTop: "12px" }}>
-        
-        {/* Perspective Confidence Distribution */}
-        <section className="panel">
-          <h2>Perspective Annotations (total: {totalAnnotations})</h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "10px" }}>
-            <div>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", marginBottom: "4px" }}>
-                <span>High (Confidence &ge; 0.8)</span>
-                <strong>{data.highConfidenceAnn}</strong>
-              </div>
-              <div style={{ height: "6px", background: "var(--surface-muted)", borderRadius: "3px", overflow: "hidden" }}>
-                <div style={{ width: `${totalAnnotations > 0 ? (data.highConfidenceAnn / totalAnnotations) * 100 : 0}%`, height: "100%", background: "var(--success)" }} />
-              </div>
-            </div>
-            <div>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", marginBottom: "4px" }}>
-                <span>Moderate (0.5 &le; Confidence &lt; 0.8)</span>
-                <strong>{data.medConfidenceAnn}</strong>
-              </div>
-              <div style={{ height: "6px", background: "var(--surface-muted)", borderRadius: "3px", overflow: "hidden" }}>
-                <div style={{ width: `${totalAnnotations > 0 ? (data.medConfidenceAnn / totalAnnotations) * 100 : 0}%`, height: "100%", background: "var(--warning)" }} />
-              </div>
-            </div>
-            <div>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", marginBottom: "4px" }}>
-                <span>Low (Confidence &lt; 0.5)</span>
-                <strong>{data.lowConfidenceAnn}</strong>
-              </div>
-              <div style={{ height: "6px", background: "var(--surface-muted)", borderRadius: "3px", overflow: "hidden" }}>
-                <div style={{ width: `${totalAnnotations > 0 ? (data.lowConfidenceAnn / totalAnnotations) * 100 : 0}%`, height: "100%", background: "var(--low-confidence)" }} />
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Source Relevance Confidence Distribution */}
-        <section className="panel">
-          <h2>Source Relevance Confidence (total: {totalSources})</h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "10px" }}>
-            <div>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", marginBottom: "4px" }}>
-                <span>High (Confidence &ge; 0.8)</span>
-                <strong>{data.highConfidenceSrc}</strong>
-              </div>
-              <div style={{ height: "6px", background: "var(--surface-muted)", borderRadius: "3px", overflow: "hidden" }}>
-                <div style={{ width: `${totalSources > 0 ? (data.highConfidenceSrc / totalSources) * 100 : 0}%`, height: "100%", background: "var(--success)" }} />
-              </div>
-            </div>
-            <div>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", marginBottom: "4px" }}>
-                <span>Moderate (0.5 &le; Confidence &lt; 0.8)</span>
-                <strong>{data.medConfidenceSrc}</strong>
-              </div>
-              <div style={{ height: "6px", background: "var(--surface-muted)", borderRadius: "3px", overflow: "hidden" }}>
-                <div style={{ width: `${totalSources > 0 ? (data.medConfidenceSrc / totalSources) * 100 : 0}%`, height: "100%", background: "var(--warning)" }} />
-              </div>
-            </div>
-            <div>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", marginBottom: "4px" }}>
-                <span>Low (Confidence &lt; 0.5)</span>
-                <strong>{data.lowConfidenceSrc}</strong>
-              </div>
-              <div style={{ height: "6px", background: "var(--surface-muted)", borderRadius: "3px", overflow: "hidden" }}>
-                <div style={{ width: `${totalSources > 0 ? (data.lowConfidenceSrc / totalSources) * 100 : 0}%`, height: "100%", background: "var(--low-confidence)" }} />
-              </div>
-            </div>
-          </div>
-        </section>
-
-      </div>
-    </>
-  );
+  const cards = [{ label: "Robots", value: kpis.robots, icon: Bot }, { label: "Sources", value: kpis.sources, icon: Database }, { label: "Contributions", value: kpis.contributions, icon: FileText }, { label: "Perspectives", value: kpis.perspectives, icon: MessageSquareText }, { label: "Countries", value: kpis.countries, icon: Globe2 }];
+  return <div className="dashboard-page"><header className="page-header"><div><span className="eyebrow">Ecosystem overview</span><h1>Thailand robotics, at a glance.</h1><p>Grouped, live indicators across models, evidence, contributions, and public perspectives.</p></div><span className={`data-mode${offline ? " data-mode--offline" : ""}`}>{offline ? "Database offline" : "Live data"}</span></header>
+    {offline ? <div className="state-banner state-banner--warning"><strong>Live database unavailable.</strong> This dashboard intentionally does not show fallback demo figures.</div> : <><section className="dashboard-kpis">{cards.map(({ label, value, icon: Icon }) => <article className="dashboard-kpi" key={label}><span><Icon size={21} /></span><div><small>{label}</small><strong>{value.toLocaleString()}</strong></div></article>)}</section><DashboardCharts composition={composition} sourceTypes={sourceTypes} origins={origins} contributionTypes={contributionTypes} embodimentLevels={embodiment} themes={themes} perspectiveConfidence={perspectiveConfidence} sourceConfidence={sourceConfidence} /></>}
+  </div>;
 }

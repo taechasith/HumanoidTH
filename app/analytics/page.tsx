@@ -289,7 +289,7 @@ export const metadata: Metadata = {
         </div>
       </div>
 
-      <AnalyticsPlayground events={events} />
+      <AnalyticsPlayground events={events} lang={lang} />
       <div style={{ marginTop: "16px" }}>
         <AnalyticsBpmn
           counts={{

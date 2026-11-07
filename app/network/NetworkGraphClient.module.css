@@ -1,11 +1,11 @@
 .networkShell {
   background: #07110d;
   border: 1px solid #14352a;
-  border-radius: 10px;
+  border-radius: 14px;
   color: #e9fff5;
   display: grid;
-  grid-template-columns: 240px minmax(560px, 1fr) 280px;
-  min-height: calc(100vh - 128px);
+  grid-template-columns: 250px minmax(0, 1fr) 300px;
+  min-height: clamp(680px, calc(100vh - 238px), 920px);
   overflow: hidden;
 }
 
@@ -23,15 +23,13 @@
 }
 
 .toolbar {
-  align-items: center;
-  background: #091812;
+  background: linear-gradient(135deg, #0b1d15, #08130f);
   border: 1px solid #14352a;
-  border-radius: 10px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 12px;
-  padding: 10px;
+  border-radius: 14px;
+  display: grid;
+  gap: 10px;
+  margin-bottom: 8px;
+  padding: 10px 12px;
 }
 
 .toolbar input,
@@ -45,10 +43,48 @@
   color: #e9fff5;
 }
 
+.toolbar button {
+  border: 1px solid #1d4b39;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 750;
+  min-height: 36px;
+  padding: 7px 10px;
+  white-space: nowrap;
+}
+
 .toolbar button.active,
 .filters button.active {
   background: #4a7c59;
   color: #ffffff;
+}
+
+.toolbarPrimary,
+.toolbarSecondary,
+.actionGroup {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.toolbarPrimary {
+  min-width: 0;
+}
+
+.toolbarSecondary {
+  border-top: 1px solid rgba(125, 211, 199, 0.13);
+  flex-wrap: wrap;
+  padding-top: 10px;
+}
+
+.primaryAction {
+  background: #3f7c59 !important;
+  border-color: #66a77d !important;
+  color: #ffffff !important;
+}
+
+.primaryAction:hover {
+  background: #4d8d69 !important;
 }
 
 .inlineControl {
@@ -62,55 +98,50 @@
 }
 
 .inlineControl select {
+  flex: 1;
   text-transform: none;
 }
 
-.tagControl {
+.compactSelect {
   align-items: center;
-  background: rgba(5, 11, 8, 0.38);
+  background: rgba(5, 11, 8, 0.34);
   border: 1px solid #1d4b39;
   border-radius: 8px;
-  color: #d9fff0;
+  color: #9fc7aa;
   display: inline-flex;
-  gap: 8px;
-  padding: 5px 7px;
+  font-size: 10px;
+  font-weight: 800;
+  gap: 7px;
+  min-height: 36px;
+  padding: 4px 8px;
+  text-transform: uppercase;
 }
 
-.tagControl > span {
+.compactSelect > span {
   color: #f5d26c;
-  font-size: 11px;
-  font-weight: 850;
-  text-transform: uppercase;
   white-space: nowrap;
 }
 
-.tagButtons {
-  display: inline-flex;
-  gap: 4px;
-}
-
-.tagButtons button {
-  border-radius: 6px;
-  min-height: 30px;
-  padding: 4px 9px;
-}
-
-.tagControl select {
-  min-height: 30px;
+.compactSelect select {
+  border: 0;
+  font-size: 12px;
+  min-height: 28px;
+  padding: 2px 0;
+  width: auto;
 }
 
 .sourceStatus {
   align-items: center;
   background: #0d1f17;
   border: 1px solid #1d4b39;
-  border-radius: 8px;
+  border-radius: 10px;
   color: #cde7d7;
   display: flex;
   flex-wrap: wrap;
   gap: 8px 12px;
   font-size: 12px;
-  margin: 0 0 12px;
-  padding: 9px 12px;
+  margin: 0 0 8px;
+  padding: 8px 12px;
 }
 
 .sourceStatus span:first-child {
@@ -123,12 +154,141 @@
   border-color: rgba(245, 210, 108, 0.34);
 }
 
+.edgeLegend {
+  margin-left: auto;
+  position: relative;
+}
+
+.edgeLegend summary {
+  color: #f5d26c;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 800;
+  list-style: none;
+  white-space: nowrap;
+}
+
+.edgeLegend summary::-webkit-details-marker {
+  display: none;
+}
+
+.edgeLegend summary::after {
+  color: #9fc7aa;
+  content: " +";
+}
+
+.edgeLegend[open] summary::after {
+  content: " −";
+}
+
+.edgeLegendMenu {
+  background: #091812;
+  border: 1px solid #286044;
+  border-radius: 10px;
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.3);
+  display: grid;
+  gap: 7px 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-width: 360px;
+  padding: 10px;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 60;
+}
+
+.edgeLegendItem,
+.edgeLegendNote {
+  align-items: center;
+  color: #d9fff0;
+  display: inline-flex;
+  font-size: 11px;
+  gap: 7px;
+  line-height: 1.2;
+}
+
+.edgeLegendSwatch {
+  border-radius: 999px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.16);
+  display: inline-block;
+  flex: 0 0 auto;
+  height: 8px;
+  width: 20px;
+}
+
+.edgeLegendNote {
+  border-top: 1px solid rgba(125, 211, 199, 0.14);
+  color: #f5d26c;
+  grid-column: 1 / -1;
+  margin-top: 2px;
+  padding-top: 8px;
+}
+
+.lowConfidenceSwatch {
+  border-top: 2px dashed #facc15;
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 20px;
+}
+
 .searchWrap {
-  flex: 1 1 260px;
+  flex: 1 1 300px;
 }
 
 .searchWrap input {
+  min-height: 38px;
   width: 100%;
+}
+
+.advancedControls {
+  margin-left: auto;
+  position: relative;
+}
+
+.advancedControls summary {
+  align-items: center;
+  background: #0d1f17;
+  border: 1px solid #1d4b39;
+  border-radius: 8px;
+  color: #cde7d7;
+  cursor: pointer;
+  display: flex;
+  font-size: 12px;
+  font-weight: 750;
+  list-style: none;
+  min-height: 36px;
+  padding: 7px 10px;
+}
+
+.advancedControls summary::-webkit-details-marker {
+  display: none;
+}
+
+.advancedControls[open] summary {
+  background: #163d2b;
+  border-color: #6ea98a;
+  color: #ffffff;
+}
+
+.advancedMenu {
+  background: #091812;
+  border: 1px solid #286044;
+  border-radius: 12px;
+  box-shadow: 0 20px 44px rgba(0, 0, 0, 0.34);
+  display: grid;
+  gap: 7px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  min-width: 520px;
+  padding: 10px;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 40;
+}
+
+.advancedMenu .inlineControl,
+.advancedMenu button {
+  min-width: 0;
 }
 
 .filters {
@@ -174,7 +334,7 @@
 
 .graphCanvas {
   height: 100%;
-  min-height: 720px;
+  min-height: 680px;
   width: 100%;
 }
 
@@ -315,35 +475,62 @@
   }
 
   .graphCanvas {
-    min-height: 620px;
+    min-height: 640px;
+  }
+
+  .advancedMenu {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 640px) {
   .toolbar {
+    gap: 8px;
+  }
+
+  .toolbarPrimary,
+  .toolbarSecondary,
+  .actionGroup {
     align-items: stretch;
-    flex-direction: column;
+    flex-wrap: wrap;
   }
 
   .toolbar button,
   .toolbar select,
   .inlineControl,
-  .tagControl {
+  .compactSelect,
+  .advancedControls {
     width: 100%;
   }
 
   .inlineControl,
-  .tagControl {
+  .compactSelect {
     align-items: stretch;
     display: grid;
   }
 
-  .tagButtons {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .advancedControls {
+    margin-left: 0;
+  }
+
+  .advancedMenu {
+    grid-template-columns: 1fr;
+    min-width: 0;
+    position: static;
   }
 
   .graphCanvas {
     min-height: 560px;
+  }
+
+  .edgeLegend {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .edgeLegendMenu {
+    grid-template-columns: 1fr;
+    min-width: 0;
+    position: static;
   }
 }

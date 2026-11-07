@@ -258,6 +258,13 @@ export async function fetchContributionClusters(): Promise<ContributionMapPoint[
     console.error("Cache fetch failed:", e);
   }
 
+  // The location explorer must remain usable without an AI key. In that case
+  // use the curated location seed immediately instead of attempting a request
+  // that is guaranteed to fail and surface a development error.
+  if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === "mock_key") {
+    return getFallbackClusters();
+  }
+
   try {
     return await analyzeClustersWithGemini();
   } catch (e) {

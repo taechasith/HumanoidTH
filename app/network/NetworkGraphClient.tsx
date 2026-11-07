@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import cytoscape, { Core, EdgeSingular, ElementDefinition, NodeSingular } from "cytoscape";
 import CircularProgress from "@mui/material/CircularProgress";
-import { networkStyles } from "./cytoscapeStyles";
+import { edgeColorLegend, networkStyles } from "./cytoscapeStyles";
 import styles from "./NetworkGraphClient.module.css";
 
 type NetworkNode = {
@@ -83,10 +83,41 @@ const labelModeOptions: Array<{ value: LabelMode; label: string }> = [
   { value: "all", label: "All" }
 ];
 
-const densitySettings: Record<DensityMode, { label: string; idealEdgeLength: number; nodeRepulsion: number; gravity: number; edgeElasticity: number; componentSpacing: number; spacingFactor: number; padding: number; zoom: number }> = {
-  compact: { label: "Compact", idealEdgeLength: 170, nodeRepulsion: 15000, gravity: 0.2, edgeElasticity: 72, componentSpacing: 160, spacingFactor: 1.75, padding: 96, zoom: 0.92 },
-  balanced: { label: "Balanced", idealEdgeLength: 240, nodeRepulsion: 30000, gravity: 0.11, edgeElasticity: 45, componentSpacing: 260, spacingFactor: 2.35, padding: 132, zoom: 0.72 },
-  spacious: { label: "Spacious", idealEdgeLength: 320, nodeRepulsion: 52000, gravity: 0.055, edgeElasticity: 28, componentSpacing: 360, spacingFactor: 3, padding: 168, zoom: 0.58 }
+const edgeLegendText: Record<"en" | "th", Record<string, string>> = {
+  en: {
+    development: "Development / creation",
+    ownership: "Ownership / initiation",
+    operations: "Operation",
+    collaboration: "Collaboration",
+    connection: "Connection",
+    association: "Related record",
+    placement: "Deployment / location",
+    showcase: "Showcase / event",
+    publication: "Publication / author",
+    classification: "Category / instance",
+    theme: "Theme",
+    reference: "Mention / discussion"
+  },
+  th: {
+    development: "พัฒนา / สร้าง",
+    ownership: "เป็นเจ้าของ / ริเริ่ม",
+    operations: "ดำเนินงาน",
+    collaboration: "ร่วมมือ",
+    connection: "เชื่อมต่อ",
+    association: "ข้อมูลที่เกี่ยวข้อง",
+    placement: "การใช้งาน / สถานที่",
+    showcase: "จัดแสดง / กิจกรรม",
+    publication: "เผยแพร่ / ผู้เขียน",
+    classification: "หมวดหมู่ / ตัวอย่าง",
+    theme: "หัวข้อ",
+    reference: "กล่าวถึง / อภิปราย"
+  }
+};
+
+const densitySettings: Record<DensityMode, { label: string; idealEdgeLength: number; nodeRepulsion: number; gravity: number; edgeElasticity: number; componentSpacing: number; spacingFactor: number; padding: number; zoom: number; minNodeSpacing: number }> = {
+  compact: { label: "Compact", idealEdgeLength: 180, nodeRepulsion: 24000, gravity: 0.16, edgeElasticity: 64, componentSpacing: 180, spacingFactor: 1.9, padding: 84, zoom: 0.94, minNodeSpacing: 48 },
+  balanced: { label: "Balanced", idealEdgeLength: 285, nodeRepulsion: 56000, gravity: 0.08, edgeElasticity: 36, componentSpacing: 300, spacingFactor: 2.9, padding: 96, zoom: 0.94, minNodeSpacing: 72 },
+  spacious: { label: "Spacious", idealEdgeLength: 420, nodeRepulsion: 98000, gravity: 0.035, edgeElasticity: 20, componentSpacing: 440, spacingFactor: 4.1, padding: 112, zoom: 0.95, minNodeSpacing: 108 }
 };
 
 function unique(values: Array<string | null | undefined>) {
@@ -210,6 +241,17 @@ function isImportantNode(node: NetworkNode) {
     || (node.confidence >= 0.9 && ["robot_model", "organization", "institution", "contribution"].includes(node.type));
 }
 
+function isMinorNode(node: NetworkNode) {
+  return !isImportantNode(node) && node.degree <= 1 && node.source_count <= 1;
+}
+
+function keyNodeIds(nodes: NetworkNode[], limit = 14) {
+  return new Set([...nodes]
+    .sort((left, right) => ((right.degree * 4) + (right.source_count * 3) + right.confidence) - ((left.degree * 4) + (left.source_count * 3) + left.confidence))
+    .slice(0, limit)
+    .map((node) => node.id));
+}
+
 function truncateLabel(label: string) {
   return label.length > 34 ? `${label.slice(0, 31)}...` : label;
 }
@@ -235,14 +277,16 @@ function densityText(mode: DensityMode, lang: "en" | "th") {
 }
 
 function toElements(graph: NetworkGraph): ElementDefinition[] {
+  const minorNodeIds = new Set(graph.nodes.filter(isMinorNode).map((node) => node.id));
+  const keyNodes = keyNodeIds(graph.nodes);
   return [
     ...graph.nodes.map((node) => ({
-      data: { ...node, displayLabel: truncateLabel(node.label), important: isImportantNode(node) },
-      classes: `${node.type} ${node.cluster} ${isImportantNode(node) ? "important" : ""} ${node.is_private ? "private" : ""} ${node.is_low_confidence ? "low-confidence" : ""}`
+      data: { ...node, displayLabel: truncateLabel(node.label), important: keyNodes.has(node.id) },
+      classes: `${node.type} ${node.cluster} ${keyNodes.has(node.id) ? "important" : ""} ${isMinorNode(node) ? "minor" : ""} ${node.is_private ? "private" : ""} ${node.is_low_confidence ? "low-confidence" : ""}`
     })),
     ...graph.edges.map((edge) => ({
       data: edge,
-      classes: `${edge.relation} ${edge.is_low_confidence ? "low-confidence" : ""}`
+      classes: `${edge.relation} ${minorNodeIds.has(edge.source) || minorNodeIds.has(edge.target) ? "minor-link" : ""} ${edge.is_low_confidence ? "low-confidence" : ""}`
     }))
   ];
 }
@@ -320,6 +364,23 @@ function localGraph(graph: NetworkGraph, selectedId: string | null, depth: numbe
   };
 }
 
+function primaryGraph(graph: NetworkGraph): NetworkGraph {
+  const primaryNodeIds = keyNodeIds(graph.nodes, 24);
+  const edges = graph.edges.filter((edge) => primaryNodeIds.has(edge.source) && primaryNodeIds.has(edge.target));
+  const connectedNodeIds = new Set<string>();
+  edges.forEach((edge) => {
+    connectedNodeIds.add(edge.source);
+    connectedNodeIds.add(edge.target);
+  });
+  const nodes = graph.nodes.filter((node) => primaryNodeIds.has(node.id) && connectedNodeIds.has(node.id));
+  return {
+    ...graph,
+    nodes,
+    edges,
+    meta: { ...graph.meta, node_count: nodes.length, edge_count: edges.length }
+  };
+}
+
 function updateLabelClasses(cy: Core, labelMode: LabelMode, selectedNodeId: string | null) {
   cy.nodes().removeClass("show-label");
   if (labelMode === "off") return;
@@ -364,6 +425,7 @@ export default function NetworkGraphClient({ lang = "en" }: { lang?: "en" | "th"
   const [showOwned, setShowOwned] = useState(true);
   const [showMedia, setShowMedia] = useState(true);
   const [showAcademic, setShowAcademic] = useState(true);
+  const [showPeripheralNodes, setShowPeripheralNodes] = useState(false);
   const [localMode, setLocalMode] = useState(false);
   const [localDepth, setLocalDepth] = useState(1);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
@@ -386,13 +448,9 @@ export default function NetworkGraphClient({ lang = "en" }: { lang?: "en" | "th"
     syncMotion();
     motionQuery.addEventListener("change", syncMotion);
     try {
-      const savedLabelMode = localStorage.getItem("network.labelMode") as LabelMode | null;
-      const savedDensity = localStorage.getItem("network.densityMode") as DensityMode | null;
       const savedAnimations = localStorage.getItem("network.animationsEnabled");
       const savedFiltersCollapsed = localStorage.getItem("network.filtersCollapsed");
       const savedDetailsCollapsed = localStorage.getItem("network.detailsCollapsed");
-      if (savedLabelMode && labelModeOptions.some((option) => option.value === savedLabelMode)) setLabelMode(savedLabelMode);
-      if (savedDensity && savedDensity in densitySettings) setDensityMode(savedDensity === "compact" ? "balanced" : savedDensity);
       if (savedAnimations !== null) setAnimationsEnabled(savedAnimations === "true");
       if (savedFiltersCollapsed !== null) setFiltersCollapsed(savedFiltersCollapsed === "true");
       if (savedDetailsCollapsed !== null) setDetailsCollapsed(savedDetailsCollapsed === "true");
@@ -404,15 +462,13 @@ export default function NetworkGraphClient({ lang = "en" }: { lang?: "en" | "th"
 
   useEffect(() => {
     try {
-      localStorage.setItem("network.labelMode", labelMode);
       localStorage.setItem("network.animationsEnabled", String(animationsEnabled));
-      localStorage.setItem("network.densityMode", densityMode);
       localStorage.setItem("network.filtersCollapsed", String(filtersCollapsed));
       localStorage.setItem("network.detailsCollapsed", String(detailsCollapsed));
     } catch {
       // Ignore blocked storage.
     }
-  }, [animationsEnabled, densityMode, detailsCollapsed, filtersCollapsed, labelMode]);
+  }, [animationsEnabled, detailsCollapsed, filtersCollapsed]);
 
   const fetchGraph = useCallback(async (limit = maxNodes, source = sourceMode) => {
     setLoading(true);
@@ -460,11 +516,16 @@ export default function NetworkGraphClient({ lang = "en" }: { lang?: "en" | "th"
     };
   }, [graph]);
 
-  const visibleGraph = useMemo(() => {
+  const filteredGraph = useMemo(() => {
     if (!graph) return null;
     const filtered = filterGraph(graph, filters, { showLowConfidence, onlyReviewed, showOwned, showMedia, showAcademic });
     return localMode ? localGraph(filtered, selectedNodeId, localDepth) : filtered;
   }, [filters, graph, localDepth, localMode, onlyReviewed, selectedNodeId, showAcademic, showLowConfidence, showMedia, showOwned]);
+
+  const visibleGraph = useMemo(() => {
+    if (!filteredGraph || showPeripheralNodes) return filteredGraph;
+    return primaryGraph(filteredGraph);
+  }, [filteredGraph, showPeripheralNodes]);
 
   const setNodeDetail = useCallback((node: NetworkNode, sourceGraph: NetworkGraph) => {
     const incoming = sourceGraph.edges.filter((edge) => edge.target === node.id);
@@ -489,30 +550,23 @@ export default function NetworkGraphClient({ lang = "en" }: { lang?: "en" | "th"
     window.setTimeout(() => node.removeClass("pulse"), 360);
   }, [motionEnabled]);
 
-  const runLayout = useCallback((name: "cose" | "circle" = "cose") => {
+  const runLayout = useCallback(() => {
     const cy = cyRef.current;
     if (!cy) return;
     cy.layout({
-      name,
-      animate: motionEnabled,
-      animationDuration: motionEnabled ? 900 : 0,
+      name: "breadthfirst",
+      animate: false,
+      animationDuration: 0,
+      avoidOverlap: true,
+      circle: false,
+      directed: true,
       fit: true,
+      grid: true,
+      nodeDimensionsIncludeLabels: true,
       padding: density.padding,
-      ...(name === "cose" ? {
-        componentSpacing: density.componentSpacing,
-        coolingFactor: 0.95,
-        edgeElasticity: density.edgeElasticity,
-        idealEdgeLength: density.idealEdgeLength,
-        initialTemp: 200,
-        minTemp: 1,
-        nestingFactor: 1.2,
-        nodeRepulsion: density.nodeRepulsion,
-        numIter: 2200,
-        spacingFactor: density.spacingFactor,
-        gravity: density.gravity
-      } : {})
+      spacingFactor: density.minNodeSpacing / 44
     } as any).run();
-  }, [density, motionEnabled]);
+  }, [density]);
 
   useEffect(() => {
     if (!containerRef.current || !visibleGraph) return;
@@ -520,23 +574,17 @@ export default function NetworkGraphClient({ lang = "en" }: { lang?: "en" | "th"
       container: containerRef.current,
       elements: toElements(visibleGraph),
       layout: {
-        name: "cose",
-        animate: motionEnabled,
-        animationDuration: motionEnabled ? 900 : 0,
-        componentSpacing: density.componentSpacing,
-        coolingFactor: 0.95,
-        edgeElasticity: density.edgeElasticity,
+        name: "breadthfirst",
+        animate: false,
+        animationDuration: 0,
+        avoidOverlap: true,
+        circle: false,
+        directed: true,
         fit: true,
-        gravity: density.gravity,
-        idealEdgeLength: density.idealEdgeLength,
-        initialTemp: 200,
-        minTemp: 1,
-        nestingFactor: 1.2,
-        nodeRepulsion: density.nodeRepulsion,
-        numIter: 2200,
+        grid: true,
+        nodeDimensionsIncludeLabels: true,
         padding: density.padding,
-        spacingFactor: density.spacingFactor,
-        randomize: false
+        spacingFactor: density.minNodeSpacing / 44
       } as any,
       maxZoom: 3,
       minZoom: 0.08,
@@ -702,78 +750,89 @@ export default function NetworkGraphClient({ lang = "en" }: { lang?: "en" | "th"
   return (
     <>
       <div className={styles.toolbar}>
-        <div className={styles.searchWrap}>
-          <input value={search} onChange={(event) => setSearch(event.target.value)} onKeyDown={(event) => event.key === "Enter" && focusSearch()} placeholder={localT[lang].searchPlaceholder} />
-        </div>
-        <select value={sourceMode} onChange={(event) => setSourceMode(event.target.value as typeof sourceMode)} aria-label="Network data source">
-          <option value="auto">{lang === "th" ? "อัตโนมัติ" : "Auto"}</option>
-          <option value="database">{lang === "th" ? "ฐานข้อมูล" : "Database"}</option>
-          <option value="file">{lang === "th" ? "ไฟล์นำเข้า" : "Import file"}</option>
-          <option value="hybrid">{lang === "th" ? "ไฮบริด" : "Hybrid"}</option>
-        </select>
-        <button type="button" onClick={focusSearch}>{localT[lang].focus}</button>
-        <button type="button" onClick={() => cyRef.current?.fit(undefined, density.padding)}>{localT[lang].fitView}</button>
-        <button type="button" onClick={() => runLayout("cose")}>{localT[lang].resetLayout}</button>
-        <div className={styles.tagControl} role="group" aria-label={localT[lang].labelDisplay}>
-          <span>{localT[lang].labelDisplay}</span>
-          <div className={styles.tagButtons}>
-            {labelModeOptions.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                className={labelMode === option.value ? styles.active : ""}
-                onClick={() => setLabelMode(option.value)}
-                aria-pressed={labelMode === option.value}
-              >
-                {labelModeText(option.value, lang)}
-              </button>
-            ))}
+        <div className={styles.toolbarPrimary}>
+          <div className={styles.searchWrap}>
+            <input aria-label={localT[lang].searchPlaceholder} value={search} onChange={(event) => setSearch(event.target.value)} onKeyDown={(event) => event.key === "Enter" && focusSearch()} placeholder={localT[lang].searchPlaceholder} />
           </div>
-          <select value={labelMode} onChange={(event) => setLabelMode(event.target.value as LabelMode)} aria-label="Label display">
-            {labelModeOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {labelModeText(option.value, lang)}
-              </option>
-            ))}
-          </select>
+          <button type="button" className={styles.primaryAction} onClick={focusSearch}>{localT[lang].focus}</button>
+          <div className={styles.actionGroup} aria-label={lang === "th" ? "ควบคุมมุมมองกราฟ" : "Graph viewport controls"}>
+            <button type="button" onClick={() => cyRef.current?.fit(undefined, density.padding)}>{localT[lang].fitView}</button>
+            <button type="button" onClick={runLayout}>{localT[lang].resetLayout}</button>
+          </div>
         </div>
-        <label className={styles.inlineControl}>
-          {localT[lang].density}
-          <select value={densityMode} onChange={(event) => setDensityMode(event.target.value as DensityMode)} aria-label="Graph density">
-            {(Object.keys(densitySettings) as DensityMode[]).map((key) => (
-              <option key={key} value={key}>
-                {densityText(key, lang)}
-              </option>
-            ))}
-          </select>
-        </label>
-        <button type="button" className={animationsEnabled ? styles.active : ""} onClick={() => setAnimationsEnabled((value) => !value)}>{localT[lang].animation}</button>
-        <button type="button" className={focusMode ? styles.active : ""} onClick={() => setFocusMode((value) => !value)}>{localT[lang].focusMode}</button>
-        <button type="button" className={filtersCollapsed ? styles.active : ""} onClick={() => setFiltersCollapsed((value) => !value)}>{filtersCollapsed ? localT[lang].showFilters : localT[lang].collapseFilters}</button>
-        <button type="button" className={detailsCollapsed ? styles.active : ""} onClick={() => setDetailsCollapsed((value) => !value)}>{detailsCollapsed ? localT[lang].showDetails : localT[lang].collapseDetails}</button>
-        <button type="button" className={showArrows ? styles.active : ""} onClick={() => setShowArrows((value) => !value)}>{localT[lang].arrows}</button>
-        <button type="button" className={showLabels ? styles.active : ""} onClick={() => setShowLabels((value) => !value)}>{localT[lang].relationLabels}</button>
-        <button type="button" className={showLowConfidence ? styles.active : ""} onClick={() => setShowLowConfidence((value) => !value)}>{localT[lang].lowConfidence}</button>
-        <button type="button" className={onlyReviewed ? styles.active : ""} onClick={() => setOnlyReviewed((value) => !value)}>{localT[lang].onlyReviewed}</button>
-        <button type="button" className={showOwned ? styles.active : ""} onClick={() => setShowOwned((value) => !value)}>{localT[lang].ownedLayer}</button>
-        <button type="button" className={showMedia ? styles.active : ""} onClick={() => setShowMedia((value) => !value)}>{localT[lang].mediaLayer}</button>
-        <button type="button" className={showAcademic ? styles.active : ""} onClick={() => setShowAcademic((value) => !value)}>{localT[lang].researchLayer}</button>
-        <button type="button" className={localMode ? styles.active : ""} onClick={() => setLocalMode((value) => !value)}>{localT[lang].localGraph}</button>
-        <select value={localDepth} onChange={(event) => setLocalDepth(Number(event.target.value))} aria-label="Local graph depth">
-          <option value={1}>{localT[lang].depth} 1</option>
-          <option value={2}>{localT[lang].depth} 2</option>
-          <option value={3}>{localT[lang].depth} 3</option>
-        </select>
-        <button type="button" onClick={() => setLocalMode(false)}>{localT[lang].backToGlobal}</button>
-        <button type="button" onClick={pinSelected}>{localT[lang].pinSelected}</button>
-        <button type="button" onClick={exportJson}>{localT[lang].exportJson}</button>
-        {graph?.meta.truncated && <button type="button" onClick={loadMore}>{localT[lang].loadMore}</button>}
+
+        <div className={styles.toolbarSecondary}>
+          <label className={styles.compactSelect}>
+            <span>{localT[lang].labelDisplay}</span>
+            <select autoComplete="off" value={labelMode} onChange={(event) => setLabelMode(event.target.value as LabelMode)} aria-label="Label display">
+              {labelModeOptions.map((option) => <option key={option.value} value={option.value}>{labelModeText(option.value, lang)}</option>)}
+            </select>
+          </label>
+          <label className={styles.compactSelect}>
+            <span>{localT[lang].density}</span>
+            <select autoComplete="off" value={densityMode} onChange={(event) => setDensityMode(event.target.value as DensityMode)} aria-label="Graph density">
+              {(Object.keys(densitySettings) as DensityMode[]).map((key) => <option key={key} value={key}>{densityText(key, lang)}</option>)}
+            </select>
+          </label>
+          <button type="button" className={focusMode ? styles.active : ""} onClick={() => setFocusMode((value) => !value)}>{localT[lang].focusMode}</button>
+          <button type="button" className={!filtersCollapsed ? styles.active : ""} onClick={() => setFiltersCollapsed((value) => !value)}>{filtersCollapsed ? localT[lang].showFilters : localT[lang].collapseFilters}</button>
+          <button type="button" className={!detailsCollapsed ? styles.active : ""} onClick={() => setDetailsCollapsed((value) => !value)}>{detailsCollapsed ? localT[lang].showDetails : localT[lang].collapseDetails}</button>
+          <details className={styles.advancedControls}>
+            <summary>{lang === "th" ? "ตัวเลือกเพิ่มเติม" : "More controls"}</summary>
+            <div className={styles.advancedMenu}>
+              <label className={styles.inlineControl}>
+                {localT[lang].dataSource}
+                <select value={sourceMode} onChange={(event) => setSourceMode(event.target.value as typeof sourceMode)} aria-label="Network data source">
+                  <option value="auto">{lang === "th" ? "อัตโนมัติ" : "Auto"}</option>
+                  <option value="database">{lang === "th" ? "ฐานข้อมูล" : "Database"}</option>
+                  <option value="file">{lang === "th" ? "ไฟล์นำเข้า" : "Import file"}</option>
+                  <option value="hybrid">{lang === "th" ? "ไฮบริด" : "Hybrid"}</option>
+                </select>
+              </label>
+              <button type="button" className={animationsEnabled ? styles.active : ""} onClick={() => setAnimationsEnabled((value) => !value)}>{localT[lang].animation}</button>
+              <button type="button" className={showArrows ? styles.active : ""} onClick={() => setShowArrows((value) => !value)}>{localT[lang].arrows}</button>
+              <button type="button" className={showLabels ? styles.active : ""} onClick={() => setShowLabels((value) => !value)}>{localT[lang].relationLabels}</button>
+              <button type="button" className={showLowConfidence ? styles.active : ""} onClick={() => setShowLowConfidence((value) => !value)}>{localT[lang].lowConfidence}</button>
+              <button type="button" className={onlyReviewed ? styles.active : ""} onClick={() => setOnlyReviewed((value) => !value)}>{localT[lang].onlyReviewed}</button>
+              <button type="button" className={showOwned ? styles.active : ""} onClick={() => setShowOwned((value) => !value)}>{localT[lang].ownedLayer}</button>
+              <button type="button" className={showMedia ? styles.active : ""} onClick={() => setShowMedia((value) => !value)}>{localT[lang].mediaLayer}</button>
+              <button type="button" className={showAcademic ? styles.active : ""} onClick={() => setShowAcademic((value) => !value)}>{localT[lang].researchLayer}</button>
+              <button type="button" className={showPeripheralNodes ? styles.active : ""} onClick={() => setShowPeripheralNodes((value) => !value)}>{lang === "th" ? "โหนดปลายทาง" : "Peripheral nodes"}</button>
+              <button type="button" className={localMode ? styles.active : ""} onClick={() => setLocalMode((value) => !value)}>{localT[lang].localGraph}</button>
+              <label className={styles.inlineControl}>
+                {localT[lang].depth}
+                <select value={localDepth} onChange={(event) => setLocalDepth(Number(event.target.value))} aria-label="Local graph depth">
+                  <option value={1}>1</option><option value={2}>2</option><option value={3}>3</option>
+                </select>
+              </label>
+              <button type="button" onClick={() => setLocalMode(false)}>{localT[lang].backToGlobal}</button>
+              <button type="button" onClick={pinSelected}>{localT[lang].pinSelected}</button>
+              <button type="button" onClick={exportJson}>{localT[lang].exportJson}</button>
+              {graph?.meta.truncated && <button type="button" onClick={loadMore}>{localT[lang].loadMore}</button>}
+            </div>
+          </details>
+        </div>
       </div>
 
       {graph && (
         <div className={`${styles.sourceStatus} ${graph.meta.resolved_source === "fallback_file" ? styles.sourceWarning : ""}`}>
           <span>{localT[lang].dataSource} {graph.meta.resolved_source === "fallback_file" ? localT[lang].sourceWarning : sourceLabel}</span>
-          <span>{graph.meta.node_count} {lang === "th" ? "โหนด" : "nodes"} / {graph.meta.edge_count} {lang === "th" ? "เส้นเชื่อม" : "edges"}</span>
+          <span>{lang === "th" ? `แสดง ${visibleGraph?.nodes.length ?? 0} จาก ${graph.meta.node_count} โหนด` : `Showing ${visibleGraph?.nodes.length ?? 0} of ${graph.meta.node_count} nodes`} / {visibleGraph?.edges.length ?? 0} {lang === "th" ? "เส้นเชื่อม" : "edges"}</span>
+          <details className={styles.edgeLegend}>
+            <summary>{lang === "th" ? "ความหมายสีเส้น" : "Edge color key"}</summary>
+            <div className={styles.edgeLegendMenu}>
+              {edgeColorLegend.map((item) => (
+                <span className={styles.edgeLegendItem} key={item.key}>
+                  <i className={styles.edgeLegendSwatch} style={{ backgroundColor: item.color }} aria-hidden="true" />
+                  {edgeLegendText[lang][item.key]}
+                </span>
+              ))}
+              <span className={styles.edgeLegendNote}>
+                <i className={styles.lowConfidenceSwatch} aria-hidden="true" />
+                {lang === "th" ? "เส้นประสีเหลือง = ข้อมูลความมั่นใจต่ำ" : "Yellow dashed = low-confidence data"}
+              </span>
+            </div>
+          </details>
           {graph.meta.warnings.map((warning) => (
             <span key={warning}>{warning}</span>
           ))}

@@ -14,6 +14,48 @@ const clusterColors: Record<string, string> = {
   unknown: "#64748b"
 };
 
+// Relationship type is encoded by hue. Keeping every edge at the same base
+// width makes dense areas readable without treating a merged source count as
+// visual priority.
+const relationColors: Record<string, string> = {
+  developed_by: "#f5b942",
+  created_by: "#f5b942",
+  initiated_by: "#fb923c",
+  operated_by: "#2dd4bf",
+  owned_by: "#fb923c",
+  collaborated_with: "#c084fc",
+  connects_to: "#22d3ee",
+  relates_to: "#38bdf8",
+  deployed_in: "#60a5fa",
+  located_in: "#60a5fa",
+  showcased_at: "#fb7185",
+  published_by: "#a78bfa",
+  authored_by: "#a78bfa",
+  instance_of: "#5eead4",
+  has_theme: "#facc15",
+  discusses: "#94a3b8",
+  mentions: "#94a3b8"
+};
+
+export const edgeColorLegend = [
+  { key: "development", color: relationColors.developed_by },
+  { key: "ownership", color: relationColors.owned_by },
+  { key: "operations", color: relationColors.operated_by },
+  { key: "collaboration", color: relationColors.collaborated_with },
+  { key: "connection", color: relationColors.connects_to },
+  { key: "association", color: relationColors.relates_to },
+  { key: "placement", color: relationColors.deployed_in },
+  { key: "showcase", color: relationColors.showcased_at },
+  { key: "publication", color: relationColors.published_by },
+  { key: "classification", color: relationColors.instance_of },
+  { key: "theme", color: relationColors.has_theme },
+  { key: "reference", color: relationColors.mentions }
+] as const;
+
+function relationColor(relation: unknown) {
+  return relationColors[String(relation)] ?? "#7dd3c7";
+}
+
 export function networkStyles(showArrows: boolean, showLabels: boolean, animationsEnabled = true): StylesheetJson {
   return [
     {
@@ -26,10 +68,10 @@ export function networkStyles(showArrows: boolean, showLabels: boolean, animatio
         "color": "#e5fff5",
         "font-family": "Inter, system-ui, sans-serif",
         "font-size": 10,
-        "height": (ele: SingularElementArgument) => Math.max(12, Math.min(48, 12 + Number(ele.data("degree") ?? 0) * 2 + Number(ele.data("source_count") ?? 0))),
+        "height": (ele: SingularElementArgument) => Math.max(8, Math.min(34, 8 + Number(ele.data("degree") ?? 0) * 1.7 + Number(ele.data("source_count") ?? 0) * 0.8)),
         "label": "",
         "min-zoomed-font-size": 8,
-        "opacity": 0.92,
+        "opacity": 0.86,
         "overlay-opacity": 0,
         "overlay-padding": 4,
         "text-background-color": "#08130f",
@@ -44,7 +86,30 @@ export function networkStyles(showArrows: boolean, showLabels: boolean, animatio
         "transition-duration": animationsEnabled ? 220 : 0,
         "transition-property": "width height border-width border-color opacity overlay-opacity text-opacity text-background-opacity text-outline-opacity",
         "transition-timing-function": "ease-out",
-        "width": (ele: SingularElementArgument) => Math.max(12, Math.min(48, 12 + Number(ele.data("degree") ?? 0) * 2 + Number(ele.data("source_count") ?? 0)))
+        "width": (ele: SingularElementArgument) => Math.max(8, Math.min(34, 8 + Number(ele.data("degree") ?? 0) * 1.7 + Number(ele.data("source_count") ?? 0) * 0.8))
+      }
+    },
+    {
+      selector: "node.important",
+      style: {
+        "border-color": "#f5d26c",
+        "border-opacity": 0.9,
+        "border-width": 3,
+        "height": (ele: SingularElementArgument) => Math.max(26, Math.min(66, 22 + Number(ele.data("degree") ?? 0) * 2.2 + Number(ele.data("source_count") ?? 0) * 1.4)),
+        "opacity": 1,
+        "width": (ele: SingularElementArgument) => Math.max(26, Math.min(66, 22 + Number(ele.data("degree") ?? 0) * 2.2 + Number(ele.data("source_count") ?? 0) * 1.4)),
+        "z-index": 20
+      }
+    },
+    {
+      selector: "node.minor",
+      style: {
+        "border-opacity": 0.12,
+        "border-width": 1,
+        "height": 6,
+        "opacity": 0.2,
+        "width": 6,
+        "z-index": 1
       }
     },
     {
@@ -114,10 +179,10 @@ export function networkStyles(showArrows: boolean, showLabels: boolean, animatio
         "color": "#d8fff0",
         "font-size": 9,
         "label": showLabels ? "data(label)" : "",
-        "line-color": "#7dd3c7",
+        "line-color": (ele: SingularElementArgument) => relationColor(ele.data("relation")),
         "line-opacity": (ele: SingularElementArgument) => Math.max(0.18, Math.min(0.8, Number(ele.data("confidence") ?? 0.5))),
         "opacity": (ele: SingularElementArgument) => Math.max(0.24, Math.min(0.9, Number(ele.data("confidence") ?? 0.5))),
-        "target-arrow-color": "#7dd3c7",
+        "target-arrow-color": (ele: SingularElementArgument) => relationColor(ele.data("relation")),
         "target-arrow-shape": showArrows ? "triangle" : "none",
         "text-background-color": "#08130f",
         "text-background-opacity": 0.85,
@@ -128,7 +193,7 @@ export function networkStyles(showArrows: boolean, showLabels: boolean, animatio
         "transition-duration": animationsEnabled ? 200 : 0,
         "transition-property": "line-color target-arrow-color width opacity line-opacity text-opacity",
         "transition-timing-function": "ease-out",
-        "width": (ele: SingularElementArgument) => Math.max(1, Math.min(7, Number(ele.data("weight") ?? 1) * 1.25))
+        "width": 1.5
       }
     },
     {
@@ -137,6 +202,14 @@ export function networkStyles(showArrows: boolean, showLabels: boolean, animatio
         "line-style": "dashed",
         "line-color": "#facc15",
         "target-arrow-color": "#facc15"
+      }
+    },
+    {
+      selector: "edge.minor-link",
+      style: {
+        "line-opacity": 0.12,
+        "opacity": 0.16,
+        "width": 1.5
       }
     },
     {

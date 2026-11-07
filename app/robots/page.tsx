@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { getTranslation } from "@/lib/translations";
+import RobotDirectory, { type RobotDirectoryItem } from "./RobotDirectory";
 
 export const dynamic = "force-dynamic";
 
@@ -124,7 +125,8 @@ function getRobotSourceImage(robot: RobotLike, sources: SourceLike[]) {
   return getSourceImageUrl(source?.url ?? robot.officialUrl, source?.rawMeta ?? null);
 }
 
-export default async function RobotsPage() {
+export default async function RobotsPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
+  const params = await searchParams;
   const cookieStore = await cookies();
   const lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
   const t = getTranslation(lang);
@@ -140,13 +142,27 @@ export default async function RobotsPage() {
     primaryUseCase: string | null;
     officialUrl: string | null;
     sourceMeta: unknown;
+    firstSeenYear: number | null;
+    updatedAt: Date;
+    inventory: Array<{ locationLabel: string | null }>;
+    _count: { contributions: number };
   }> = [];
   let sources: SourceLike[] = [];
   let dbOffline = false;
 
   try {
     [robots, sources] = await Promise.all([
-      prisma.robotModel.findMany({ orderBy: { canonicalName: "asc" }, take: 200 }),
+      prisma.robotModel.findMany({
+        orderBy: { canonicalName: "asc" },
+        take: 200,
+        include: {
+          inventory: {
+            where: { visibility: "public" },
+            select: { locationLabel: true }
+          },
+          _count: { select: { contributions: true } }
+        }
+      }),
       prisma.sourceRecord.findMany({
         orderBy: [{ relevanceConfidence: "desc" }, { updatedAt: "desc" }],
         select: { title: true, url: true, platform: true, rawMeta: true },
@@ -169,28 +185,28 @@ export default async function RobotsPage() {
           Live database records are unavailable. No substitute robot registry records are being shown.
         </div>
       )}
-      <div className="cards">
-        {robots.map((robot) => {
-          const bannerUrl = getRobotSourceImage(robot, sources);
-          return (
-            <article className="card" key={robot.id}>
-              <div className="card-banner">
-                {bannerUrl ? (
-                  <img src={bannerUrl} alt={robot.canonicalName} loading="lazy" />
-                ) : (
-                  <div className="source-thumbnail-empty">No source thumbnail</div>
-                )}
-              </div>
-              <h2>{robot.canonicalName}</h2>
-              <p className="muted">{robot.description ?? "No description yet."}</p>
-              <p><span className="badge">{robot.robotType}</span> <span className="badge">{robot.thailandStatus}</span></p>
-              <p><strong>{robot.manufacturer ?? robot.developerOrg ?? "Unknown developer"}</strong><br />{robot.primaryUseCase ?? "Use case unclassified"}</p>
-              {robot.officialUrl && <a href={robot.officialUrl} target="_blank" rel="noopener noreferrer">Source</a>}
-            </article>
-          );
-        })}
-        {!robots.length && <div className="empty">No robot models yet. Add seeds with `pnpm db:seed` or import sources.</div>}
-      </div>
+      {robots.length ? (
+        <RobotDirectory
+          lang={lang}
+          initialQuery={params.q || ""}
+          robots={robots.map((robot): RobotDirectoryItem => ({
+            id: robot.id,
+            canonicalName: robot.canonicalName,
+            description: robot.description,
+            robotType: robot.robotType,
+            thailandStatus: robot.thailandStatus,
+            manufacturer: robot.manufacturer,
+            developerOrg: robot.developerOrg,
+            primaryUseCase: robot.primaryUseCase,
+            officialUrl: robot.officialUrl,
+            bannerUrl: getRobotSourceImage(robot, sources),
+            publicLocations: [...new Set(robot.inventory.map((item) => item.locationLabel?.trim()).filter((location): location is string => Boolean(location)))].sort((left, right) => left.localeCompare(right)),
+            contributionCount: robot._count.contributions,
+            updatedAt: robot.updatedAt.toISOString(),
+            firstSeenYear: robot.firstSeenYear
+          }))}
+        />
+      ) : <div className="empty">No robot models yet. Add seeds with `pnpm db:seed` or import sources.</div>}
     </>
   );
 }

@@ -1,0 +1,164 @@
+.directory {
+  display: grid;
+  gap: 18px;
+}
+
+.controlBar {
+  align-items: stretch;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(0, 1fr) minmax(230px, 300px);
+}
+
+.viewTabs {
+  background: rgba(235, 241, 236, 0.78);
+  border: 1px solid #dbe6de;
+  border-radius: 14px;
+  display: grid;
+  gap: 5px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding: 5px;
+}
+
+.viewTabs button {
+  align-items: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  box-shadow: none;
+  color: #597064;
+  cursor: pointer;
+  display: flex;
+  gap: 8px;
+  min-height: 56px;
+  padding: 8px 10px;
+  text-align: left;
+}
+
+.viewTabs button:hover {
+  background: rgba(255, 255, 255, 0.72);
+  border-color: #cbddd0;
+  transform: none;
+}
+
+.viewTabs button.activeTab {
+  background: #ffffff;
+  border-color: #c9dbce;
+  box-shadow: 0 5px 12px rgba(29, 74, 48, 0.08);
+  color: #225d3e;
+}
+
+.viewTabs svg { flex: 0 0 auto; }
+.viewTabs span { min-width: 0; }
+.viewTabs strong,.viewTabs small { display: block; }
+.viewTabs strong { font-size: 13px; line-height: 1.2; }
+.viewTabs small { color: #708076; font-size: 10px; line-height: 1.3; margin-top: 3px; }
+
+.searchBox {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #d8e3db;
+  border-radius: 12px;
+  display: flex;
+  gap: 7px;
+  min-height: 50px;
+  padding: 0 11px;
+}
+
+.searchBox svg { color: #647a6c; flex: 0 0 auto; }
+.searchBox input { background: transparent; border: 0; box-shadow: none; min-width: 0; outline: 0; padding: 0; width: 100%; }
+.searchBox input:focus { box-shadow: none; transform: none; }
+.searchBox button { background: transparent; border: 0; box-shadow: none; color: #698074; font-size: 22px; line-height: 1; min-height: 25px; padding: 0 2px; }
+.searchBox button:hover { box-shadow: none; color: #214e35; transform: none; }
+
+.filterBar {
+  align-items: end;
+  background: #fff;
+  border: 1px solid #e0e8e2;
+  border-radius: 13px;
+  box-shadow: 0 3px 10px rgba(27, 64, 46, .035);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 12px;
+}
+.filterLabel { align-items: center; align-self: center; color: #53685a; display: flex; font-size: 11px; font-weight: 800; gap: 7px; margin-right: auto; }
+.filterLabel svg { color: #37744e; }
+.filterLabel b { background: #eef5ef; border-radius: 999px; color: #567360; font-size: 9px; font-weight: 750; margin-left: 3px; padding: 4px 7px; }
+.filterBar>label { color: #77867c; display: grid; font-size: 9px; font-weight: 750; gap: 4px; min-width: 145px; }
+.filterBar>label:first-of-type>span { display: none; }
+.filterBar select { background-color: #fbfcfb; border: 1px solid #e1e8e3; border-radius: 8px; color: #34473b; font-size: 10px; min-height: 34px; padding: 6px 26px 6px 9px; }
+.filterBar select:focus { border-color: #6da27d; box-shadow: 0 0 0 3px rgba(50,119,76,.1); outline: 0; transform: none; }
+
+.locationView,.orderedView { display: grid; gap: 16px; }
+.viewSummary { color: var(--text-secondary); font-size: 13px; line-height: 1.5; margin: 0; }
+
+.locationGroup,.orderedView {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-soft);
+  padding: 18px;
+}
+
+.groupHeader,.orderedHeader {
+  align-items: start;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  padding-bottom: 14px;
+}
+
+.groupEyebrow { color: #527164; display: block; font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.groupHeader h2,.orderedHeader h2 { align-items: center; display: flex; font-size: 19px; gap: 7px; letter-spacing: -.025em; line-height: 1.2; margin: 3px 0 0; }
+.groupHeader h2 svg { color: var(--accent); }
+.groupHeader p,.orderedHeader p { color: var(--text-secondary); font-size: 12px; line-height: 1.45; margin: 6px 0 0; }
+.groupHeader>strong,.orderedHeader>strong { color: #245d3f; font-size: 24px; line-height: 1; text-align: right; white-space: nowrap; }
+.groupHeader>strong small,.orderedHeader>strong small { color: #66766d; display: block; font-size: 10px; font-weight: 700; margin-top: 5px; text-transform: uppercase; }
+
+.robotGrid { display: grid; gap: 13px; grid-template-columns: repeat(auto-fill, minmax(245px, 1fr)); }
+.robotCard { background: #fbfdfb; border: 1px solid #dce7df; border-radius: 13px; height: 100%; overflow: hidden; transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease; }
+.robotCard:hover { border-color: #83b296; box-shadow: 0 10px 22px rgba(27, 64, 46, .10); transform: translateY(-2px); }
+.cardImage { background: linear-gradient(135deg, #eef5ef, #dfece2); height: 136px; overflow: hidden; position: relative; }
+.cardImage img { height: 100%; object-fit: cover; transition: transform 240ms ease; width: 100%; }
+.robotCard:hover .cardImage img { transform: scale(1.035); }
+.imageFallback { align-items: center; color: #678072; display: grid; font-size: 11px; gap: 5px; height: 100%; justify-content: center; justify-items: center; }
+.typeBadge { background: rgba(20, 67, 44, .88); border-radius: 999px; bottom: 9px; color: #fff; font-size: 10px; font-weight: 750; left: 9px; max-width: calc(100% - 18px); overflow: hidden; padding: 4px 7px; position: absolute; text-overflow: ellipsis; white-space: nowrap; }
+.cardBody { display: flex; flex-direction: column; gap: 9px; padding: 12px; }
+.cardTitleRow { align-items: start; display: flex; gap: 7px; justify-content: space-between; }
+.cardTitleRow h3 { font-size: 15px; letter-spacing: -.02em; line-height: 1.25; margin: 0; }.cardTitleRow h3 a { color: #20372a; }.cardTitleRow h3 a:hover { color: #247249; text-decoration: underline; text-underline-offset: 3px; }
+.statusBadge { background: #edf4ee; border: 1px solid #d4e4d8; border-radius: 999px; color: #436b52; flex: 0 0 auto; font-size: 9px; font-weight: 750; line-height: 1.1; max-width: 44%; overflow: hidden; padding: 4px 6px; text-overflow: ellipsis; white-space: nowrap; }
+.description { color: var(--text-secondary); display: -webkit-box; font-size: 12px; line-height: 1.45; margin: 0; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
+.developer { color: #3f5749; font-size: 11px; font-weight: 750; margin: 0; }
+.locationChips { display: flex; flex-wrap: wrap; gap: 5px; }
+.locationChips span { align-items: center; background: #edf6f0; border-radius: 999px; color: #356448; display: flex; font-size: 10px; gap: 3px; max-width: 100%; overflow: hidden; padding: 4px 6px; text-overflow: ellipsis; white-space: nowrap; }
+.locationChips .undisclosed { background: #f4f0e7; color: #7a6a4b; }
+.cardFooter { align-items: center; border-top: 1px solid #e2ebe4; display: flex; gap: 8px; justify-content: space-between; margin-top: 2px; padding-top: 9px; }
+.cardFooter span { align-items: center; color: #63766a; display: flex; font-size: 10px; gap: 4px; }
+.cardFooter a { font-size: 11px; font-weight: 750; }
+
+.rankedCard { display: grid; gap: 5px; }
+.rank { align-items: center; color: #597065; display: flex; font-size: 10px; font-weight: 750; gap: 4px; min-height: 19px; }
+.rank svg { color: #c38422; }
+.noMatches { background: #ffffff; border: 1px dashed #b8cdbd; border-radius: 14px; color: var(--text-secondary); padding: 34px; text-align: center; }
+
+@media (max-width: 900px) {
+  .controlBar { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 660px) {
+  .viewTabs { grid-template-columns: 1fr; }
+  .viewTabs button { min-height: 46px; }
+  .viewTabs small { display: none; }
+  .filterBar { align-items: stretch; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); }.filterLabel { grid-column:1/-1; }.filterBar>label { min-width:0; }.filterBar>label:first-of-type>span { display:block; }
+  .locationGroup,.orderedView { padding: 14px; }
+  .groupHeader,.orderedHeader { gap: 8px; }
+  .robotGrid { grid-template-columns: 1fr; }
+}
+
+:global(html[data-atlas-theme="dark"]) .filterBar { background:#1a292b; border-color:#35484a; }
+:global(html[data-atlas-theme="dark"]) .filterLabel,:global(html[data-atlas-theme="dark"]) .cardTitleRow h3 a { color:#dbe8e3; }
+:global(html[data-atlas-theme="dark"]) .filterBar select { background:#223435; border-color:#405353; color:#e0ece8; }
+:global(html[data-atlas-theme="dark"]) .filterLabel b { background:#263a36; color:#c4d5ce; }

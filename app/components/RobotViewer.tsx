@@ -28,7 +28,7 @@ type RotationBase = {
   z: number;
 };
 
-export default function RobotViewer() {
+export default function RobotViewer({ modelScale = 3.35 }: { modelScale?: number }) {
   const frameRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -127,7 +127,7 @@ export default function RobotViewer() {
       box.getSize(size);
       box.getCenter(center);
 
-      const scale = size.y > 0 ? 3.35 / size.y : 1;
+      const scale = size.y > 0 ? modelScale / size.y : 1;
       model.scale.setScalar(scale);
 
       const scaledCenter = center.multiplyScalar(scale);
@@ -341,7 +341,7 @@ export default function RobotViewer() {
       renderer.dispose();
       frame.removeChild(renderer.domElement);
     };
-  }, []);
+  }, [modelScale]);
 
   return <div ref={frameRef} className="robot-viewer-frame" />;
 }
