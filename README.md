@@ -135,6 +135,45 @@ Explore the main app modules:
 - `🟡 /analytics` — 📈 Statistics, sentiment graphs, and attention metrics over time.
 - `🟢 /data-pulls` — 🔌 Control room to trigger data ingestion pipelines.
 - `🟡 /submit-data` — 📥 Community submission form for sharing robot models and projects.
+- `🟢 /living-lab` — 🤝 HRI Wellness Living Lab: create an HRI Passport with voice, typing, buttons or the camera.
+- `🟡 /living-lab/passport/[token]` — 🪪 Passport card with QR, owner edit and delete.
+- `🟢 /living-lab/robot` — 🤖 Robot console: one passport adapted by simulated robots with different hardware.
+- `🟡 /living-lab/meet/[code]` — 🏥 Hospital journey with comfort ratings.
+- `🟢 /api/hri/passport/[token]` — 🔌 Robot-facing API (see [`docs/hri-passport-api.md`](docs/hri-passport-api.md)).
+
+---
+
+## 🤝 HRI Passport (HRI Hackathon Thailand 2026, team Robosonic)
+
+**One profile. Every robot understands you.** A person tells one robot how they like to be treated, and every robot that reads the passport adapts its distance, speed, eye contact, greeting and speech.
+
+**Try it**
+1. Follow [Setup & Installation](#-setup--installation), including the database step, then run `pnpm dev`.
+2. Open `/living-lab`, tick the consent box and choose **Talk or type your answers**.
+3. Answer one question at a time: press the microphone and speak, type, or use the buttons.
+4. Check your answers on the review screen, change anything, then save.
+5. Scan the QR or open the card, then read the passport in `/living-lab/robot`.
+
+The demo script is in [`docs/HRI-PASSPORT-DEMO.md`](docs/HRI-PASSPORT-DEMO.md), and tested status is in [`docs/BASELINE-AUDIT.md`](docs/BASELINE-AUDIT.md).
+
+**Environment:** besides the variables in `.env.example`, set `RATE_LIMIT_SALT` to a long random value. Never commit `.env*` files, connection strings, API keys or edit tokens. An existing database needs the migration in `prisma/migrations/20261107000000_hri_passport_access` first (see the rollout steps in the API document).
+
+**Tests**
+```bash
+pnpm test && pnpm typecheck
+pnpm build && pnpm start &
+# No database needed:
+PLAYWRIGHT_EXTERNAL_SERVER=1 pnpm exec playwright test tests-node/hri-voice-flow.spec.ts
+# Writes test data, so it runs only with NEON_BRANCH=dev:
+PLAYWRIGHT_EXTERNAL_SERVER=1 pnpm exec playwright test tests-node/hri-
+```
+
+**Limitations and fallbacks**
+- **Simulation only.** Every robot that moves is a browser simulation. No real robot is connected or controlled.
+- **Speech input depends on the browser.** Without support, or with the microphone blocked, the same flow works by typing or with buttons. Thai recognition has not been measured in a noisy venue.
+- **Speech may leave the device.** The browser's speech service may process what is said. This site stores neither audio nor transcripts, only the chosen preferences.
+- **Auto mode is unvalidated.** Camera calibration runs on-device, but its accuracy on real people has not been measured. It never infers feelings.
+- **Preferences, not medical data.** A passport is what the person says they prefer, not a diagnosis.
 
 ---
 
@@ -265,15 +304,19 @@ Set these variables in your Vercel project settings:
 ```env
 DATABASE_URL="prisma+postgres://accelerate.prisma-data.net/?api_key=..."
 NEXT_PUBLIC_APP_URL="https://your-project.vercel.app"
-ADMIN_BASIC_USER="creativelab.co.th@gmail.com"
+NEXT_PUBLIC_SITE_URL="https://your-project.vercel.app"
+ADMIN_BASIC_USER="admin@example.com"
 ADMIN_BASIC_PASSWORD="use-a-strong-password"
+ADMIN_SESSION_SECRET="random-32-byte-secret"
 YOUTUBE_API_KEY="your-api-key"
 GITHUB_TOKEN="your-token"
 GEMINI_API_KEY="your-gemini-api-key"
 ```
 
 > [!IMPORTANT]
-> - 🔒 Production endpoints `/admin/*`, `/data-pulls`, and `/api/ingest/*` are protected with Basic Auth using `ADMIN_BASIC_USER` and `ADMIN_BASIC_PASSWORD`. Keep credentials safe!
+> - 🔒 `/admin/*` and `/data-pulls` require an administrator to sign in at `/admin-login` with `ADMIN_BASIC_USER` / `ADMIN_BASIC_PASSWORD`. The session is an HMAC-signed, HttpOnly cookie (signed with `ADMIN_SESSION_SECRET`, or the admin password if unset) that expires after 8 hours. Every server action that changes data re-checks it.
+> - 🔒 `/api/ingest/*` and `/api/export` use Basic Auth with the same credentials. There are no built-in default credentials: if the variables are unset, admin access is disabled.
+> - 🌐 `NEXT_PUBLIC_SITE_URL` sets canonical URLs, the sitemap and Open Graph links.
 > - ⚙️ The Vercel build command is configured to run `pnpm vercel-build` which automatically handles schema generation. Do **not** run `db:push` inside the Vercel build phase.
 
 ---

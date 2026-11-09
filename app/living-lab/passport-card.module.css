@@ -1,0 +1,148 @@
+/* The HRI Passport as a physical-looking identity card. Shared by the calibration "done" screen and the
+   passport card page. Built from the HumanoidTH shell's own palette, so it reads as the same brand:
+   sidebar deep green (#0b1a15) and its border (#14352a), --accent-strong (#365b41), and a lighter cut of the
+   amber active-marker (--warning #705c30) that stays legible on the dark ground. */
+.card {
+  --pc-ink: #0b1a15;
+  --pc-forest: #14352a;
+  --pc-leaf: #365b41;
+  --pc-text: #eef5f1;
+  --pc-muted: #b9cdc3;
+  --pc-gold: #d9b45a;
+  --pc-gold-line: rgba(217, 180, 90, 0.45);
+  --pc-chip: rgba(11, 26, 21, 0.5);
+  --pc-chip-line: rgba(238, 245, 241, 0.14);
+
+  container-type: inline-size;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: grid;
+  gap: 16px;
+  padding: 20px 22px 16px;
+  border-radius: 18px;
+  color: var(--pc-text);
+  background:
+    radial-gradient(120% 90% at 100% 0%, rgba(74, 124, 89, 0.55), transparent 60%),
+    linear-gradient(140deg, var(--pc-ink) 0%, var(--pc-forest) 58%, var(--pc-leaf) 100%);
+  box-shadow:
+    inset 0 0 0 1px var(--pc-gold-line),
+    0 1px 2px rgba(11, 26, 21, 0.25),
+    0 22px 44px -22px rgba(11, 26, 21, 0.6);
+  text-align: left;
+}
+
+/* Guilloché: the fine security pattern printed on real passports. Decorative and faint. */
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.14;
+  background:
+    repeating-radial-gradient(circle at 88% 18%, transparent 0 9px, rgba(217, 180, 90, 0.55) 9px 10px),
+    repeating-radial-gradient(circle at 8% 115%, transparent 0 13px, rgba(238, 245, 241, 0.4) 13px 14px);
+  -webkit-mask-image: linear-gradient(180deg, #000, rgba(0, 0, 0, 0.5));
+  mask-image: linear-gradient(180deg, #000, rgba(0, 0, 0, 0.5));
+}
+
+.head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 11px; min-width: 0; }
+.emblem {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--pc-gold);
+  border: 1px solid var(--pc-gold-line);
+  background: rgba(217, 180, 90, 0.08);
+}
+.heading { margin: 0; font-size: 12px; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; color: var(--pc-gold); }
+.motto { margin: 2px 0 0; font-size: 12.5px; line-height: 1.35; color: var(--pc-muted); }
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  color: var(--pc-text);
+  background: rgba(238, 245, 241, 0.1);
+  border: 1px solid rgba(238, 245, 241, 0.26);
+}
+.status::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #7fe0a5; box-shadow: 0 0 0 3px rgba(127, 224, 165, 0.2); }
+.statusOff::before { background: var(--pc-gold); box-shadow: 0 0 0 3px rgba(217, 180, 90, 0.2); }
+
+.body { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 20px; align-items: center; }
+.qrTile { background: #fff; border-radius: 12px; padding: 8px; box-shadow: 0 8px 20px -10px rgba(0, 0, 0, 0.55); }
+.qr { display: block; width: 132px; height: 132px; }
+.qrEmpty { width: 132px; height: 132px; display: grid; place-items: center; padding: 8px; text-align: center; font-size: 11px; color: #5e6661; }
+.codeLabel { margin: 0; font-size: 10.5px; font-weight: 750; letter-spacing: 0.16em; text-transform: uppercase; color: var(--pc-gold); }
+.code {
+  margin: 4px 0 0;
+  font-size: clamp(28px, 7.5cqi, 42px);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: 0.14em;
+  font-variant-numeric: tabular-nums;
+  color: var(--pc-text);
+  overflow-wrap: anywhere;
+}
+.meta { margin: 6px 0 0; font-size: 12px; color: var(--pc-muted); }
+
+.prefs { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.pref { min-width: 0; display: grid; gap: 4px; align-content: start; padding: 9px 10px; border-radius: 10px; background: var(--pc-chip); border: 1px solid var(--pc-chip-line); }
+.prefLabel { display: flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--pc-muted); }
+.prefLabel svg { flex: none; color: var(--pc-gold); }
+.prefValue { font-size: 13.5px; font-weight: 700; line-height: 1.3; color: var(--pc-text); overflow-wrap: anywhere; }
+
+/* Machine-readable zone, like the bottom of a passport. Carries only what is already on the card. */
+.mrz {
+  margin: 0;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(217, 180, 90, 0.32);
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  white-space: nowrap;
+  overflow: hidden;
+  color: rgba(238, 245, 241, 0.55);
+}
+
+/* Narrow cards (calibration side panel, phones): preferences become label/value rows. */
+@container (max-width: 640px) {
+  .prefs { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .pref { grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 8px 11px; }
+  .prefValue { text-align: right; }
+}
+@container (max-width: 400px) {
+  .body { grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: center; }
+  .pref { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .prefValue { text-align: left; }
+}
+
+/* One "issued" moment when a passport is first shown: the card settles in and a light sheen passes once. */
+.issued { animation: pc-issue 700ms var(--motion-ease, ease-out) both; }
+.issued::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.16) 48%, transparent 66%);
+  transform: translateX(-120%);
+  animation: pc-sheen 1400ms 350ms var(--motion-ease, ease-out) both;
+}
+@keyframes pc-issue { from { opacity: 0; transform: translateY(14px) scale(0.985); } to { opacity: 1; transform: none; } }
+@keyframes pc-sheen { to { transform: translateX(120%); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .issued { animation: none; }
+  .issued::after { display: none; }
+}
